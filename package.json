@@ -24,5 +24,5 @@
     "eslint-config-next": "15.2.1",
     "@eslint/eslintrc": "^3"
   },
-  "packageManager": "pnpm@9.15.1+sha512.1acb565e6193efbebda772702950469150cf12bcc764262e7587e71d19dc98a423dff9536e57ea44c49bdf790ff694e83c27be5faa23d67e0c033b583be4bfcf"
+  "packageManager": "pnpm@10.5.0+sha512.11106a5916c7406fe4b8cb8e3067974b8728f47308a4f5ac5e850304afa6f57e2847d7950dfe78877d8d36bfb401d381c4215db3a4c3547ffa63c14333a6fa51"
 }
