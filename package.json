@@ -11,7 +11,9 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "test:coverage:ui": "vitest --coverage --ui",
-    "code:prettier:format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,hbs}\""
+    "code:prettier:format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,hbs}\"",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "next": "15.2.1",
@@ -19,7 +21,17 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^3.2.5",
     "@eslint/eslintrc": "^3",
+    "@storybook/addon-essentials": "^8.6.4",
+    "@storybook/addon-interactions": "^8.6.4",
+    "@storybook/addon-onboarding": "^8.6.4",
+    "@storybook/blocks": "^8.6.4",
+    "@storybook/experimental-addon-test": "^8.6.4",
+    "@storybook/experimental-nextjs-vite": "8.6.4",
+    "@storybook/nextjs": "^8.6.4",
+    "@storybook/react": "^8.6.4",
+    "@storybook/test": "^8.6.4",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.2.0",
@@ -27,17 +39,26 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/browser": "3.0.7",
     "@vitest/coverage-v8": "3.0.7",
     "eslint": "^9",
     "eslint-config-next": "15.2.1",
+    "eslint-plugin-storybook": "^0.11.4",
     "jsdom": "^26.0.0",
+    "playwright": "^1.50.1",
     "prettier": "^3.5.3",
     "prettier-config-standard": "^7.0.0",
+    "storybook": "^8.6.4",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.0.7"
   },
   "prettier": "prettier-config-standard",
-  "packageManager": "pnpm@10.5.0+sha512.11106a5916c7406fe4b8cb8e3067974b8728f47308a4f5ac5e850304afa6f57e2847d7950dfe78877d8d36bfb401d381c4215db3a4c3547ffa63c14333a6fa51"
+  "packageManager": "pnpm@10.5.0+sha512.11106a5916c7406fe4b8cb8e3067974b8728f47308a4f5ac5e850304afa6f57e2847d7950dfe78877d8d36bfb401d381c4215db3a4c3547ffa63c14333a6fa51",
+  "eslintConfig": {
+    "extends": [
+      "plugin:storybook/recommended"
+    ]
+  }
 }
