@@ -1,0 +1,51 @@
+name: Format
+
+on:
+  push:
+    tags-ignore: ['v[0-9]+.[0-9]+.[0-9]+*']
+    paths:
+      - '**.ts'
+      - '**.tsx'
+      - '**.js'
+      - '**.mjs'
+      - '**.cs'
+      - '**.json'
+      - '.github/workflows/**.yml'
+    branches:
+      - main
+  pull_request:
+    paths:
+      - '**.ts'
+      - '**.tsx'
+      - '**.js'
+      - '**.mjs'
+      - '**.cs'
+      - '**.json'
+      - '.github/workflows/**.yml'
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Format code
+        run: pnpm code:prettier:format
+
+      - name: Auto fix lint errors
+        run: pnpm lint --fix
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
