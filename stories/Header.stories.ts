@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from '@storybook/test';
+import type { Meta, StoryObj } from '@storybook/react'
+import { fn } from '@storybook/test'
 
-import { Header } from './Header';
+import { Header } from './Header'
 
 const meta = {
   title: 'Example/Header',
@@ -10,24 +10,24 @@ const meta = {
   tags: ['autodocs'],
   parameters: {
     // More on how to position stories at: https://storybook.js.org/docs/configure/story-layout
-    layout: 'fullscreen',
+    layout: 'fullscreen'
   },
   args: {
     onLogin: fn(),
     onLogout: fn(),
-    onCreateAccount: fn(),
-  },
-} satisfies Meta<typeof Header>;
+    onCreateAccount: fn()
+  }
+} satisfies Meta<typeof Header>
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 export const LoggedIn: Story = {
   args: {
     user: {
-      name: 'Jane Doe',
-    },
-  },
-};
+      name: 'Jane Doe'
+    }
+  }
+}
 
-export const LoggedOut: Story = {};
+export const LoggedOut: Story = {}
