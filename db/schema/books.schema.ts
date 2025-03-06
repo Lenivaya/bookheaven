@@ -10,6 +10,7 @@ import {
 } from 'drizzle-orm/pg-core'
 import { timestamps } from './columns.helpers'
 import { relations } from 'drizzle-orm'
+import { ratings } from './ratings.schema'
 
 // Authors table
 export const authors = pgTable('authors', {
@@ -130,3 +131,14 @@ export const workToTagsRelations = relations(workToTags, ({ one }) => ({
 export const tagsRelations = relations(tags, ({ many }) => ({
   workToTags: many(workToTags)
 }))
+
+export const bookWorksRatingRelations = relations(bookWorks, ({ many }) => ({
+  ratings: many(ratings)
+}))
+
+export const bookEditionsRatingRelations = relations(
+  bookEditions,
+  ({ many }) => ({
+    ratings: many(ratings)
+  })
+)
