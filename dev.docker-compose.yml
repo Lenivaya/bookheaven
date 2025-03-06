@@ -1,0 +1,21 @@
+services:
+  bookheaven-dev-database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bookheaven
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - bookheaven-dev-network
+
+networks:
+  bookheaven-dev-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
