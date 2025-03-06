@@ -1,8 +1,9 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @plugin "tailwindcss-animate";
 
 @custom-variant dark (&:is(.dark *));
+/* @custom-variant dark (&:where(.dark, .dark *)); */
 
 @theme inline {
   --color-background: var(--background);
@@ -122,5 +123,8 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  *:focus {
+    @apply focus:ring-0 focus:outline-none;
   }
 }

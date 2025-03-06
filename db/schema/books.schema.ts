@@ -8,10 +8,11 @@ import {
   boolean,
   decimal
 } from 'drizzle-orm/pg-core'
-import { timestamps } from './columns.helpers'
+import { createInsertSchema, timestamps } from './columns.helpers'
 import { relations } from 'drizzle-orm'
 import { ratings } from './ratings.schema'
 import { authorFollowers } from './followers.schema'
+import { createSelectSchema, createUpdateSchema } from 'drizzle-zod'
 
 // Authors table
 export const authors = pgTable('authors', {
@@ -151,3 +152,23 @@ export const bookEditionsRatingRelations = relations(
 export const authorsFollowersRelations = relations(authors, ({ many }) => ({
   followers: many(authorFollowers)
 }))
+
+export type Author = typeof authors.$inferSelect
+export type BookWork = typeof bookWorks.$inferSelect
+export type BookEdition = typeof bookEditions.$inferSelect
+export type Tag = typeof tags.$inferSelect
+
+export const authorsSelectSchema = createSelectSchema(authors)
+export const bookWorksSelectSchema = createSelectSchema(bookWorks)
+export const bookEditionsSelectSchema = createSelectSchema(bookEditions)
+export const tagsSelectSchema = createSelectSchema(tags)
+
+export const bookEditionsInsertSchema = createInsertSchema(bookEditions)
+export const bookWorksInsertSchema = createInsertSchema(bookWorks)
+export const authorsInsertSchema = createInsertSchema(authors)
+export const tagsInsertSchema = createInsertSchema(tags)
+
+export const bookEditionsUpdateSchema = createUpdateSchema(bookEditions)
+export const bookWorksUpdateSchema = createUpdateSchema(bookWorks)
+export const authorsUpdateSchema = createUpdateSchema(authors)
+export const tagsUpdateSchema = createUpdateSchema(tags)
