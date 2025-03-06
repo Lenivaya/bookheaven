@@ -19,6 +19,8 @@ export const authors = pgTable('authors', {
   name: text('name').notNull(),
   biography: text('biography'),
   birthDate: timestamp('birth_date'),
+  deathDate: timestamp('death_date'),
+  photoUrl: text('photo_url'),
   ...timestamps
 })
 
