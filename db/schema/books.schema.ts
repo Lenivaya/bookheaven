@@ -50,6 +50,8 @@ export const bookEditions = pgTable('book_editions', {
   isOnSale: boolean('is_on_sale').default(false),
   salePrice: decimal('sale_price', { precision: 10, scale: 2 }),
   stockQuantity: integer('stock_quantity').notNull().default(0),
+  thumbnailUrl: text('thumbnail_url'),
+  smallThumbnailUrl: text('small_thumbnail_url'),
   ...timestamps
 })
 
