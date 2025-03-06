@@ -11,6 +11,7 @@ import {
 import { timestamps } from './columns.helpers'
 import { relations } from 'drizzle-orm'
 import { ratings } from './ratings.schema'
+import { authorFollowers } from './followers.schema'
 
 // Authors table
 export const authors = pgTable('authors', {
@@ -142,3 +143,7 @@ export const bookEditionsRatingRelations = relations(
     ratings: many(ratings)
   })
 )
+
+export const authorsFollowersRelations = relations(authors, ({ many }) => ({
+  followers: many(authorFollowers)
+}))
