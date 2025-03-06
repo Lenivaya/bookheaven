@@ -14,7 +14,8 @@ export default defineConfig({
         'postcss.config.mjs',
         'eslint.config.mjs',
         'next-env.d.ts',
-        'vitest.config.ts'
+        'vitest.config.ts',
+        'db'
       ],
       reporter: ['html', 'json-summary', 'json', 'text'],
       provider: 'v8',
