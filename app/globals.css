@@ -47,74 +47,114 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  /* Light theme - warm paper-like background */
+  --background: oklch(0.98 0.02 85);
+  --foreground: oklch(0.2 0.03 80);
+
+  /* Card and popover with subtle texture */
+  --card: oklch(0.99 0.01 85);
+  --card-foreground: oklch(0.2 0.03 80);
+  --popover: oklch(0.99 0.01 85);
+  --popover-foreground: oklch(0.2 0.03 80);
+
+  /* Primary - rich brown like leather book binding */
+  --primary: oklch(0.45 0.12 60);
+  --primary-foreground: oklch(0.98 0.02 85);
+
+  /* Secondary - subtle cream */
+  --secondary: oklch(0.95 0.03 85);
+  --secondary-foreground: oklch(0.35 0.08 60);
+
+  /* Muted - soft beige */
+  --muted: oklch(0.92 0.03 80);
+  --muted-foreground: oklch(0.5 0.05 70);
+
+  /* Accent - warm gold for highlights */
+  --accent: oklch(0.8 0.12 85);
+  --accent-foreground: oklch(0.2 0.03 80);
+
+  /* Destructive - muted red */
+  --destructive: oklch(0.65 0.18 25);
+  --destructive-foreground: oklch(0.98 0.02 85);
+
+  /* Border and input with subtle warmth */
+  --border: oklch(0.85 0.03 80);
+  --input: oklch(0.85 0.03 80);
+  --ring: oklch(0.65 0.1 60);
+
+  /* Chart colors - book-themed palette */
+  --chart-1: oklch(0.65 0.15 85); /* Warm gold */
+  --chart-2: oklch(0.5 0.12 40); /* Leather brown */
+  --chart-3: oklch(0.6 0.1 200); /* Muted teal */
+  --chart-4: oklch(0.55 0.15 330); /* Burgundy */
+  --chart-5: oklch(0.45 0.12 120); /* Forest green */
+
+  /* Radius for soft edges */
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Sidebar with paper texture feel */
+  --sidebar: oklch(0.96 0.02 85);
+  --sidebar-foreground: oklch(0.2 0.03 80);
+  --sidebar-primary: oklch(0.45 0.12 60);
+  --sidebar-primary-foreground: oklch(0.98 0.02 85);
+  --sidebar-accent: oklch(0.92 0.03 80);
+  --sidebar-accent-foreground: oklch(0.35 0.08 60);
+  --sidebar-border: oklch(0.85 0.03 80);
+  --sidebar-ring: oklch(0.65 0.1 60);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  /* Dark rich background - deep charcoal with slight warmth */
+  --background: oklch(0.125 0.01 80);
+  --foreground: oklch(0.96 0.01 80);
+
+  /* Card and popover with subtle distinction from background */
+  --card: oklch(0.14 0.01 80);
+  --card-foreground: oklch(0.96 0.01 80);
+  --popover: oklch(0.14 0.01 80);
+  --popover-foreground: oklch(0.96 0.01 80);
+
+  /* Primary - warm cream color for text and accents */
+  --primary: oklch(0.96 0.03 85);
+  --primary-foreground: oklch(0.125 0.01 80);
+
+  /* Secondary - subtle dark brown */
+  --secondary: oklch(0.25 0.04 80);
+  --secondary-foreground: oklch(0.96 0.01 80);
+
+  /* Muted - subtle dark brown with lower contrast */
+  --muted: oklch(0.22 0.02 80);
+  --muted-foreground: oklch(0.75 0.02 80);
+
+  /* Accent - warm amber/gold for highlights */
+  --accent: oklch(0.7 0.15 85);
+  --accent-foreground: oklch(0.125 0.01 80);
+
+  /* Destructive - muted red */
+  --destructive: oklch(0.65 0.18 25);
+  --destructive-foreground: oklch(0.96 0.01 80);
+
+  /* Border and input with subtle warmth */
+  --border: oklch(0.22 0.02 80);
+  --input: oklch(0.22 0.02 80);
+  --ring: oklch(0.7 0.15 85);
+
+  /* Chart colors - book-themed palette */
+  --chart-1: oklch(0.7 0.15 85); /* Warm gold */
+  --chart-2: oklch(0.55 0.12 40); /* Leather brown */
+  --chart-3: oklch(0.65 0.1 200); /* Muted teal */
+  --chart-4: oklch(0.6 0.15 330); /* Burgundy */
+  --chart-5: oklch(0.5 0.12 120); /* Forest green */
+
+  /* Sidebar with slightly darker background for contrast */
+  --sidebar: oklch(0.11 0.01 80);
+  --sidebar-foreground: oklch(0.96 0.01 80);
+  --sidebar-primary: oklch(0.7 0.15 85);
+  --sidebar-primary-foreground: oklch(0.125 0.01 80);
+  --sidebar-accent: oklch(0.25 0.04 80);
+  --sidebar-accent-foreground: oklch(0.96 0.01 80);
+  --sidebar-border: oklch(0.18 0.02 80);
+  --sidebar-ring: oklch(0.7 0.15 85);
 }
 
 @layer base {
