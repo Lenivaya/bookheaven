@@ -120,7 +120,9 @@ export default function BookCard({
           </CardContent>
 
           <CardFooter className='mt-auto flex flex-col items-start gap-1.5 p-0 pt-1'>
-            <BookTagsList tags={tags} onTagClick={onTagClick} />
+            <div className='h-[30px]'>
+              <BookTagsList tags={tags} onTagClick={onTagClick} />
+            </div>
 
             <div className='flex w-full items-center justify-between'>
               <div className='flex items-center gap-2'>

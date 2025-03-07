@@ -16,7 +16,7 @@ import {
   workToTags
 } from '@/db/schema'
 import { isNone, isSome, Option } from '@/lib/types'
-import { and, eq, ilike, inArray, or, SQL } from 'drizzle-orm'
+import { and, countDistinct, eq, ilike, inArray, or, SQL } from 'drizzle-orm'
 
 type Book = {
   edition: BookEdition
@@ -75,7 +75,7 @@ export async function getBooks(
       filters.push(inArray(bookWorks.id, options.bookWorksIds))
     }
 
-    const books = await db
+    const getBooks = db
       .select()
       .from(bookEditions)
       .innerJoin(bookWorks, eq(bookEditions.workId, bookWorks.id))
@@ -86,6 +86,22 @@ export async function getBooks(
       .where(and(...filters))
       .limit(options.limit)
       .offset(options.offset)
+    const getTotalCount = db
+      .select({
+        totalCount: countDistinct(bookEditions.id)
+      })
+      .from(bookEditions)
+      .innerJoin(bookWorks, eq(bookEditions.workId, bookWorks.id))
+      .leftJoin(workToAuthors, eq(bookWorks.id, workToAuthors.workId))
+      .leftJoin(authors, eq(workToAuthors.authorId, authors.id))
+      .leftJoin(workToTags, eq(bookWorks.id, workToTags.workId))
+      .leftJoin(tags, eq(workToTags.tagId, tags.id))
+      .where(and(...filters))
+
+    const [books, [{ totalCount }]] = await Promise.all([
+      getBooks,
+      getTotalCount
+    ])
 
     const result = books.reduce<Record<string, Book>>((acc, row) => {
       const { book_editions, book_works, authors, tags } = row
@@ -110,7 +126,11 @@ export async function getBooks(
       return acc
     }, {})
 
-    return Object.values(result)
+    return {
+      books: Object.values(result),
+      totalCount,
+      pageCount: Math.ceil(Number(totalCount) / options.limit)
+    }
   } catch (error) {
     console.error('Error fetching books:', error)
     throw new Error('Failed to fetch books')

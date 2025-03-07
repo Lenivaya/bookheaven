@@ -15,7 +15,7 @@ import Link from 'next/link'
 
 export default async function Home() {
   // Fetch featured books for the carousel
-  const featuredBooks = await getBooks({
+  const { books: featuredBooks } = await getBooks({
     limit: 6,
     offset: 0
   })
