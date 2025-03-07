@@ -1,9 +1,11 @@
 import ReactQueryProvider from '@/components/providers/ReactQueryProvider'
+import { ClerkProvider } from '@clerk/nextjs'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
-import './globals.css'
+import { dark } from '@clerk/themes'
 import { Navbar } from './books/navbar/Navbar'
+import './globals.css'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -26,17 +28,23 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang='en' className='dark' suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <NuqsAdapter>
-          <ReactQueryProvider>
-            <Navbar />
-            {children}
-          </ReactQueryProvider>
-        </NuqsAdapter>
-      </body>
-    </html>
+    <ClerkProvider
+      appearance={{
+        baseTheme: dark
+      }}
+    >
+      <html lang='en' className='dark' suppressHydrationWarning>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        >
+          <NuqsAdapter>
+            <ReactQueryProvider>
+              <Navbar />
+              {children}
+            </ReactQueryProvider>
+          </NuqsAdapter>
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }
