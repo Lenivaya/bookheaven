@@ -23,7 +23,7 @@ export default async function BooksPage({ searchParams }: BooksPageProps) {
   })
 
   return (
-    <div className='container mx-auto py-8'>
+    <div className='container mx-auto py-8 mt-20'>
       <div className='flex flex-col justify-between mb-5 w-full'>
         <BooksSearch />
       </div>
