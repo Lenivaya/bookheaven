@@ -1,4 +1,5 @@
 import { getBooks } from '@/app/actions/books.actions'
+import BookCard from '@/components/books/book-card/BookCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -8,11 +9,9 @@ import {
   CarouselNext,
   CarouselPrevious
 } from '@/components/ui/carousel'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import BookCard from '@/components/books/book-card/BookCard'
+import { FocusCards } from '@/components/ui/focus-cards'
 import { ArrowRight, BookOpen, Heart, ShoppingBag, Star } from 'lucide-react'
 import Link from 'next/link'
-import Image from 'next/image'
 
 export default async function Home() {
   // Fetch featured books for the carousel
@@ -166,123 +165,43 @@ export default async function Home() {
               </p>
             </div>
           </div>
-          <div className='mx-auto py-8'>
-            <Tabs defaultValue='fiction' className='w-full max-w-4xl mx-auto'>
-              <TabsList className='grid w-full grid-cols-4'>
-                <TabsTrigger value='fiction'>Fiction</TabsTrigger>
-                <TabsTrigger value='non-fiction'>Non-Fiction</TabsTrigger>
-                <TabsTrigger value='sci-fi'>Sci-Fi & Fantasy</TabsTrigger>
-                <TabsTrigger value='mystery'>Mystery & Thriller</TabsTrigger>
-              </TabsList>
-              <TabsContent value='fiction' className='mt-6'>
-                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-                  {featuredBooks.slice(0, 3).map((book) => (
-                    <Card key={book.edition.id} className='overflow-hidden'>
-                      <div className='aspect-[3/4] relative'>
-                        <Image
-                          src={
-                            book.edition.thumbnailUrl ||
-                            'https://placehold.co/400x600?text=No+Cover'
-                          }
-                          alt={book.work.title}
-                          fill
-                          className='object-cover'
-                        />
-                      </div>
-                      <CardContent className='p-4'>
-                        <h3 className='font-semibold truncate'>
-                          {book.work.title}
-                        </h3>
-                        <p className='text-sm text-muted-foreground truncate'>
-                          {book.authors.map((a) => a.name).join(', ')}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
-              <TabsContent value='non-fiction' className='mt-6'>
-                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-                  {featuredBooks.slice(2, 5).map((book) => (
-                    <Card key={book.edition.id} className='overflow-hidden'>
-                      <div className='aspect-[3/4] relative'>
-                        <Image
-                          src={
-                            book.edition.thumbnailUrl ||
-                            'https://placehold.co/400x600?text=No+Cover'
-                          }
-                          alt={book.work.title}
-                          fill
-                          className='object-cover'
-                        />
-                      </div>
-                      <CardContent className='p-4'>
-                        <h3 className='font-semibold truncate'>
-                          {book.work.title}
-                        </h3>
-                        <p className='text-sm text-muted-foreground truncate'>
-                          {book.authors.map((a) => a.name).join(', ')}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
-              <TabsContent value='sci-fi' className='mt-6'>
-                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-                  {featuredBooks.slice(1, 4).map((book) => (
-                    <Card key={book.edition.id} className='overflow-hidden'>
-                      <div className='aspect-[3/4] relative'>
-                        <Image
-                          src={
-                            book.edition.thumbnailUrl ||
-                            'https://placehold.co/400x600?text=No+Cover'
-                          }
-                          alt={book.work.title}
-                          fill
-                          className='object-cover'
-                        />
-                      </div>
-                      <CardContent className='p-4'>
-                        <h3 className='font-semibold truncate'>
-                          {book.work.title}
-                        </h3>
-                        <p className='text-sm text-muted-foreground truncate'>
-                          {book.authors.map((a) => a.name).join(', ')}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
-              <TabsContent value='mystery' className='mt-6'>
-                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-                  {featuredBooks.slice(3, 6).map((book) => (
-                    <Card key={book.edition.id} className='overflow-hidden'>
-                      <div className='aspect-[3/4] relative'>
-                        <Image
-                          src={
-                            book.edition.thumbnailUrl ||
-                            'https://placehold.co/400x600?text=No+Cover'
-                          }
-                          alt={book.work.title}
-                          fill
-                          className='object-cover'
-                        />
-                      </div>
-                      <CardContent className='p-4'>
-                        <h3 className='font-semibold truncate'>
-                          {book.work.title}
-                        </h3>
-                        <p className='text-sm text-muted-foreground truncate'>
-                          {book.authors.map((a) => a.name).join(', ')}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
-            </Tabs>
+          <div className='mx-auto py-12'>
+            <FocusCards
+              cards={[
+                {
+                  title: 'Fiction',
+                  src: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+                },
+                {
+                  title: 'Non-Fiction',
+                  src: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=3546&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+                },
+                {
+                  title: 'Sci-Fi & Fantasy',
+                  src: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=2787&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+                },
+                {
+                  title: 'Mystery & Thriller',
+                  src: 'https://images.unsplash.com/photo-1587876931567-564ce588bfbd?q=80&w=2832&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+                },
+                {
+                  title: 'Biography',
+                  src: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=2874&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+                },
+                {
+                  title: 'Poetry',
+                  src: 'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+                }
+              ]}
+            />
+          </div>
+          <div className='flex justify-center mt-8'>
+            <Link href='/books'>
+              <Button variant='outline' size='lg' className='gap-1.5'>
+                Browse All Categories
+                <ArrowRight className='h-4 w-4' />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
