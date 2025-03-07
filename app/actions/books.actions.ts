@@ -98,10 +98,14 @@ export async function getBooks(
         }
       }
       if (authors) {
-        acc[book_works.id].authors.push(authors)
+        if (!acc[book_works.id].authors.some((a) => a.id === authors.id)) {
+          acc[book_works.id].authors.push(authors)
+        }
       }
       if (tags) {
-        acc[book_works.id].tags.push(tags)
+        if (!acc[book_works.id].tags.some((t) => t.id === tags.id)) {
+          acc[book_works.id].tags.push(tags)
+        }
       }
       return acc
     }, {})
@@ -164,5 +168,19 @@ export async function getBookById(id: string): Promise<Option<Book>> {
   } catch (error) {
     console.error(`Error fetching book with ID ${id}:`, error)
     throw new Error('Failed to fetch book')
+  }
+}
+
+/**
+ * Server action to fetch book work by id
+ **/
+export async function getBookWorkById(id: string) {
+  try {
+    return await db.query.bookWorks.findFirst({
+      where: eq(bookWorks.id, id)
+    })
+  } catch (error) {
+    console.error(`Error fetching book work with ID ${id}:`, error)
+    throw new Error('Failed to fetch book work')
   }
 }

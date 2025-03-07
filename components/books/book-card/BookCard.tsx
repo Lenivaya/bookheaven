@@ -24,6 +24,7 @@ import { BookCoverImage } from './BookCoverImage'
 import { BookTagsList } from './BookTagsList'
 import { BookPriceDisplay } from './BookPriceDisplay'
 import { ShoppingCart } from 'lucide-react'
+import { BookCardAuthors } from './BookCardAuthors'
 
 interface BookCardProps {
   book: BookWork
@@ -93,9 +94,7 @@ export default function BookCard({
 
             <HoverCard>
               <HoverCardTrigger asChild>
-                <p className='line-clamp-1 text-xs text-muted-foreground dark:text-slate-400'>
-                  {authors.map((author) => author.name).join(', ')}
-                </p>
+                <BookCardAuthors authors={authors} />
               </HoverCardTrigger>
               <HoverCardContent className='w-80' side='right'>
                 {authors.map((author) => (

@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
+import { useQueryStates } from 'nuqs'
+import { bookSearchParamsSchema } from '@/app/books/searchParams'
 
 interface BookTagsListProps {
   tags: Tag[]
@@ -14,8 +16,25 @@ interface BookTagsListProps {
 export function BookTagsList({ tags, onTagClick }: BookTagsListProps) {
   const [showAllTags, setShowAllTags] = useState(false)
 
+  const [{ tags: queryTags }, setSearchParams] = useQueryStates(
+    bookSearchParamsSchema,
+    {
+      shallow: false
+    }
+  )
+
   if (tags.length === 0) {
     return null
+  }
+
+  const handleTagClick = (tagId: string) => {
+    const isTagAlreadySelected = queryTags.includes(tagId)
+    if (isTagAlreadySelected) {
+      setSearchParams({ tags: queryTags.filter((t) => t !== tagId) })
+    } else {
+      setSearchParams({ tags: [tagId, ...queryTags] })
+    }
+    onTagClick?.(tagId)
   }
 
   const displayedTags = showAllTags ? tags : tags.slice(0, 2)
@@ -30,9 +49,7 @@ export function BookTagsList({ tags, onTagClick }: BookTagsListProps) {
           className='text-[9px] px-1 py-0 h-3.5 rounded-sm dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer'
           onClick={(e) => {
             e.preventDefault() // Prevent navigation from the parent Link
-            if (onTagClick) {
-              onTagClick(tag.id)
-            }
+            handleTagClick(tag.id)
           }}
         >
           {tag.name}
