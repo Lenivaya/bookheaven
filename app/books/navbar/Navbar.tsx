@@ -17,7 +17,7 @@ export function Navbar() {
               <span className='bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-base font-bold text-transparent'>
                 BookHeaven
               </span>
-              <span className='text-muted-foreground'>📚</span>
+              <span className='text-muted-foreground'>📚🌿</span>
             </Link>
 
             <div className='hidden h-5 w-[1px] bg-border/40 sm:block' />
