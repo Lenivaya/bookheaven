@@ -24,18 +24,17 @@ export function BookCardAuthors({ authors }: { authors: Author[] }) {
   }
 
   return (
-    <p className='line-clamp-1 text-xs text-muted-foreground dark:text-slate-400'>
-      {/* {authors.map((author) => author.name).join(', ')} */}
+    <div className='flex flex-wrap gap-1.5'>
       {authors.map((author) => (
         <Badge
           key={author.id}
           variant='outline'
-          className='cursor-pointer'
+          className='cursor-pointer text-xs px-2 py-0.5 border-primary/20 hover:bg-primary/5 hover:border-primary/30 transition-colors duration-200 dark:border-primary/30 dark:hover:bg-primary/10'
           onClick={() => handleAuthorClick(author.id)}
         >
           {author.name}
         </Badge>
       ))}
-    </p>
+    </div>
   )
 }
