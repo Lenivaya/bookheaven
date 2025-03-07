@@ -8,9 +8,10 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 
 interface BookTagsListProps {
   tags: Tag[]
+  onTagClick?: (tagId: string) => void
 }
 
-export function BookTagsList({ tags }: BookTagsListProps) {
+export function BookTagsList({ tags, onTagClick }: BookTagsListProps) {
   const [showAllTags, setShowAllTags] = useState(false)
 
   if (tags.length === 0) {
@@ -26,10 +27,12 @@ export function BookTagsList({ tags }: BookTagsListProps) {
         <Badge
           key={tag.id}
           variant='secondary'
-          className='text-[9px] px-1 py-0 h-3.5 rounded-sm dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+          className='text-[9px] px-1 py-0 h-3.5 rounded-sm dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer'
           onClick={(e) => {
             e.preventDefault() // Prevent navigation from the parent Link
-            // You could add tag filtering functionality here
+            if (onTagClick) {
+              onTagClick(tag.id)
+            }
           }}
         >
           {tag.name}

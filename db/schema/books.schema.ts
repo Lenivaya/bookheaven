@@ -157,11 +157,14 @@ export type Author = typeof authors.$inferSelect
 export type BookWork = typeof bookWorks.$inferSelect
 export type BookEdition = typeof bookEditions.$inferSelect
 export type Tag = typeof tags.$inferSelect
+export type WorkToAuthor = typeof workToAuthors.$inferSelect
+export type WorkToTag = typeof workToTags.$inferSelect
 
 export const authorsSelectSchema = createSelectSchema(authors)
 export const bookWorksSelectSchema = createSelectSchema(bookWorks)
 export const bookEditionsSelectSchema = createSelectSchema(bookEditions)
 export const tagsSelectSchema = createSelectSchema(tags)
+export const booksTagsRelationsSelectSchema = createSelectSchema(workToTags)
 
 export const bookEditionsInsertSchema = createInsertSchema(bookEditions)
 export const bookWorksInsertSchema = createInsertSchema(bookWorks)

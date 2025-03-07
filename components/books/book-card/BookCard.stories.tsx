@@ -15,7 +15,11 @@ const meta: Meta<typeof BookCard> = {
       </div>
     )
   ],
-  tags: ['autodocs']
+  tags: ['autodocs'],
+  argTypes: {
+    onBuyClick: { action: 'buy clicked' },
+    onTagClick: { action: 'tag clicked' }
+  }
 }
 
 export default meta
@@ -101,6 +105,11 @@ const mockTags: Tag[] = [
   }
 ]
 
+// Mock handlers
+const handleBuyClick = (id: string) =>
+  console.log(`Buy clicked for edition ${id}`)
+const handleTagClick = (id: string) => console.log(`Tag clicked: ${id}`)
+
 // Stories
 export const Default: Story = {
   args: {
@@ -108,6 +117,17 @@ export const Default: Story = {
     edition: mockEdition,
     authors: mockAuthors,
     tags: mockTags
+  }
+}
+
+export const WithActions: Story = {
+  args: {
+    book: mockBook,
+    edition: mockEdition,
+    authors: mockAuthors,
+    tags: mockTags,
+    onBuyClick: handleBuyClick,
+    onTagClick: handleTagClick
   }
 }
 
@@ -120,7 +140,8 @@ export const OnSale: Story = {
       salePrice: '9.99'
     },
     authors: mockAuthors,
-    tags: mockTags
+    tags: mockTags,
+    onBuyClick: handleBuyClick
   }
 }
 
@@ -133,7 +154,8 @@ export const NoImage: Story = {
       smallThumbnailUrl: ''
     },
     authors: mockAuthors,
-    tags: mockTags
+    tags: mockTags,
+    onBuyClick: handleBuyClick
   }
 }
 
@@ -168,7 +190,9 @@ export const ManyTags: Story = {
         updated_at: new Date(),
         deleted_at: null
       }
-    ]
+    ],
+    onBuyClick: handleBuyClick,
+    onTagClick: handleTagClick
   }
 }
 
@@ -192,7 +216,8 @@ export const MultipleAuthors: Story = {
         deleted_at: null
       }
     ],
-    tags: mockTags
+    tags: mockTags,
+    onBuyClick: handleBuyClick
   }
 }
 
@@ -205,6 +230,7 @@ export const LongTitle: Story = {
     },
     edition: mockEdition,
     authors: mockAuthors,
-    tags: mockTags
+    tags: mockTags,
+    onBuyClick: handleBuyClick
   }
 }

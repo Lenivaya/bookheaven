@@ -8,13 +8,17 @@ import { neon } from '@neondatabase/serverless'
 const isProduction = env.NODE_ENV === 'production'
 
 export const db = isProduction
-  ? drizzleNeonPostgres(neon(env.DATABASE_URL), { schema })
+  ? drizzleNeonPostgres(neon(env.DATABASE_URL), {
+      schema,
+      logger: !isProduction
+    })
   : drizzlePostgres(
       new Pool({
         connectionString: env.DATABASE_URL
       }),
       {
-        schema
+        schema,
+        logger: !isProduction
       }
     )
 
