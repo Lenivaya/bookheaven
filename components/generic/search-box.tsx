@@ -1,4 +1,4 @@
-import { Search, X, Keyboard } from 'lucide-react'
+import { Search, X, Keyboard, BookOpen } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { useCallback, useState, useRef, useMemo, memo } from 'react'
@@ -61,6 +61,11 @@ interface SearchBoxProps {
    * @default 'ctrl+k'
    */
   hotkey?: string
+  /**
+   * Use book icon instead of search icon
+   * @default false
+   */
+  useBookIcon?: boolean
 }
 
 /**
@@ -69,7 +74,7 @@ interface SearchBoxProps {
  * @example
  * ```tsx
  * <SearchBox
- *   placeholder="Search items..."
+ *   placeholder="Search books..."
  *   onSearch={(value) => console.log('Searching for:', value)}
  *   debounceMs={500}
  *   enableHotkey
@@ -77,7 +82,7 @@ interface SearchBoxProps {
  * ```
  */
 const SearchBoxComponent = ({
-  placeholder = 'Search...',
+  placeholder = 'Search books...',
   className,
   inputClassName,
   onSearch,
@@ -87,9 +92,11 @@ const SearchBoxComponent = ({
   iconSize = 18,
   disabled = false,
   enableHotkey = false,
-  hotkey = 'ctrl+k'
+  hotkey = 'ctrl+k',
+  useBookIcon = false
 }: SearchBoxProps) => {
   const [value, setValue] = useState(defaultValue)
+  const [isFocused, setIsFocused] = useState(false)
   const [isHotkeyPressed, setIsHotkeyPressed] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -131,6 +138,15 @@ const SearchBoxComponent = ({
     }
   }, [enableHotkey, disabled])
 
+  // Handle focus events
+  const handleFocus = useCallback(() => {
+    setIsFocused(true)
+  }, [])
+
+  const handleBlur = useCallback(() => {
+    setIsFocused(false)
+  }, [])
+
   // Set up hotkeys with memoized handler
   useHotkeys(
     hotkey,
@@ -156,20 +172,23 @@ const SearchBoxComponent = ({
   const containerClass = useMemo(() => {
     return cn(
       'group relative flex w-full items-center transition-all duration-300',
-      'hover:shadow-md focus-within:shadow-md',
-      'rounded-lg bg-background',
-      isHotkeyPressed && 'ring-2 ring-primary ring-offset-2',
+      'rounded-full border border-border/40 bg-background/95',
+      'backdrop-blur supports-[backdrop-filter]:bg-background/60',
+      'hover:border-muted/60 hover:bg-background/90 hover:shadow-sm',
+      isFocused && 'border-muted-foreground/30 shadow-sm',
+      isHotkeyPressed && 'ring-1 ring-muted/40 ring-offset-1',
+      disabled && 'opacity-70',
       className
     )
-  }, [className, isHotkeyPressed])
+  }, [className, isFocused, isHotkeyPressed, disabled])
 
   // Memoize input class to avoid recalculation on every render
   const inputClass = useMemo(() => {
     return cn(
-      'border-0 pl-10 pr-9 text-center shadow-none',
-      'placeholder:text-muted-foreground/60',
-      'focus-visible:ring-2 focus-visible:ring-offset-0',
-      'transition-all duration-200',
+      'h-10 border-0 pl-10 pr-9 shadow-none rounded-full',
+      'placeholder:text-muted-foreground/60 placeholder:text-sm placeholder:italic',
+      'focus-visible:ring-0 focus-visible:ring-offset-0',
+      'transition-all duration-200 bg-transparent',
       inputClassName
     )
   }, [inputClassName])
@@ -178,10 +197,10 @@ const SearchBoxComponent = ({
   const clearButtonClass = useMemo(() => {
     return cn(
       'absolute right-3',
-      'text-muted-foreground/60 hover:text-foreground',
+      'text-muted-foreground/60 hover:text-muted-foreground/90',
       'transition-all duration-200',
-      'focus-visible:outline-none focus-visible:ring-2',
-      'focus-visible:ring-ring focus-visible:ring-offset-2',
+      'focus-visible:outline-none focus-visible:ring-1',
+      'focus-visible:ring-muted/40 focus-visible:ring-offset-1',
       'rounded-full p-0.5'
     )
   }, [])
@@ -190,27 +209,34 @@ const SearchBoxComponent = ({
   const hotkeyIndicatorClass = useMemo(() => {
     return cn(
       'pointer-events-none absolute right-3 flex items-center gap-1',
-      'text-xs text-muted-foreground/40',
+      'text-xs text-muted-foreground/40 italic',
       value && 'hidden'
     )
   }, [value])
 
+  // Memoize icon class
+  const iconClass = useMemo(() => {
+    return cn(
+      'absolute left-3 transition-all duration-300 ease-in-out',
+      'text-muted-foreground/60',
+      'group-hover:text-muted-foreground/80',
+      isFocused && 'text-muted-foreground/90 scale-110',
+      disabled && 'text-muted-foreground/40'
+    )
+  }, [isFocused, disabled])
+
+  const SearchIcon = useBookIcon ? BookOpen : Search
+
   return (
     <div className={containerClass}>
-      <Search
-        size={iconSize}
-        className={cn(
-          'absolute left-3 text-muted-foreground/60',
-          'transition-colors duration-200',
-          'group-hover:text-muted-foreground',
-          'group-focus-within:text-primary'
-        )}
-      />
+      <SearchIcon size={iconSize} className={iconClass} strokeWidth={1.5} />
       <Input
         ref={inputRef}
         type='text'
         value={value}
         onChange={handleChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         className={inputClass}
         placeholder={placeholder}
         disabled={disabled}
@@ -226,12 +252,13 @@ const SearchBoxComponent = ({
           <X
             size={iconSize}
             className='transition-transform duration-200 hover:scale-110'
+            strokeWidth={1.5}
           />
         </button>
       )}
-      {enableHotkey && !disabled && (
+      {enableHotkey && !disabled && !value && (
         <div className={hotkeyIndicatorClass}>
-          <Keyboard size={14} />
+          <Keyboard size={14} strokeWidth={1.5} />
           <span>{hotkeyDisplay}</span>
         </div>
       )}
