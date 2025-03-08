@@ -46,7 +46,7 @@ export function BookPriceDisplay({
             ${salePrice}
           </span>
         </div>
-        <span className='text-xs text-muted-foreground line-through dark:text-slate-500'>
+        <span className='text-xs text-primary/60 line-through dark:text-primary/50'>
           ${price}
         </span>
       </div>
@@ -56,7 +56,7 @@ export function BookPriceDisplay({
   return (
     <div className='flex items-center px-1.5 py-0.5 rounded-md bg-primary/10 dark:bg-primary/20'>
       <TagsIcon className='h-3 w-3 mr-1 text-primary/70 dark:text-primary/80' />
-      <span className='font-bold text-primary text-sm dark:text-primary-foreground/90'>
+      <span className='font-bold text-primary text-sm dark:text-primary'>
         ${price}
       </span>
     </div>
