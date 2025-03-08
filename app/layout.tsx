@@ -5,6 +5,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { dark } from '@clerk/themes'
 import { Navbar } from '../components/layout/navbar/Navbar'
+import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
 const geistSans = Geist({
@@ -41,6 +42,7 @@ export default function RootLayout({
             <ReactQueryProvider>
               <Navbar />
               {children}
+              <Toaster position='bottom-right' />
             </ReactQueryProvider>
           </NuqsAdapter>
         </body>

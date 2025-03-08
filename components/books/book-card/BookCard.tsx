@@ -25,6 +25,7 @@ import { BookTagsList } from './BookTagsList'
 import { BookPriceDisplay } from './BookPriceDisplay'
 import { ShoppingCart } from 'lucide-react'
 import { BookCardAuthors } from './BookCardAuthors'
+import { BookActions } from './BookActions'
 
 interface BookCardProps {
   book: BookWork
@@ -47,7 +48,7 @@ export default function BookCard({
     <Card className='group h-full overflow-hidden border-border/40 bg-card/95 transition-all duration-300 hover:border-primary/30 hover:shadow-md dark:bg-card/95 dark:hover:border-primary/40 dark:hover:bg-card/100'>
       <div className='grid grid-cols-[120px_1fr] gap-3 p-3'>
         {/* Book cover on the left */}
-        <div className='relative h-[180px] w-[120px] overflow-hidden rounded-md shadow-sm transition-shadow duration-300 group-hover:shadow-md'>
+        <div className='relative h-[180px] w-[120px] overflow-hidden rounded-md shadow-sm transition-shadow duration-300 group-hover:shadow-md group'>
           <Link
             href={`/books/${book.id}`}
             className='block h-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
@@ -58,6 +59,13 @@ export default function BookCard({
               bookEditionId={edition.id}
             />
           </Link>
+
+          {/* Book Actions Component */}
+          <BookActions
+            bookId={book.id}
+            bookTitle={book.title}
+            editionId={edition.id}
+          />
 
           {edition.isOnSale && (
             <div className='absolute right-0 top-0 z-10'>

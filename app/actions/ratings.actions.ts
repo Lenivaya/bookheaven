@@ -8,7 +8,7 @@ import { isNone, isSome } from '@/lib/types'
 import { and, avg, count, eq } from 'drizzle-orm'
 import { getAuthenticatedUserId } from './actions.helpers'
 
-type RatingValue = 1 | 2 | 3 | 4 | 5
+export type RatingValue = 1 | 2 | 3 | 4 | 5
 
 /**
  * Get a user's rating for a book edition
@@ -67,10 +67,11 @@ export async function upsertBookRating(
   ratingValue: RatingValue,
   review?: string
 ) {
+  console.log('upsertBookRating', bookEditionId, ratingValue, review)
   const userId = await getAuthenticatedUserId()
   const workId = await getWorkIdFromEdition(bookEditionId)
 
-  return db
+  const result = await db
     .insert(ratings)
     .values({
       editionId: bookEditionId,
@@ -88,6 +89,9 @@ export async function upsertBookRating(
         [[isSome(review), { review }]]
       )
     })
+    .returning()
+
+  return result.length > 0
 }
 
 /**
@@ -96,11 +100,14 @@ export async function upsertBookRating(
 export async function deleteBookRating(bookEditionId: string) {
   const userId = await getAuthenticatedUserId()
 
-  return db
+  const result = await db
     .delete(ratings)
     .where(
       and(eq(ratings.editionId, bookEditionId), eq(ratings.userId, userId))
     )
+    .returning()
+
+  return result.length > 0
 }
 
 /**

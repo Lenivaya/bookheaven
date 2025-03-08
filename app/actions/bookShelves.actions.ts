@@ -12,6 +12,12 @@ import { auth } from '@clerk/nextjs/server'
 import { isNone, isSome } from '@/lib/types'
 import { z } from 'zod'
 
+export type DefaultShelves =
+  | 'Want to Read'
+  | 'Currently Reading'
+  | 'Read'
+  | 'Did Not Finish'
+
 /**
  * Ensure the authenticated user is the author of the shelf
  */
@@ -103,6 +109,7 @@ export async function upsertShelfItem(
         ...itemData
       }
     })
+    .returning()
 }
 
 /**
