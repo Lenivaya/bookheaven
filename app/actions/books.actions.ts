@@ -17,8 +17,8 @@ import {
   workToTags
 } from '@/db/schema'
 import { isNone, isSome, Option } from '@/lib/types'
-import { auth } from '@clerk/nextjs/server'
 import { and, countDistinct, eq, ilike, inArray, or, SQL } from 'drizzle-orm'
+import { getAuthenticatedUserId } from './actions.helpers'
 
 type Book = {
   edition: BookEdition
@@ -211,23 +211,16 @@ export async function getBookWorkById(id: string) {
  * Server action to check if a user has liked a book by id
  */
 export async function hasLikedBook(bookEditionId: string) {
-  const userId = await auth()
-  if (isNone(userId.userId)) {
-    return false
-  }
+  const userId = await getAuthenticatedUserId()
 
   try {
-    const result = await db
-      .select()
-      .from(bookLikes)
-      .where(
-        and(
-          eq(bookLikes.editionId, bookEditionId),
-          eq(bookLikes.userId, userId.userId)
-        )
+    const result = await db.query.bookLikes.findFirst({
+      where: and(
+        eq(bookLikes.editionId, bookEditionId),
+        eq(bookLikes.userId, userId)
       )
-
-    return result.length > 0
+    })
+    return isSome(result)
   } catch (error) {
     console.error(
       `Error checking if user has liked book edition with ID ${bookEditionId}:`,
@@ -252,17 +245,14 @@ export async function toggleBookLike(bookEditionId: string) {
  * Server action to like a book by id
  */
 export async function likeBook(bookEditionId: string) {
-  const userId = await auth()
-  if (isNone(userId.userId)) {
-    throw new Error('User must be logged in to like a book')
-  }
+  const userId = await getAuthenticatedUserId()
 
   try {
     await db
       .insert(bookLikes)
       .values({
         editionId: bookEditionId,
-        userId: userId.userId
+        userId: userId
       })
       .onConflictDoNothing()
   } catch (error) {
@@ -275,10 +265,7 @@ export async function likeBook(bookEditionId: string) {
  * Server action to unlike a book by id
  */
 export async function unlikeBook(bookEditionId: string) {
-  const userId = await auth()
-  if (isNone(userId.userId)) {
-    throw new Error('User must be logged in to unlike a book')
-  }
+  const userId = await getAuthenticatedUserId()
 
   try {
     await db
@@ -286,7 +273,7 @@ export async function unlikeBook(bookEditionId: string) {
       .where(
         and(
           eq(bookLikes.editionId, bookEditionId),
-          eq(bookLikes.userId, userId.userId)
+          eq(bookLikes.userId, userId)
         )
       )
   } catch (error) {
