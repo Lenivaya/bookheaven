@@ -55,8 +55,21 @@ export const bookEditions = pgTable('book_editions', {
   stockQuantity: integer('stock_quantity').notNull().default(0),
   thumbnailUrl: text('thumbnail_url'),
   smallThumbnailUrl: text('small_thumbnail_url'),
+  likesCount: integer('likes_count').default(0),
   ...timestamps
 })
+
+export const bookLikes = pgTable(
+  'book_likes',
+  {
+    userId: text('user_id').notNull(),
+    editionId: uuid('edition_id')
+      .notNull()
+      .references(() => bookEditions.id, { onDelete: 'cascade' }),
+    ...timestamps
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.editionId] })]
+)
 
 // Tags/Genres table
 export const tags = pgTable('tags', {
@@ -101,12 +114,16 @@ export const bookWorksRelations = relations(bookWorks, ({ many }) => ({
   workToTags: many(workToTags)
 }))
 
-export const bookEditionsRelations = relations(bookEditions, ({ one }) => ({
-  work: one(bookWorks, {
-    fields: [bookEditions.workId],
-    references: [bookWorks.id]
+export const bookEditionsRelations = relations(
+  bookEditions,
+  ({ one, many }) => ({
+    work: one(bookWorks, {
+      fields: [bookEditions.workId],
+      references: [bookWorks.id]
+    }),
+    likes: many(bookLikes)
   })
-}))
+)
 
 export const authorsRelations = relations(authors, ({ many }) => ({
   workToAuthors: many(workToAuthors)
