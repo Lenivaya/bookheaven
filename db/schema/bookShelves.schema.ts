@@ -1,15 +1,44 @@
 import { relations } from 'drizzle-orm'
-import { boolean, pgTable, primaryKey, text, uuid } from 'drizzle-orm/pg-core'
-import { bookEditions, bookWorks } from './books.schema'
-import { timestamps } from './columns.helpers'
+import {
+  boolean,
+  integer,
+  pgTable,
+  primaryKey,
+  text,
+  unique,
+  uuid
+} from 'drizzle-orm/pg-core'
+import { bookWorks } from './books.schema'
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+  timestamps
+} from './columns.helpers'
 
 // Bookshelves table
-export const shelves = pgTable('shelves', {
-  id: uuid('id').defaultRandom().primaryKey(),
+export const shelves = pgTable(
+  'shelves',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: text('user_id').notNull(),
+    name: text('name').notNull(), // Currently reading, to read, favorites, etc.
+    description: text('description'),
+    isPublic: boolean('is_public').default(false),
+    likesCount: integer('likes_count').default(0),
+    ...timestamps
+  },
+  (t) => [unique('user_shelf_unique').on(t.userId, t.name)]
+)
+
+// Track shelf likes
+export const shelfLikes = pgTable('shelf_likes', {
+  shelfId: uuid('shelf_id')
+    .notNull()
+    .references(() => shelves.id, {
+      onDelete: 'cascade'
+    }),
   userId: text('user_id').notNull(),
-  name: text('name').notNull(), // Currently reading, to read, favorites, etc.
-  description: text('description'),
-  isPublic: boolean('is_public').default(false),
   ...timestamps
 })
 
@@ -23,9 +52,6 @@ export const shelfItems = pgTable(
     workId: uuid('work_id')
       .notNull()
       .references(() => bookWorks.id, { onDelete: 'cascade' }),
-    editionId: uuid('edition_id').references(() => bookEditions.id, {
-      onDelete: 'set null'
-    }),
     notes: text('notes'),
     ...timestamps
   },
@@ -34,7 +60,8 @@ export const shelfItems = pgTable(
 
 // Relations
 export const shelvesRelations = relations(shelves, ({ many }) => ({
-  items: many(shelfItems)
+  items: many(shelfItems),
+  likes: many(shelfLikes)
 }))
 
 export const shelfItemsRelations = relations(shelfItems, ({ one }) => ({
@@ -45,9 +72,11 @@ export const shelfItemsRelations = relations(shelfItems, ({ one }) => ({
   work: one(bookWorks, {
     fields: [shelfItems.workId],
     references: [bookWorks.id]
-  }),
-  edition: one(bookEditions, {
-    fields: [shelfItems.editionId],
-    references: [bookEditions.id]
   })
 }))
+
+export const selectShelfSchema = createSelectSchema(shelves)
+export const insertShelfSchema = createInsertSchema(shelves)
+export const updateShelfSchema = createUpdateSchema(shelves)
+
+export const insertShelfItemSchema = createInsertSchema(shelfItems)
