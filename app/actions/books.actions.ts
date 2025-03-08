@@ -47,95 +47,87 @@ export async function getBooks(
     bookWorksIds: []
   }
 ) {
-  try {
-    const filters: SQL[] = []
+  const filters: SQL[] = []
 
-    if (options.search) {
-      const searchTerms = options.search.trim().split(/\s+/).filter(Boolean)
-      const orConditions: SQL[] = searchTerms.map((term) =>
-        or(
-          ilike(bookWorks.title, `%${term}%`),
-          ilike(bookWorks.originalTitle, `%${term}%`),
-          ilike(bookWorks.description, `%${term}%`),
-          ilike(bookEditions.publisher, `%${term}%`),
-          ilike(bookEditions.edition, `%${term}%`),
-          ilike(tags.name, `%${term}%`)
-        )
-      ) as SQL[]
-      filters.push(...orConditions)
-    }
+  if (options.search) {
+    const searchTerms = options.search.trim().split(/\s+/).filter(Boolean)
+    const orConditions: SQL[] = searchTerms.map((term) =>
+      or(
+        ilike(bookWorks.title, `%${term}%`),
+        ilike(bookWorks.originalTitle, `%${term}%`),
+        ilike(bookWorks.description, `%${term}%`),
+        ilike(bookEditions.publisher, `%${term}%`),
+        ilike(bookEditions.edition, `%${term}%`),
+        ilike(tags.name, `%${term}%`)
+      )
+    ) as SQL[]
+    filters.push(...orConditions)
+  }
 
-    if (isSome(options.tagsIds) && options.tagsIds.length > 0) {
-      filters.push(inArray(tags.id, options.tagsIds))
-    }
+  if (isSome(options.tagsIds) && options.tagsIds.length > 0) {
+    filters.push(inArray(tags.id, options.tagsIds))
+  }
 
-    if (isSome(options.authorsIds) && options.authorsIds.length > 0) {
-      filters.push(inArray(authors.id, options.authorsIds))
-    }
+  if (isSome(options.authorsIds) && options.authorsIds.length > 0) {
+    filters.push(inArray(authors.id, options.authorsIds))
+  }
 
-    if (isSome(options.bookWorksIds) && options.bookWorksIds.length > 0) {
-      filters.push(inArray(bookWorks.id, options.bookWorksIds))
-    }
+  if (isSome(options.bookWorksIds) && options.bookWorksIds.length > 0) {
+    filters.push(inArray(bookWorks.id, options.bookWorksIds))
+  }
 
-    const getBooks = db
-      .select()
-      .from(bookEditions)
-      .innerJoin(bookWorks, eq(bookEditions.workId, bookWorks.id))
-      .leftJoin(workToAuthors, eq(bookWorks.id, workToAuthors.workId))
-      .leftJoin(authors, eq(workToAuthors.authorId, authors.id))
-      .leftJoin(workToTags, eq(bookWorks.id, workToTags.workId))
-      .leftJoin(tags, eq(workToTags.tagId, tags.id))
-      .where(and(...filters))
-      .limit(options.limit)
-      .offset(options.offset)
-    const getTotalCount = db
-      .select({
-        totalCount: countDistinct(bookEditions.id)
-      })
-      .from(bookEditions)
-      .innerJoin(bookWorks, eq(bookEditions.workId, bookWorks.id))
-      .leftJoin(workToAuthors, eq(bookWorks.id, workToAuthors.workId))
-      .leftJoin(authors, eq(workToAuthors.authorId, authors.id))
-      .leftJoin(workToTags, eq(bookWorks.id, workToTags.workId))
-      .leftJoin(tags, eq(workToTags.tagId, tags.id))
-      .where(and(...filters))
+  const getBooks = db
+    .select()
+    .from(bookEditions)
+    .innerJoin(bookWorks, eq(bookEditions.workId, bookWorks.id))
+    .leftJoin(workToAuthors, eq(bookWorks.id, workToAuthors.workId))
+    .leftJoin(authors, eq(workToAuthors.authorId, authors.id))
+    .leftJoin(workToTags, eq(bookWorks.id, workToTags.workId))
+    .leftJoin(tags, eq(workToTags.tagId, tags.id))
+    .where(and(...filters))
+    .limit(options.limit)
+    .offset(options.offset)
+  const getTotalCount = db
+    .select({
+      totalCount: countDistinct(bookEditions.id)
+    })
+    .from(bookEditions)
+    .innerJoin(bookWorks, eq(bookEditions.workId, bookWorks.id))
+    .leftJoin(workToAuthors, eq(bookWorks.id, workToAuthors.workId))
+    .leftJoin(authors, eq(workToAuthors.authorId, authors.id))
+    .leftJoin(workToTags, eq(bookWorks.id, workToTags.workId))
+    .leftJoin(tags, eq(workToTags.tagId, tags.id))
+    .where(and(...filters))
 
-    const [books, [{ totalCount }]] = await Promise.all([
-      getBooks,
-      getTotalCount
-    ])
+  const [books, [{ totalCount }]] = await Promise.all([getBooks, getTotalCount])
 
-    const result = books.reduce<Record<string, Book>>((acc, row) => {
-      const { book_editions, book_works, authors, tags } = row
-      if (!acc[book_works.id]) {
-        acc[book_works.id] = {
-          edition: book_editions,
-          work: book_works,
-          authors: [],
-          tags: []
-        }
+  const result = books.reduce<Record<string, Book>>((acc, row) => {
+    const { book_editions, book_works, authors, tags } = row
+    if (!acc[book_works.id]) {
+      acc[book_works.id] = {
+        edition: book_editions,
+        work: book_works,
+        authors: [],
+        tags: []
       }
-      if (authors) {
-        if (!acc[book_works.id].authors.some((a) => a.id === authors.id)) {
-          acc[book_works.id].authors.push(authors)
-        }
-      }
-      if (tags) {
-        if (!acc[book_works.id].tags.some((t) => t.id === tags.id)) {
-          acc[book_works.id].tags.push(tags)
-        }
-      }
-      return acc
-    }, {})
-
-    return {
-      books: Object.values(result),
-      totalCount,
-      pageCount: Math.ceil(Number(totalCount) / options.limit)
     }
-  } catch (error) {
-    console.error('Error fetching books:', error)
-    throw new Error('Failed to fetch books')
+    if (authors) {
+      if (!acc[book_works.id].authors.some((a) => a.id === authors.id)) {
+        acc[book_works.id].authors.push(authors)
+      }
+    }
+    if (tags) {
+      if (!acc[book_works.id].tags.some((t) => t.id === tags.id)) {
+        acc[book_works.id].tags.push(tags)
+      }
+    }
+    return acc
+  }, {})
+
+  return {
+    books: Object.values(result),
+    totalCount,
+    pageCount: Math.ceil(Number(totalCount) / options.limit)
   }
 }
 
@@ -143,53 +135,48 @@ export async function getBooks(
  * Server action to fetch a single book by ID
  */
 export async function getBookById(id: string): Promise<Option<Book>> {
-  try {
-    const book = (await db.query.bookEditions.findFirst({
-      where: eq(bookEditions.id, id),
-      with: {
-        work: {
-          with: {
-            workToAuthors: {
-              with: {
-                author: true
-              }
-            },
-            workToTags: {
-              with: {
-                tag: true
-              }
+  const book = (await db.query.bookEditions.findFirst({
+    where: eq(bookEditions.id, id),
+    with: {
+      work: {
+        with: {
+          workToAuthors: {
+            with: {
+              author: true
+            }
+          },
+          workToTags: {
+            with: {
+              tag: true
             }
           }
         }
       }
-    })) as Option<
-      BookEdition & {
-        work: BookWork & {
-          workToAuthors: WorkToAuthor &
-            {
-              author: Author
-            }[]
-          workToTags: WorkToTag &
-            {
-              tag: Tag
-            }[]
-        }
+    }
+  })) as Option<
+    BookEdition & {
+      work: BookWork & {
+        workToAuthors: WorkToAuthor &
+          {
+            author: Author
+          }[]
+        workToTags: WorkToTag &
+          {
+            tag: Tag
+          }[]
       }
-    >
-
-    if (isNone(book)) {
-      return null
     }
+  >
 
-    return {
-      edition: book,
-      work: book.work!,
-      authors: book.work.workToAuthors.map(({ author }) => author),
-      tags: book.work.workToTags.map(({ tag }) => tag)
-    }
-  } catch (error) {
-    console.error(`Error fetching book with ID ${id}:`, error)
-    throw new Error('Failed to fetch book')
+  if (isNone(book)) {
+    return null
+  }
+
+  return {
+    edition: book,
+    work: book.work!,
+    authors: book.work.workToAuthors.map(({ author }) => author),
+    tags: book.work.workToTags.map(({ tag }) => tag)
   }
 }
 
@@ -197,14 +184,9 @@ export async function getBookById(id: string): Promise<Option<Book>> {
  * Server action to fetch book work by id
  **/
 export async function getBookWorkById(id: string) {
-  try {
-    return await db.query.bookWorks.findFirst({
-      where: eq(bookWorks.id, id)
-    })
-  } catch (error) {
-    console.error(`Error fetching book work with ID ${id}:`, error)
-    throw new Error('Failed to fetch book work')
-  }
+  return await db.query.bookWorks.findFirst({
+    where: eq(bookWorks.id, id)
+  })
 }
 
 /**
@@ -212,22 +194,13 @@ export async function getBookWorkById(id: string) {
  */
 export async function hasLikedBook(bookEditionId: string) {
   const userId = await getAuthenticatedUserId()
-
-  try {
-    const result = await db.query.bookLikes.findFirst({
-      where: and(
-        eq(bookLikes.editionId, bookEditionId),
-        eq(bookLikes.userId, userId)
-      )
-    })
-    return isSome(result)
-  } catch (error) {
-    console.error(
-      `Error checking if user has liked book edition with ID ${bookEditionId}:`,
-      error
+  const result = await db.query.bookLikes.findFirst({
+    where: and(
+      eq(bookLikes.editionId, bookEditionId),
+      eq(bookLikes.userId, userId)
     )
-    throw new Error('Failed to check if user has liked book')
-  }
+  })
+  return isSome(result)
 }
 
 /**
@@ -237,28 +210,22 @@ export async function toggleBookLike(bookEditionId: string) {
   if (await hasLikedBook(bookEditionId)) {
     await unlikeBook(bookEditionId)
   } else {
-    await likeBook(bookEditionId)
+    await upserBookLike(bookEditionId)
   }
 }
 
 /**
  * Server action to like a book by id
  */
-export async function likeBook(bookEditionId: string) {
+export async function upserBookLike(bookEditionId: string) {
   const userId = await getAuthenticatedUserId()
-
-  try {
-    await db
-      .insert(bookLikes)
-      .values({
-        editionId: bookEditionId,
-        userId: userId
-      })
-      .onConflictDoNothing()
-  } catch (error) {
-    console.error(`Error liking book edition with ID ${bookEditionId}:`, error)
-    throw new Error('Failed to like book')
-  }
+  return db
+    .insert(bookLikes)
+    .values({
+      editionId: bookEditionId,
+      userId: userId
+    })
+    .onConflictDoNothing()
 }
 
 /**
@@ -266,21 +233,9 @@ export async function likeBook(bookEditionId: string) {
  */
 export async function unlikeBook(bookEditionId: string) {
   const userId = await getAuthenticatedUserId()
-
-  try {
-    await db
-      .delete(bookLikes)
-      .where(
-        and(
-          eq(bookLikes.editionId, bookEditionId),
-          eq(bookLikes.userId, userId)
-        )
-      )
-  } catch (error) {
-    console.error(
-      `Error unliking book edition with ID ${bookEditionId}:`,
-      error
+  return db
+    .delete(bookLikes)
+    .where(
+      and(eq(bookLikes.editionId, bookEditionId), eq(bookLikes.userId, userId))
     )
-    throw new Error('Failed to unlike book')
-  }
 }
