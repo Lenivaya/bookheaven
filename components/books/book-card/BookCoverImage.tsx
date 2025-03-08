@@ -1,18 +1,27 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { ImageOff, Loader2 } from 'lucide-react'
 import { ZoomableImage } from '@/components/generic/zoomable-image'
+import { cn } from '@/lib/utils'
+import { LikeButton } from './LikeButton'
+import { Protect } from '@clerk/nextjs'
 
 interface BookCoverImageProps {
   thumbnailUrl: string | null
   title: string
+  bookEditionId: string
 }
 
-export function BookCoverImage({ thumbnailUrl, title }: BookCoverImageProps) {
+export function BookCoverImage({
+  thumbnailUrl,
+  title,
+  bookEditionId
+}: BookCoverImageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
+  const [isHovering, setIsHovering] = useState(false)
 
   if (!thumbnailUrl) {
     return (
@@ -28,7 +37,11 @@ export function BookCoverImage({ thumbnailUrl, title }: BookCoverImageProps) {
   }
 
   return (
-    <div className='relative h-full w-full bg-muted dark:bg-muted/80'>
+    <div
+      className='relative h-full w-full bg-muted dark:bg-muted/80 group'
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
       <ZoomableImage src={thumbnailUrl} alt={`Cover of ${title}`}>
         <Image
           src={thumbnailUrl}
@@ -47,6 +60,20 @@ export function BookCoverImage({ thumbnailUrl, title }: BookCoverImageProps) {
           }}
         />
       </ZoomableImage>
+
+      {/* Hover overlay with like button */}
+      <div
+        className={cn(
+          'absolute inset-0 bg-black/40 transition-opacity duration-200',
+          isHovering ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        )}
+      >
+        <Suspense fallback={null}>
+          <Protect>
+            <LikeButton bookEditionId={bookEditionId} isHovering={isHovering} />
+          </Protect>
+        </Suspense>
+      </div>
 
       {isLoading && (
         <div className='absolute inset-0 flex items-center justify-center bg-muted/50 dark:bg-muted/30'>

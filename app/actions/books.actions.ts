@@ -6,6 +6,7 @@ import {
   authors,
   BookEdition,
   bookEditions,
+  bookLikes,
   BookWork,
   bookWorks,
   Tag,
@@ -16,6 +17,7 @@ import {
   workToTags
 } from '@/db/schema'
 import { isNone, isSome, Option } from '@/lib/types'
+import { auth } from '@clerk/nextjs/server'
 import { and, countDistinct, eq, ilike, inArray, or, SQL } from 'drizzle-orm'
 
 type Book = {
@@ -202,5 +204,96 @@ export async function getBookWorkById(id: string) {
   } catch (error) {
     console.error(`Error fetching book work with ID ${id}:`, error)
     throw new Error('Failed to fetch book work')
+  }
+}
+
+/**
+ * Server action to check if a user has liked a book by id
+ */
+export async function hasLikedBook(bookEditionId: string) {
+  const userId = await auth()
+  if (isNone(userId.userId)) {
+    return false
+  }
+
+  try {
+    const result = await db
+      .select()
+      .from(bookLikes)
+      .where(
+        and(
+          eq(bookLikes.editionId, bookEditionId),
+          eq(bookLikes.userId, userId.userId)
+        )
+      )
+
+    return result.length > 0
+  } catch (error) {
+    console.error(
+      `Error checking if user has liked book edition with ID ${bookEditionId}:`,
+      error
+    )
+    throw new Error('Failed to check if user has liked book')
+  }
+}
+
+/**
+ * Server action to toggle a book like by id
+ */
+export async function toggleBookLike(bookEditionId: string) {
+  if (await hasLikedBook(bookEditionId)) {
+    await unlikeBook(bookEditionId)
+  } else {
+    await likeBook(bookEditionId)
+  }
+}
+
+/**
+ * Server action to like a book by id
+ */
+export async function likeBook(bookEditionId: string) {
+  const userId = await auth()
+  if (isNone(userId.userId)) {
+    throw new Error('User must be logged in to like a book')
+  }
+
+  try {
+    await db
+      .insert(bookLikes)
+      .values({
+        editionId: bookEditionId,
+        userId: userId.userId
+      })
+      .onConflictDoNothing()
+  } catch (error) {
+    console.error(`Error liking book edition with ID ${bookEditionId}:`, error)
+    throw new Error('Failed to like book')
+  }
+}
+
+/**
+ * Server action to unlike a book by id
+ */
+export async function unlikeBook(bookEditionId: string) {
+  const userId = await auth()
+  if (isNone(userId.userId)) {
+    throw new Error('User must be logged in to unlike a book')
+  }
+
+  try {
+    await db
+      .delete(bookLikes)
+      .where(
+        and(
+          eq(bookLikes.editionId, bookEditionId),
+          eq(bookLikes.userId, userId.userId)
+        )
+      )
+  } catch (error) {
+    console.error(
+      `Error unliking book edition with ID ${bookEditionId}:`,
+      error
+    )
+    throw new Error('Failed to unlike book')
   }
 }

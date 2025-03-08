@@ -55,6 +55,7 @@ export default function BookCard({
             <BookCoverImage
               thumbnailUrl={edition.thumbnailUrl}
               title={book.title}
+              bookEditionId={edition.id}
             />
           </Link>
 
