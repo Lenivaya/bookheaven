@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { dark } from '@clerk/themes'
-import { Navbar } from './books/navbar/Navbar'
+import { Navbar } from '../components/layout/navbar/Navbar'
 import './globals.css'
 
 const geistSans = Geist({
