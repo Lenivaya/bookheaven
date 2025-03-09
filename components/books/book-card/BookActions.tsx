@@ -34,6 +34,7 @@ import {
   getUserShelvesWithItems
 } from '@/app/actions/bookShelves.actions'
 import { RatingValue } from '@/db/schema/ratings.schema'
+
 export const AVAILABLE_SYSTEM_SHELVES: DefaultShelves[] = [
   'Want to Read',
   'Currently Reading',
@@ -56,23 +57,16 @@ export function BookActions({
   const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
 
-  // Query to get all user shelves with their items - this can be shared across all book cards
   const { data: userShelves, isLoading: isShelvesLoading } = useQuery({
     queryKey: ['userShelves'],
-    queryFn: async () => {
-      return getUserShelvesWithItems(AVAILABLE_SYSTEM_SHELVES)
-    },
+    queryFn: () => getUserShelvesWithItems(AVAILABLE_SYSTEM_SHELVES),
     refetchOnWindowFocus: false,
-    staleTime: 5 * 60 * 1000 // 5 minutes
+    staleTime: 5 * 60 * 1000
   })
 
-  // Use memoized computation to determine which shelf the book is in
   const { currentShelf, isBookmarked } = useMemo(() => {
-    if (!userShelves) {
-      return { currentShelf: null, isBookmarked: false }
-    }
+    if (!userShelves) return { currentShelf: null, isBookmarked: false }
 
-    // Find the shelf that contains this book
     const shelfWithBook = userShelves.find((shelf) =>
       shelf.items.some((item) => item.workId === bookId)
     )
@@ -83,31 +77,21 @@ export function BookActions({
     }
   }, [userShelves, bookId])
 
-  // Query to get the user's current rating for this book
-  const { data: userRating, isLoading: isRatingLoading } = useQuery({
+  const { data: userRating } = useQuery({
     queryKey: ['userRating', editionId],
-    queryFn: async () => {
-      const rating = await getUserRating(editionId)
-      return rating
-    },
+    queryFn: () => getUserRating(editionId),
     refetchOnWindowFocus: false
   })
 
-  // Query to get the book's average rating
   const { data: averageRating } = useQuery({
     queryKey: ['averageRating', editionId],
-    queryFn: async () => {
-      const rating = await getBookAverageRating(editionId)
-      return rating
-    },
+    queryFn: () => getBookAverageRating(editionId),
     refetchOnWindowFocus: false
   })
 
-  // Mutation to add book to shelf
   const addToShelfMutation = useMutation({
-    mutationFn: async (shelfName: DefaultShelves) => {
-      await upsertShelfItemWithShelfName({ workId: bookId }, shelfName)
-    },
+    mutationFn: (shelfName: DefaultShelves) =>
+      upsertShelfItemWithShelfName({ workId: bookId }, shelfName),
     onSuccess: (_, shelfName) => {
       queryClient.invalidateQueries({ queryKey: ['userShelves'] })
       toast.success(`Added "${bookTitle}" to ${shelfName}`)
@@ -118,17 +102,11 @@ export function BookActions({
     }
   })
 
-  // Mutation to remove book from shelf
   const removeFromShelfMutation = useMutation({
     mutationFn: async (shelfName: DefaultShelves) => {
-      // Find the shelf ID from our cached shelves data
       const shelf = userShelves?.find((s) => s.name === shelfName)
-
-      if (!shelf) {
-        throw new Error(`Shelf ${shelfName} not found`)
-      }
-
-      await deleteShelfItem(shelf.id, bookId)
+      if (!shelf) throw new Error(`Shelf ${shelfName} not found`)
+      return deleteShelfItem(shelf.id, bookId)
     },
     onSuccess: (_, shelfName) => {
       queryClient.invalidateQueries({ queryKey: ['userShelves'] })
@@ -140,11 +118,9 @@ export function BookActions({
     }
   })
 
-  // Mutation to update a book rating
   const updateRatingMutation = useMutation({
-    mutationFn: async ({ rating }: { rating: RatingValue }) => {
-      await upsertBookRating(editionId, rating)
-    },
+    mutationFn: ({ rating }: { rating: RatingValue }) =>
+      upsertBookRating(editionId, rating),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['userRating', editionId] })
       queryClient.invalidateQueries({ queryKey: ['averageRating', editionId] })
@@ -156,11 +132,8 @@ export function BookActions({
     }
   })
 
-  // Mutation to delete a book rating
   const deleteRatingMutation = useMutation({
-    mutationFn: async () => {
-      await deleteBookRating(editionId)
-    },
+    mutationFn: () => deleteBookRating(editionId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userRating', editionId] })
       queryClient.invalidateQueries({ queryKey: ['averageRating', editionId] })
@@ -172,7 +145,6 @@ export function BookActions({
     }
   })
 
-  // Function to get the appropriate icon based on shelf type
   const getShelfIcon = (shelf: DefaultShelves | null) => {
     if (!shelf) return <Bookmark className='h-4 w-4' />
 
@@ -185,29 +157,20 @@ export function BookActions({
   }
 
   const handleShelfSelect = async (shelf: DefaultShelves) => {
-    // If the shelf is already selected, remove the book from it
     if (currentShelf === shelf) {
       removeFromShelfMutation.mutate(shelf)
       setOpen(false)
       return
     }
 
-    // If the book is already on a different shelf, we need to remove it first
     if (currentShelf) {
       try {
-        // Find the current shelf object
         const currentShelfObj = userShelves?.find(
           (s) => s.name === currentShelf
         )
-
         if (currentShelfObj) {
-          // First remove from current shelf
           await deleteShelfItem(currentShelfObj.id, bookId)
-
-          // Then add to the new shelf
           await upsertShelfItemWithShelfName({ workId: bookId }, shelf)
-
-          // Update UI and show success message
           queryClient.invalidateQueries({ queryKey: ['userShelves'] })
           toast.success(`Moved "${bookTitle}" from ${currentShelf} to ${shelf}`)
           setOpen(false)
@@ -220,15 +183,12 @@ export function BookActions({
       }
     }
 
-    // Otherwise, just add the book to the new shelf
     addToShelfMutation.mutate(shelf)
     setOpen(false)
   }
 
   const handleRateBook = (rating: number) => {
-    // Only update if the rating is different from the current one
     if (userRating?.rating !== rating) {
-      // Ensure rating is a valid RatingValue (1-5)
       const validRating = Math.min(
         Math.max(Math.round(rating), 1),
         5
@@ -237,27 +197,6 @@ export function BookActions({
     }
   }
 
-  const handleDeleteRating = () => {
-    if (userRating) {
-      deleteRatingMutation.mutate()
-    }
-  }
-
-  const handleAddToList = () => {
-    // Here you would open a modal or navigate to add to list page
-    console.log(`Adding book ${bookId} to list`)
-
-    toast.info(`Add "${bookTitle}" to list functionality coming soon`)
-  }
-
-  const handleWriteReview = () => {
-    // Here you would navigate to review page or open a modal
-    console.log(`Writing review for book ${bookId}`)
-
-    toast.info(`Write review for "${bookTitle}" functionality coming soon`)
-  }
-
-  // Loading state for the entire component
   if (isShelvesLoading) {
     return (
       <Button
@@ -280,7 +219,6 @@ export function BookActions({
           className={cn(
             'absolute right-1 top-1 z-10 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90',
             'transition-opacity duration-200',
-            // Show by default if bookmarked, otherwise only on parent hover
             isBookmarked ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
           )}
           aria-label={
@@ -301,7 +239,6 @@ export function BookActions({
         </div>
 
         <div className='px-1 py-2'>
-          {/* Shelves section */}
           <div className='space-y-1 px-2'>
             {AVAILABLE_SYSTEM_SHELVES.map((shelf) => (
               <Button
@@ -336,7 +273,6 @@ export function BookActions({
 
           <DropdownMenuSeparator className='my-2' />
 
-          {/* Rating section */}
           <div className='px-2 py-1'>
             <div className='flex items-center justify-between mb-2'>
               <p className='text-xs font-medium text-muted-foreground'>
@@ -347,7 +283,7 @@ export function BookActions({
                   variant='ghost'
                   size='icon'
                   className='h-5 w-5'
-                  onClick={handleDeleteRating}
+                  onClick={() => deleteRatingMutation.mutate()}
                   disabled={deleteRatingMutation.isPending}
                   title='Remove rating'
                 >
@@ -361,7 +297,7 @@ export function BookActions({
                 interactive
                 rating={userRating?.rating}
                 onRatingChange={handleRateBook}
-                isLoading={isRatingLoading || updateRatingMutation.isPending}
+                isLoading={updateRatingMutation.isPending}
               />
             </div>
             {averageRating && averageRating.totalRatings > 0 && (
@@ -382,13 +318,16 @@ export function BookActions({
 
           <DropdownMenuSeparator className='my-2' />
 
-          {/* Additional actions */}
           <div className='px-2 py-1 space-y-1'>
             <Button
               variant='ghost'
               size='sm'
               className='w-full justify-start text-sm'
-              onClick={handleWriteReview}
+              onClick={() =>
+                toast.info(
+                  `Write review for "${bookTitle}" functionality coming soon`
+                )
+              }
             >
               Write a review...
             </Button>
@@ -396,7 +335,11 @@ export function BookActions({
               variant='ghost'
               size='sm'
               className='w-full justify-start text-sm'
-              onClick={handleAddToList}
+              onClick={() =>
+                toast.info(
+                  `Add "${bookTitle}" to list functionality coming soon`
+                )
+              }
             >
               Add to list...
             </Button>
