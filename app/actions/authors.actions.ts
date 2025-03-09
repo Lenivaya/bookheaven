@@ -62,12 +62,14 @@ export async function getAuthors(
     .limit(options.limit)
     .offset(options.offset)
   const getTotalCount = db
-    .selectDistinctOn([authors.id], {
+    .select({
       totalCount: countDistinct(authors.id)
     })
     .from(authors)
     .innerJoin(workToAuthors, eq(authors.id, workToAuthors.authorId))
     .innerJoin(bookWorks, eq(workToAuthors.workId, bookWorks.id))
+    .innerJoin(workToTags, eq(bookWorks.id, workToTags.workId))
+    .innerJoin(tags, eq(workToTags.tagId, tags.id))
     .where(and(...filters))
 
   const [resultAuthors, [{ totalCount }]] = await Promise.all([
