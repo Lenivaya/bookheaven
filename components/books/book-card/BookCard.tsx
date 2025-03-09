@@ -26,6 +26,7 @@ import { BookPriceDisplay } from './BookPriceDisplay'
 import { ShoppingCart } from 'lucide-react'
 import { BookCardAuthors } from './BookCardAuthors'
 import { BookActions } from './BookActions'
+import { Protect } from '@clerk/nextjs'
 
 interface BookCardProps {
   book: BookWork
@@ -61,11 +62,13 @@ export default function BookCard({
           </Link>
 
           {/* Book Actions Component */}
-          <BookActions
-            bookId={book.id}
-            bookTitle={book.title}
-            editionId={edition.id}
-          />
+          <Protect>
+            <BookActions
+              bookId={book.id}
+              bookTitle={book.title}
+              editionId={edition.id}
+            />
+          </Protect>
 
           {edition.isOnSale && (
             <div className='absolute right-0 top-0 z-10'>

@@ -16,13 +16,11 @@ export function LikeButton({ bookEditionId, isHovering }: LikeButtonProps) {
 
   const { data: isLiked = false, isLoading: isLikeStatusLoading } = useQuery({
     queryKey: ['isLikedBook', bookEditionId],
-    queryFn: async () => await hasLikedBook(bookEditionId)
+    queryFn: () => hasLikedBook(bookEditionId)
   })
 
   const likeMutation = useMutation({
-    mutationFn: async () => {
-      await toggleBookLike(bookEditionId)
-    },
+    mutationFn: () => toggleBookLike(bookEditionId),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['isLikedBook', bookEditionId]
