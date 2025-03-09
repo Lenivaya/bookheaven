@@ -1,6 +1,6 @@
 import { db } from '@/db'
 import { insertQuoteSchema, quoteLikes, quotes } from '@/db/schema'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { getAuthenticatedUserId } from './actions.helpers'
 import { isSome } from '@/lib/types'
@@ -49,15 +49,32 @@ export async function hasLikedQuote(quoteId: string) {
 /** Upsert a quote like */
 export async function upsertQuoteLike(quoteId: string) {
   const userId = await getAuthenticatedUserId()
-  return db.insert(quoteLikes).values({ quoteId, userId }).onConflictDoNothing()
+  await db.transaction(async (tx) => {
+    await tx
+      .insert(quoteLikes)
+      .values({ quoteId, userId })
+      .onConflictDoNothing()
+    await tx
+      .update(quotes)
+      .set({ likesCount: sql`${quotes.likesCount} + 1` })
+      .where(eq(quotes.id, quoteId))
+  })
 }
 
 /** Delete a quote like */
 export async function deleteQuoteLike(quoteId: string) {
   const userId = await getAuthenticatedUserId()
-  return db
-    .delete(quoteLikes)
-    .where(and(eq(quoteLikes.quoteId, quoteId), eq(quoteLikes.userId, userId)))
+  await db.transaction(async (tx) => {
+    await tx
+      .delete(quoteLikes)
+      .where(
+        and(eq(quoteLikes.quoteId, quoteId), eq(quoteLikes.userId, userId))
+      )
+    await tx
+      .update(quotes)
+      .set({ likesCount: sql`${quotes.likesCount} - 1` })
+      .where(eq(quotes.id, quoteId))
+  })
 }
 
 /** Toggle a quote like */

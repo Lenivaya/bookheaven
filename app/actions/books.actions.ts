@@ -17,7 +17,16 @@ import {
   workToTags
 } from '@/db/schema'
 import { isNone, isSome, Option } from '@/lib/types'
-import { and, countDistinct, eq, ilike, inArray, or, SQL } from 'drizzle-orm'
+import {
+  and,
+  countDistinct,
+  eq,
+  ilike,
+  inArray,
+  or,
+  sql,
+  SQL
+} from 'drizzle-orm'
 import { getAuthenticatedUserId } from './actions.helpers'
 
 type Book = {
@@ -219,13 +228,21 @@ export async function toggleBookLike(bookEditionId: string) {
  */
 export async function upserBookLike(bookEditionId: string) {
   const userId = await getAuthenticatedUserId()
-  return db
-    .insert(bookLikes)
-    .values({
-      editionId: bookEditionId,
-      userId: userId
-    })
-    .onConflictDoNothing()
+  await db.transaction(async (tx) => {
+    await tx
+      .insert(bookLikes)
+      .values({
+        editionId: bookEditionId,
+        userId: userId
+      })
+      .onConflictDoNothing()
+    await tx
+      .update(bookEditions)
+      .set({
+        likesCount: sql`${bookEditions.likesCount} + 1`
+      })
+      .where(eq(bookEditions.id, bookEditionId))
+  })
 }
 
 /**
@@ -233,9 +250,20 @@ export async function upserBookLike(bookEditionId: string) {
  */
 export async function unlikeBook(bookEditionId: string) {
   const userId = await getAuthenticatedUserId()
-  return db
-    .delete(bookLikes)
-    .where(
-      and(eq(bookLikes.editionId, bookEditionId), eq(bookLikes.userId, userId))
-    )
+  await db.transaction(async (tx) => {
+    await tx
+      .delete(bookLikes)
+      .where(
+        and(
+          eq(bookLikes.editionId, bookEditionId),
+          eq(bookLikes.userId, userId)
+        )
+      )
+    await tx
+      .update(bookEditions)
+      .set({
+        likesCount: sql`${bookEditions.likesCount} - 1`
+      })
+      .where(eq(bookEditions.id, bookEditionId))
+  })
 }

@@ -10,7 +10,7 @@ import {
 } from '@/db/schema'
 import { isNone, isSome } from '@/lib/types'
 import { auth } from '@clerk/nextjs/server'
-import { and, eq, inArray, or } from 'drizzle-orm'
+import { and, eq, inArray, or, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { getAuthenticatedUserId } from './actions.helpers'
 import { DefaultShelves } from '@/lib/constants'
@@ -190,7 +190,16 @@ export async function hasLikedShelf(shelfId: string) {
  */
 export async function upsertShelfLike(shelfId: string) {
   const userId = await getAuthenticatedUserId()
-  return db.insert(shelfLikes).values({ shelfId, userId }).onConflictDoNothing()
+  await db.transaction(async (tx) => {
+    await tx
+      .insert(shelfLikes)
+      .values({ shelfId, userId })
+      .onConflictDoNothing()
+    await tx
+      .update(shelves)
+      .set({ likesCount: sql`${shelves.likesCount} + 1` })
+      .where(eq(shelves.id, shelfId))
+  })
 }
 
 /**
@@ -198,9 +207,17 @@ export async function upsertShelfLike(shelfId: string) {
  */
 export async function deleteShelfLike(shelfId: string) {
   const userId = await getAuthenticatedUserId()
-  return db
-    .delete(shelfLikes)
-    .where(and(eq(shelfLikes.shelfId, shelfId), eq(shelfLikes.userId, userId)))
+  await db.transaction(async (tx) => {
+    await tx
+      .delete(shelfLikes)
+      .where(
+        and(eq(shelfLikes.shelfId, shelfId), eq(shelfLikes.userId, userId))
+      )
+    await tx
+      .update(shelves)
+      .set({ likesCount: sql`${shelves.likesCount} - 1` })
+      .where(eq(shelves.id, shelfId))
+  })
 }
 
 /**
