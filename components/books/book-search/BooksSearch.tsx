@@ -109,6 +109,42 @@ export function BooksSearch({ isAutoFocusable, isClient }: BooksSearchProps) {
 
       <div className='flex flex-wrap gap-2 items-center mx-auto'>
         <FilterIcon className='h-4 w-4' />
+
+        {search && (
+          <div className='flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary'>
+            <BookIcon className='h-3.5 w-3.5' />
+            <span>Searching for &quot;{search}&quot;</span>
+          </div>
+        )}
+
+        {queryTags.length > 0 && (
+          <div className='flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-sm text-emerald-600 dark:text-emerald-400'>
+            <TagIcon className='h-3.5 w-3.5' />
+            <span>
+              {queryTags.length} {queryTags.length === 1 ? 'tag' : 'tags'}
+            </span>
+          </div>
+        )}
+
+        {queryAuthors.length > 0 && (
+          <div className='flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-sm text-blue-600 dark:text-blue-400'>
+            <UserIcon className='h-3.5 w-3.5' />
+            <span>
+              {queryAuthors.length}{' '}
+              {queryAuthors.length === 1 ? 'author' : 'authors'}
+            </span>
+          </div>
+        )}
+
+        {queryBooks.length > 0 && (
+          <div className='flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1 text-sm text-amber-600 dark:text-amber-400'>
+            <BookIcon className='h-3.5 w-3.5' />
+            <span>
+              {queryBooks.length} {queryBooks.length === 1 ? 'book' : 'books'}
+            </span>
+          </div>
+        )}
+
         {queryTags?.map((tag) => (
           <Suspense
             key={tag}
