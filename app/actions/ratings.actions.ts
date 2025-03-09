@@ -14,9 +14,14 @@ import { RatingValue } from '@/db/schema/ratings.schema'
  */
 export async function getUserRating(bookEditionId: string) {
   const userId = await getAuthenticatedUserId()
-  return db.query.ratings.findFirst({
-    where: and(eq(ratings.editionId, bookEditionId), eq(ratings.userId, userId))
-  })
+  return (
+    (await db.query.ratings.findFirst({
+      where: and(
+        eq(ratings.editionId, bookEditionId),
+        eq(ratings.userId, userId)
+      )
+    })) ?? null
+  )
 }
 
 /**
