@@ -1,5 +1,5 @@
 import { getAuthors } from '@/app/actions/authors.actions'
-import AuthorCard from '@/components/authors/author-card/AuthorCard'
+import AuthorList from '@/components/authors/author-list/AuthorList'
 import { AuthorsSearch } from '@/components/authors/author-search/AuthorsSearch'
 import { SearchParams } from 'nuqs/server'
 import { authorSearchParamsCache } from './searchParams'
@@ -55,16 +55,7 @@ export default async function AuthorsPage({ searchParams }: AuthorsPageProps) {
       ) : (
         <>
           <div className='min-h-[70vh]'>
-            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
-              {authors.map((author) => (
-                <AuthorCard
-                  key={author.id}
-                  author={author}
-                  // In a real implementation, you would check if the user is following the author
-                  isFollowing={false}
-                />
-              ))}
-            </div>
+            <AuthorList authors={authors} />
           </div>
 
           {totalCount > DEFAULT_PAGE_SIZE && (

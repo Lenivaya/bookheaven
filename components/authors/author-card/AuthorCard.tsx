@@ -3,11 +3,12 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CalendarIcon } from 'lucide-react'
+import { CalendarIcon, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { AuthorFollowButton } from './AuthorFollowButton'
 import { AuthorViewBooksButton } from './AuthorViewBooksButton'
 import { ZoomableImage } from '@/components/generic/zoomable-image'
+import { cn } from '@/lib/utils'
 
 interface AuthorCardProps {
   author: Author
@@ -34,10 +35,28 @@ export default function AuthorCard({
   isFollowing = false
 }: AuthorCardProps) {
   return (
-    <Card className='group h-full overflow-hidden border-border/40 bg-card/95 transition-all duration-300 hover:border-primary/30 hover:shadow-md dark:bg-card/95 dark:hover:border-primary/40 dark:hover:bg-card/100 flex flex-col'>
+    <Card
+      className={cn(
+        'group h-full overflow-hidden transition-all duration-300 hover:shadow-md flex flex-col relative',
+        isFollowing
+          ? 'border-primary/40 bg-primary/5 dark:bg-primary/10 hover:border-primary/60 dark:hover:border-primary/70'
+          : 'border-border/40 bg-card/95 hover:border-primary/30 dark:bg-card/95 dark:hover:border-primary/40 dark:hover:bg-card/100'
+      )}
+    >
+      {isFollowing && (
+        <div className='absolute top-2 right-2 z-10'>
+          <CheckCircle2 className='h-5 w-5 text-primary' />
+        </div>
+      )}
+
       <CardHeader className='flex flex-row items-center gap-4 p-4'>
         <ZoomableImage src={author.photoUrl || ''} alt={author.name}>
-          <Avatar className='h-16 w-16 border border-border/50 shadow-sm'>
+          <Avatar
+            className={cn(
+              'h-16 w-16 border shadow-sm',
+              isFollowing ? 'border-primary/50' : 'border-border/50'
+            )}
+          >
             <AvatarImage src={author.photoUrl || ''} alt={author.name} />
             <AvatarFallback className='text-lg font-medium bg-primary/10 text-primary'>
               {getInitials(author.name)}
@@ -48,7 +67,10 @@ export default function AuthorCard({
         <div className='flex flex-col'>
           <Link
             href={`/authors/${author.id}`}
-            className='text-lg font-semibold leading-tight tracking-tight group-hover:text-primary transition-colors duration-200 dark:text-slate-50'
+            className={cn(
+              'text-lg font-semibold leading-tight tracking-tight transition-colors duration-200 dark:text-slate-50',
+              isFollowing ? 'text-primary' : 'group-hover:text-primary'
+            )}
           >
             {author.name}
           </Link>
@@ -64,6 +86,15 @@ export default function AuthorCard({
                 {author.deathDate && (
                   <span>- {formatDate(author.deathDate)}</span>
                 )}
+              </Badge>
+            )}
+
+            {isFollowing && (
+              <Badge
+                variant='secondary'
+                className='bg-primary/20 text-primary hover:bg-primary/30 flex items-center gap-1 text-xs px-2 py-0.5'
+              >
+                Following
               </Badge>
             )}
           </div>
