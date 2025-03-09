@@ -13,7 +13,9 @@ import {
   workToAuthors,
   workToTags
 } from '@/db/schema/books.schema'
+import { ratings } from '@/db/schema/ratings.schema'
 import { Option } from '@/lib/types'
+import { seed } from 'drizzle-seed'
 
 const openLibraryClient = createClient<paths>({
   baseUrl: 'https://openlibrary.org/'
@@ -95,6 +97,13 @@ const getText = (field: Option<{ type: string; value: string }>) => {
   return field.value
 }
 
+// Store book and author data for later use with drizzle-seed
+const bookData: {
+  workId: string
+  editionId: string
+  title: string
+}[] = []
+
 const main = async () => {
   // Clear existing data
   await db.delete(workToTags)
@@ -103,6 +112,7 @@ const main = async () => {
   await db.delete(bookWorks)
   await db.delete(authors)
   await db.delete(tags)
+  await db.delete(ratings)
 
   for (const [authorId, books] of Object.entries(booksToSeed)) {
     const authorResponse = await fetchAuthor(authorId)
@@ -135,11 +145,13 @@ const main = async () => {
     for (const book of authorBooks) {
       if (!book) continue
 
+      const bookTitle = book.title || 'Unknown Title'
+
       // Insert work
       const [insertedWork] = await db
         .insert(bookWorks)
         .values({
-          title: book.title || 'Unknown Title',
+          title: bookTitle,
           description: book.description,
           originalLanguage: book.language?.toLowerCase() || 'en'
         })
@@ -152,17 +164,27 @@ const main = async () => {
       })
 
       // Insert edition
-      await db.insert(bookEditions).values({
+      const [insertedEdition] = await db
+        .insert(bookEditions)
+        .values({
+          workId: insertedWork.id,
+          isbn: book.isbn13,
+          publisher: book.publishers?.[0],
+          publishedAt: parseDate(book.publishedDate),
+          language: book.language?.toLowerCase() || 'en',
+          pageCount: book.pageCount,
+          thumbnailUrl: book.thumbnail,
+          smallThumbnailUrl: book.thumbnailSmall,
+          price: '9.99',
+          stockQuantity: 100
+        })
+        .returning()
+
+      // Store book data for later use with drizzle-seed
+      bookData.push({
         workId: insertedWork.id,
-        isbn: book.isbn13,
-        publisher: book.publishers?.[0],
-        publishedAt: parseDate(book.publishedDate),
-        language: book.language?.toLowerCase() || 'en',
-        pageCount: book.pageCount,
-        thumbnailUrl: book.thumbnail,
-        smallThumbnailUrl: book.thumbnailSmall,
-        price: '9.99',
-        stockQuantity: 100
+        editionId: insertedEdition.id,
+        title: bookTitle
       })
 
       // Insert genres as tags and link them to work
@@ -184,9 +206,85 @@ const main = async () => {
         }
       }
 
-      console.log(chalk.blue(`Processed book: ${book.title}`))
+      console.log(chalk.blue(`Processed book: ${bookTitle}`))
     }
   }
+
+  // Now use drizzle-seed to generate ratings
+  console.log(chalk.yellow('Generating ratings using drizzle-seed...'))
+
+  // Generate 50 random user IDs
+  const userIds = Array.from({ length: 50 }, (_, i) => `user_${i + 1}`)
+
+  // Create positive review templates
+  const positiveReviews = [
+    'I really enjoyed this book. Highly recommended!',
+    "This was a fantastic read. Couldn't put it down.",
+    "One of the best books I've read this year.",
+    "The author's writing style is exceptional.",
+    'A masterpiece that will stand the test of time.'
+  ]
+
+  // Create neutral review templates
+  const neutralReviews = [
+    'This book was decent, but not exceptional.',
+    'An interesting read, though it dragged in some parts.',
+    'Had some good moments, but also some flaws.',
+    "Worth reading, but don't expect to be blown away.",
+    "A solid book, but not the author's best work."
+  ]
+
+  // Create negative review templates
+  const negativeReviews = [
+    'I struggled to finish this book.',
+    'Not what I expected. Disappointing overall.',
+    'The plot was confusing and the characters underdeveloped.',
+    "I wouldn't recommend this to others.",
+    'Had potential but failed to deliver.'
+  ]
+
+  // Seed ratings using drizzle-seed
+  await seed(db, { ratings }).refine((f) => ({
+    ratings: {
+      count: bookData.length * 10, // Average 10 ratings per book
+      columns: {
+        workId: f.valuesFromArray({
+          values: bookData.map((book) => book.workId)
+        }),
+        editionId: f.weightedRandom([
+          {
+            weight: 0.7,
+            value: f.valuesFromArray({
+              values: bookData.map((book) => book.editionId)
+            })
+          },
+          { weight: 0.3, value: f.default({ defaultValue: null }) }
+        ]),
+        userId: f.valuesFromArray({ values: userIds }),
+        rating: f.int({ minValue: 1, maxValue: 5 }),
+        review: f.weightedRandom([
+          {
+            weight: 0.3,
+            value: f.default({ defaultValue: null })
+          },
+          {
+            weight: 0.3,
+            value: f.valuesFromArray({ values: positiveReviews })
+          },
+          {
+            weight: 0.2,
+            value: f.valuesFromArray({ values: neutralReviews })
+          },
+          {
+            weight: 0.2,
+            value: f.valuesFromArray({ values: negativeReviews })
+          }
+        ])
+      }
+    }
+  }))
+
+  console.log(chalk.green('Ratings generated successfully'))
 }
 
 main()
