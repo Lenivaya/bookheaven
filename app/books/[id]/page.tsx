@@ -41,7 +41,7 @@ export default async function BookPage({ params }: BookPageProps) {
               className='mb-6'
             />
 
-            <BookActions bookId={id} workId={work.id} />
+            <BookActions workId={work.id} editionId={edition.id} />
           </div>
         </div>
 
