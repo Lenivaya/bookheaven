@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { Suspense, useState } from 'react'
 import { ImageOff, Loader2 } from 'lucide-react'
-import { ZoomableImage } from '@/components/generic/zoomable-image'
+import { ZoomableImage } from '@/components/generic/ZoomableImage'
 import { cn } from '@/lib/utils'
 import { LikeButton } from './LikeButton'
 import { Protect } from '@clerk/nextjs'

@@ -3,7 +3,7 @@
 import { useCallback } from 'react'
 import { useQueryStates } from 'nuqs'
 import { bookSearchParamsSchema } from '@/app/books/searchParams'
-import { Pagination } from '@/components/generic/pagination/pagination'
+import { Pagination } from '@/components/generic/pagination/Pagination'
 
 interface BooksPaginationProps {
   currentPage: number

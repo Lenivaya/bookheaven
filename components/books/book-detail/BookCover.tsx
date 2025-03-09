@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import Image from 'next/image'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import { ZoomableImage } from '@/components/generic/zoomable-image'
+import { ZoomableImage } from '@/components/generic/ZoomableImage'
 
 interface BookCoverProps {
   thumbnailUrl: string | null

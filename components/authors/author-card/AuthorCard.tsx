@@ -7,7 +7,7 @@ import { CalendarIcon, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { AuthorFollowButton } from './AuthorFollowButton'
 import { AuthorViewBooksButton } from './AuthorViewBooksButton'
-import { ZoomableImage } from '@/components/generic/zoomable-image'
+import { ZoomableImage } from '@/components/generic/ZoomableImage'
 import { cn } from '@/lib/utils'
 
 interface AuthorCardProps {

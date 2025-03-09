@@ -20,7 +20,7 @@ import {
   PaginationItem,
   PaginationLink
 } from '@/components/ui/pagination'
-import { PaginationInfo } from './pagination-info'
+import { PaginationInfo } from './PaginationInfo'
 
 export interface PaginationMeta {
   page: number

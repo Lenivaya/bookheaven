@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import type { PaginationMeta } from './pagination'
+import type { PaginationMeta } from './Pagination'
 
 export interface PaginationInfoProps {
   /**
