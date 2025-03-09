@@ -33,12 +33,8 @@ import {
   deleteShelfItem,
   getUserShelvesWithItems
 } from '@/app/actions/bookShelves.actions'
-
-// Define the valid rating values
-type RatingValue = 1 | 2 | 3 | 4 | 5
-
-// All available shelves
-const AVAILABLE_SHELVES: DefaultShelves[] = [
+import { RatingValue } from '@/db/schema/ratings.schema'
+export const AVAILABLE_SYSTEM_SHELVES: DefaultShelves[] = [
   'Want to Read',
   'Currently Reading',
   'Read',
@@ -64,7 +60,7 @@ export function BookActions({
   const { data: userShelves, isLoading: isShelvesLoading } = useQuery({
     queryKey: ['userShelves'],
     queryFn: async () => {
-      return getUserShelvesWithItems(AVAILABLE_SHELVES)
+      return getUserShelvesWithItems(AVAILABLE_SYSTEM_SHELVES)
     },
     refetchOnWindowFocus: false,
     staleTime: 5 * 60 * 1000 // 5 minutes
@@ -307,7 +303,7 @@ export function BookActions({
         <div className='px-1 py-2'>
           {/* Shelves section */}
           <div className='space-y-1 px-2'>
-            {AVAILABLE_SHELVES.map((shelf) => (
+            {AVAILABLE_SYSTEM_SHELVES.map((shelf) => (
               <Button
                 key={shelf}
                 variant={currentShelf === shelf ? 'default' : 'ghost'}

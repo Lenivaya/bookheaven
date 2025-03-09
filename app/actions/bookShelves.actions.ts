@@ -1,7 +1,6 @@
 'use server'
 
 import { db } from '@/db'
-import { Author, BookEdition, BookWork, Tag } from '@/db/schema'
 import {
   insertShelfItemSchema,
   insertShelfSchema,
@@ -9,11 +8,11 @@ import {
   shelfLikes,
   shelves
 } from '@/db/schema'
-import { and, eq, or, inArray } from 'drizzle-orm'
-import { getAuthenticatedUserId } from './actions.helpers'
-import { auth } from '@clerk/nextjs/server'
 import { isNone, isSome } from '@/lib/types'
+import { auth } from '@clerk/nextjs/server'
+import { and, eq, inArray, or } from 'drizzle-orm'
 import { z } from 'zod'
+import { getAuthenticatedUserId } from './actions.helpers'
 
 export type DefaultShelves =
   | 'Want to Read'
@@ -115,6 +114,7 @@ export async function upsertShelfItem(
     .returning()
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const upsertShelfItemWithShelfSchema = insertShelfItemSchema.omit({
   shelfId: true
 })

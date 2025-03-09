@@ -7,8 +7,7 @@ import { mergeManyIfs } from '@/lib/objects'
 import { isNone, isSome } from '@/lib/types'
 import { and, avg, count, eq } from 'drizzle-orm'
 import { getAuthenticatedUserId } from './actions.helpers'
-
-export type RatingValue = 1 | 2 | 3 | 4 | 5
+import { RatingValue } from '@/db/schema/ratings.schema'
 
 /**
  * Get a user's rating for a book edition

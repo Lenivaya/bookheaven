@@ -3,6 +3,8 @@ import { integer, pgTable, text, unique, uuid } from 'drizzle-orm/pg-core'
 import { bookEditions, bookWorks } from './books.schema'
 import { timestamps } from './columns.helpers'
 
+export type RatingValue = 1 | 2 | 3 | 4 | 5
+
 export const ratings = pgTable(
   'ratings',
   {
@@ -14,7 +16,7 @@ export const ratings = pgTable(
       onDelete: 'cascade'
     }),
     userId: text('user_id').notNull(),
-    rating: integer('rating').notNull().$type<1 | 2 | 3 | 4 | 5>(),
+    rating: integer('rating').notNull().$type<RatingValue>(),
     review: text('review'),
     ...timestamps
   },
