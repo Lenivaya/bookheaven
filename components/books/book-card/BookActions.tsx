@@ -1,7 +1,7 @@
 'use client'
 
 import { match } from 'ts-pattern'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
   Bookmark,
   BookOpen,
@@ -26,9 +26,24 @@ import {
   getUserRating,
   upsertBookRating,
   deleteBookRating,
-  getBookAverageRating,
-  RatingValue
+  getBookAverageRating
 } from '@/app/actions/ratings.actions'
+import {
+  upsertShelfItemWithShelfName,
+  deleteShelfItem,
+  getUserShelvesWithItems
+} from '@/app/actions/bookShelves.actions'
+
+// Define the valid rating values
+type RatingValue = 1 | 2 | 3 | 4 | 5
+
+// All available shelves
+const AVAILABLE_SHELVES: DefaultShelves[] = [
+  'Want to Read',
+  'Currently Reading',
+  'Read',
+  'Did Not Finish'
+]
 
 interface BookActionsProps {
   bookId: string
@@ -40,15 +55,37 @@ interface BookActionsProps {
 export function BookActions({
   bookId,
   editionId,
-  bookTitle,
-  currentShelf: initialShelf
+  bookTitle
 }: BookActionsProps) {
-  const [isBookmarked, setIsBookmarked] = useState(!!initialShelf)
-  const [currentShelf, setCurrentShelf] = useState<DefaultShelves | null>(
-    initialShelf || null
-  )
   const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
+
+  // Query to get all user shelves with their items - this can be shared across all book cards
+  const { data: userShelves, isLoading: isShelvesLoading } = useQuery({
+    queryKey: ['userShelves'],
+    queryFn: async () => {
+      return getUserShelvesWithItems(AVAILABLE_SHELVES)
+    },
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  })
+
+  // Use memoized computation to determine which shelf the book is in
+  const { currentShelf, isBookmarked } = useMemo(() => {
+    if (!userShelves) {
+      return { currentShelf: null, isBookmarked: false }
+    }
+
+    // Find the shelf that contains this book
+    const shelfWithBook = userShelves.find((shelf) =>
+      shelf.items.some((item) => item.workId === bookId)
+    )
+
+    return {
+      currentShelf: shelfWithBook?.name as DefaultShelves | null,
+      isBookmarked: !!shelfWithBook
+    }
+  }, [userShelves, bookId])
 
   // Query to get the user's current rating for this book
   const { data: userRating, isLoading: isRatingLoading } = useQuery({
@@ -57,7 +94,6 @@ export function BookActions({
       const rating = await getUserRating(editionId)
       return rating
     },
-    // Don't refetch on window focus to avoid flickering
     refetchOnWindowFocus: false
   })
 
@@ -68,8 +104,44 @@ export function BookActions({
       const rating = await getBookAverageRating(editionId)
       return rating
     },
-    // Don't refetch on window focus to avoid flickering
     refetchOnWindowFocus: false
+  })
+
+  // Mutation to add book to shelf
+  const addToShelfMutation = useMutation({
+    mutationFn: async (shelfName: DefaultShelves) => {
+      await upsertShelfItemWithShelfName({ workId: bookId }, shelfName)
+    },
+    onSuccess: (_, shelfName) => {
+      queryClient.invalidateQueries({ queryKey: ['userShelves'] })
+      toast.success(`Added "${bookTitle}" to ${shelfName}`)
+    },
+    onError: (error) => {
+      console.error('Failed to add book to shelf:', error)
+      toast.error('Failed to add book to shelf')
+    }
+  })
+
+  // Mutation to remove book from shelf
+  const removeFromShelfMutation = useMutation({
+    mutationFn: async (shelfName: DefaultShelves) => {
+      // Find the shelf ID from our cached shelves data
+      const shelf = userShelves?.find((s) => s.name === shelfName)
+
+      if (!shelf) {
+        throw new Error(`Shelf ${shelfName} not found`)
+      }
+
+      await deleteShelfItem(shelf.id, bookId)
+    },
+    onSuccess: (_, shelfName) => {
+      queryClient.invalidateQueries({ queryKey: ['userShelves'] })
+      toast.success(`Removed "${bookTitle}" from ${shelfName}`)
+    },
+    onError: (error) => {
+      console.error('Failed to remove book from shelf:', error)
+      toast.error('Failed to remove book from shelf')
+    }
   })
 
   // Mutation to update a book rating
@@ -117,30 +189,44 @@ export function BookActions({
   }
 
   const handleShelfSelect = async (shelf: DefaultShelves) => {
-    // If the shelf is already selected, unselect it
+    // If the shelf is already selected, remove the book from it
     if (currentShelf === shelf) {
-      setCurrentShelf(null)
-      setIsBookmarked(false)
+      removeFromShelfMutation.mutate(shelf)
       setOpen(false)
-
-      // Here you would call your server action to remove the book from the shelf
-      // Example: await deleteShelfItem(shelf, bookId)
-      console.log(`Removing book ${bookId} from shelf: ${shelf}`)
-
-      toast.success(`Removed "${bookTitle}" from ${shelf}`)
       return
     }
 
-    // Otherwise, select the new shelf
-    setCurrentShelf(shelf)
-    setIsBookmarked(true)
+    // If the book is already on a different shelf, we need to remove it first
+    if (currentShelf) {
+      try {
+        // Find the current shelf object
+        const currentShelfObj = userShelves?.find(
+          (s) => s.name === currentShelf
+        )
+
+        if (currentShelfObj) {
+          // First remove from current shelf
+          await deleteShelfItem(currentShelfObj.id, bookId)
+
+          // Then add to the new shelf
+          await upsertShelfItemWithShelfName({ workId: bookId }, shelf)
+
+          // Update UI and show success message
+          queryClient.invalidateQueries({ queryKey: ['userShelves'] })
+          toast.success(`Moved "${bookTitle}" from ${currentShelf} to ${shelf}`)
+          setOpen(false)
+          return
+        }
+      } catch (error) {
+        console.error('Failed to move book between shelves:', error)
+        toast.error('Failed to move book between shelves')
+        return
+      }
+    }
+
+    // Otherwise, just add the book to the new shelf
+    addToShelfMutation.mutate(shelf)
     setOpen(false)
-
-    // Here you would call your server action to update the shelf
-    // Example: await upsertShelfItem({ shelfId: shelf, workId: bookId })
-    console.log(`Adding book ${bookId} to shelf: ${shelf}`)
-
-    toast.success(`Added "${bookTitle}" to ${shelf}`)
   }
 
   const handleRateBook = (rating: number) => {
@@ -175,6 +261,20 @@ export function BookActions({
     toast.info(`Write review for "${bookTitle}" functionality coming soon`)
   }
 
+  // Loading state for the entire component
+  if (isShelvesLoading) {
+    return (
+      <Button
+        variant='ghost'
+        size='icon'
+        className='absolute right-1 top-1 z-10 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90 opacity-50'
+        disabled
+      >
+        <Bookmark className='h-4 w-4 animate-pulse' />
+      </Button>
+    )
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -207,20 +307,17 @@ export function BookActions({
         <div className='px-1 py-2'>
           {/* Shelves section */}
           <div className='space-y-1 px-2'>
-            {(
-              [
-                'Want to Read',
-                'Currently Reading',
-                'Read',
-                'Did Not Finish'
-              ] as DefaultShelves[]
-            ).map((shelf) => (
+            {AVAILABLE_SHELVES.map((shelf) => (
               <Button
                 key={shelf}
                 variant={currentShelf === shelf ? 'default' : 'ghost'}
                 size='sm'
                 className='w-full justify-start text-sm'
                 onClick={() => handleShelfSelect(shelf)}
+                disabled={
+                  addToShelfMutation.isPending ||
+                  removeFromShelfMutation.isPending
+                }
               >
                 {match(shelf)
                   .with('Want to Read', () => (

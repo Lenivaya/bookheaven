@@ -1,4 +1,7 @@
+'use server'
+
 import { db } from '@/db'
+import { Author, BookEdition, BookWork, Tag } from '@/db/schema'
 import {
   insertShelfItemSchema,
   insertShelfSchema,
@@ -6,7 +9,7 @@ import {
   shelfLikes,
   shelves
 } from '@/db/schema'
-import { and, eq, or } from 'drizzle-orm'
+import { and, eq, or, inArray } from 'drizzle-orm'
 import { getAuthenticatedUserId } from './actions.helpers'
 import { auth } from '@clerk/nextjs/server'
 import { isNone, isSome } from '@/lib/types'
@@ -62,7 +65,7 @@ export async function getShelfById(id: string) {
   })
 }
 
-export const createShelfSchema = insertShelfSchema.omit({ userId: true })
+const createShelfSchema = insertShelfSchema.omit({ userId: true })
 /**
  * Create a shelf for the user
  */
@@ -112,14 +115,62 @@ export async function upsertShelfItem(
     .returning()
 }
 
+const upsertShelfItemWithShelfSchema = insertShelfItemSchema.omit({
+  shelfId: true
+})
+/**
+ * Upserts item to a shelf, also upserts the shelf if it doesn't exist
+ */
+export async function upsertShelfItemWithShelfName(
+  itemData: z.infer<typeof upsertShelfItemWithShelfSchema>,
+  shelfName: string
+) {
+  const userId = await getAuthenticatedUserId()
+  const shelfExisting = await db.query.shelves.findFirst({
+    where: and(eq(shelves.userId, userId), eq(shelves.name, shelfName))
+  })
+
+  if (isNone(shelfExisting)) {
+    await upsertShelf(createShelfSchema.parse({ name: shelfName, userId }))
+    const shelfExisting = await db.query.shelves.findFirst({
+      where: and(eq(shelves.userId, userId), eq(shelves.name, shelfName))
+    })
+    if (isNone(shelfExisting)) {
+      throw new Error('Shelf was not created')
+    }
+    return upsertShelfItem({ ...itemData, shelfId: shelfExisting.id })
+  }
+
+  return upsertShelfItem({ ...itemData, shelfId: shelfExisting.id })
+}
+
+/**
+ * Checks if shelf has the book in it given shelf name and user id
+ */
+export async function hasBookInShelf(shelfName: string, workId: string) {
+  const userId = await getAuthenticatedUserId()
+  const shelf = await db.query.shelves.findFirst({
+    where: and(eq(shelves.userId, userId), eq(shelves.name, shelfName)),
+    with: {
+      items: {
+        where: eq(shelfItems.workId, workId)
+      }
+    }
+  })
+  return isSome(shelf)
+}
+
 /**
  * Delete an item from a shelf
  */
 export async function deleteShelfItem(shelfId: string, workId: string) {
   await ensureShelfAuthor(shelfId)
-  return db
+  const result = await db
     .delete(shelfItems)
     .where(and(eq(shelfItems.shelfId, shelfId), eq(shelfItems.workId, workId)))
+    .returning()
+
+  return result.length > 0
 }
 
 /**
@@ -166,4 +217,32 @@ export async function toggleShelfLike(shelfId: string) {
   } else {
     await upsertShelfLike(shelfId)
   }
+}
+
+/**
+ * Get user shelves with their items for efficient client-side filtering
+ * Returns shelves with their items so the client can check if a book is in a shelf
+ */
+export async function getUserShelvesWithItems(shelfNames?: DefaultShelves[]) {
+  const userId = await getAuthenticatedUserId()
+
+  // Get all shelves with the given names and their items
+  const userShelves = await db.query.shelves.findMany({
+    where: shelfNames
+      ? and(eq(shelves.userId, userId), inArray(shelves.name, shelfNames))
+      : eq(shelves.userId, userId),
+    with: {
+      items: {
+        columns: {
+          workId: true
+        }
+      }
+    },
+    columns: {
+      id: true,
+      name: true
+    }
+  })
+
+  return userShelves
 }
