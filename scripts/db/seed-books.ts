@@ -61,6 +61,15 @@ const booksToSeed: Record<string, string[]> = {
   ]
 }
 
+// https://covers.openlibrary.org/a/$key/$value-$size.jpg
+// size can be one of S, M and L for small, medium and large respectively.
+//
+// For example the following is the photograph of Donald E. Knuth from the Open Library.
+// https://covers.openlibrary.org/a/olid/OL229501A-S.jpg
+const getAuthorPhotoUrl = (authorId: string, size: 'S' | 'M' | 'L' = 'S') => {
+  return `https://covers.openlibrary.org/a/olid/${authorId}-${size}.jpg`
+}
+
 const fetchBook = async (isbn: string) => {
   const info = await IsbnFetch.combined(isbn)
   return info
@@ -115,7 +124,7 @@ const main = async () => {
         birthDate: parseDate(authorData.birth_date),
         deathDate: parseDate(authorData.death_date),
         photoUrl: authorData.photos?.[0]
-          ? `https://covers.openlibrary.org/a/id/${authorData.photos[0]}-L.jpg`
+          ? getAuthorPhotoUrl(authorId, 'L')
           : null
       })
       .returning()
