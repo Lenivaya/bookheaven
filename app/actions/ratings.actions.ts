@@ -117,7 +117,7 @@ export async function deleteBookRating(bookEditionId: string) {
 /**
  * Get average rating for a book edition
  */
-export async function getBookAverageRating(bookEditionId: string) {
+export async function getBookEditionAverageRating(bookEditionId: string) {
   const [result] = await db
     .select({
       averageRating: avg(ratings.rating),
@@ -141,7 +141,9 @@ export async function getBookAverageRating(bookEditionId: string) {
  * Get average rating for a book work (across all editions)
  */
 export async function getWorkAverageRating(workId: string) {
-  const [result] = await db
+  const [
+    { averageRating, totalRatings } = { averageRating: 0, totalRatings: 0 }
+  ] = await db
     .select({
       averageRating: avg(ratings.rating),
       totalRatings: count(ratings.id)
@@ -150,12 +152,31 @@ export async function getWorkAverageRating(workId: string) {
     .where(eq(ratings.workId, workId))
     .groupBy(ratings.workId)
 
-  if (isNone(result)) {
-    return { averageRating: 0, totalRatings: 0 }
-  }
-
   return {
-    averageRating: Number(result.averageRating) || 0,
-    totalRatings: Number(result.totalRatings) || 0
+    averageRating,
+    totalRatings
   }
+}
+
+/**
+ * Server actions to get ratings distribution for a book by id
+ */
+export async function getBookRatingsDistribution(id: string) {
+  const bookRatings = await db.query.ratings.findMany({
+    where: eq(ratings.workId, id)
+  })
+  const distribution = bookRatings.reduce<Record<RatingValue, number>>(
+    (acc, rating) => {
+      acc[rating.rating] = acc[rating.rating] + 1
+      return acc
+    },
+    {
+      1: 0,
+      2: 0,
+      3: 0,
+      4: 0,
+      5: 0
+    }
+  )
+  return distribution
 }

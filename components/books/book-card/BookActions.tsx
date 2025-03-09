@@ -1,52 +1,45 @@
 'use client'
 
-import { match } from 'ts-pattern'
-import { useState, useMemo } from 'react'
 import {
-  Bookmark,
-  BookOpen,
-  BookMarked,
-  BookCheck,
-  BookX,
-  X
-} from 'lucide-react'
-import { DefaultShelves } from '@/app/actions/bookShelves.actions'
+  deleteShelfItem,
+  getUserShelvesWithItems,
+  upsertShelfItemWithShelfName
+} from '@/app/actions/bookShelves.actions'
+import {
+  deleteBookRating,
+  getBookEditionAverageRating,
+  getUserRating,
+  upsertBookRating
+} from '@/app/actions/ratings.actions'
 import { Button } from '@/components/ui/button'
+import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger
 } from '@/components/ui/popover'
-import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
+import { RatingValue } from '@/db/schema/ratings.schema'
+import { DEFAULT_SYSTEM_SHELVES, DefaultShelves } from '@/lib/constants'
 import { cn } from '@/lib/utils'
-import { BookRating } from './BookRating'
-import { toast } from 'sonner'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  getUserRating,
-  upsertBookRating,
-  deleteBookRating,
-  getBookAverageRating
-} from '@/app/actions/ratings.actions'
-import {
-  upsertShelfItemWithShelfName,
-  deleteShelfItem,
-  getUserShelvesWithItems
-} from '@/app/actions/bookShelves.actions'
-import { RatingValue } from '@/db/schema/ratings.schema'
-
-export const AVAILABLE_SYSTEM_SHELVES: DefaultShelves[] = [
-  'Want to Read',
-  'Currently Reading',
-  'Read',
-  'Did Not Finish'
-]
+  BookCheck,
+  Bookmark,
+  BookMarked,
+  BookOpen,
+  BookX,
+  X
+} from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
+import { match } from 'ts-pattern'
+import { BookRating } from './BookRating'
 
 interface BookActionsProps {
   bookId: string
   editionId: string
   bookTitle: string
-  currentShelf?: DefaultShelves | null
+  currentShelf?: DefaultShelves[] | null
 }
 
 export function BookActions({
@@ -59,7 +52,7 @@ export function BookActions({
 
   const { data: userShelves, isLoading: isShelvesLoading } = useQuery({
     queryKey: ['userShelves'],
-    queryFn: () => getUserShelvesWithItems(AVAILABLE_SYSTEM_SHELVES),
+    queryFn: () => getUserShelvesWithItems(DEFAULT_SYSTEM_SHELVES),
     refetchOnWindowFocus: false,
     staleTime: 5 * 60 * 1000
   })
@@ -85,7 +78,7 @@ export function BookActions({
 
   const { data: averageRating } = useQuery({
     queryKey: ['averageRating', editionId],
-    queryFn: () => getBookAverageRating(editionId),
+    queryFn: () => getBookEditionAverageRating(editionId),
     refetchOnWindowFocus: false
   })
 
@@ -240,7 +233,7 @@ export function BookActions({
 
         <div className='px-1 py-2'>
           <div className='space-y-1 px-2'>
-            {AVAILABLE_SYSTEM_SHELVES.map((shelf) => (
+            {DEFAULT_SYSTEM_SHELVES.map((shelf) => (
               <Button
                 key={shelf}
                 variant={currentShelf === shelf ? 'default' : 'ghost'}

@@ -13,12 +13,7 @@ import { auth } from '@clerk/nextjs/server'
 import { and, eq, inArray, or } from 'drizzle-orm'
 import { z } from 'zod'
 import { getAuthenticatedUserId } from './actions.helpers'
-
-export type DefaultShelves =
-  | 'Want to Read'
-  | 'Currently Reading'
-  | 'Read'
-  | 'Did Not Finish'
+import { DefaultShelves } from '@/lib/constants'
 
 /**
  * Ensure the authenticated user is the author of the shelf

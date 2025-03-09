@@ -88,7 +88,7 @@ export default function BookCard({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Link href={`/books/${book.id}`}>
+                  <Link href={`/books/${edition.id}`}>
                     <CardTitle className='line-clamp-2 text-base font-semibold leading-tight tracking-tight group-hover:text-primary transition-colors duration-200 dark:text-slate-50'>
                       {book.title}
                     </CardTitle>
