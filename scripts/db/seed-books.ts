@@ -250,7 +250,8 @@ const main = async () => {
           { weight: 0.15, value: f.default({ defaultValue: 3 }) },
           { weight: 0.1, value: f.default({ defaultValue: 2 }) },
           { weight: 0.05, value: f.default({ defaultValue: 1 }) }
-        ])
+        ]),
+        deletedAt: f.default({ defaultValue: null })
       }
     }
   }))

@@ -3,10 +3,10 @@
 import { db } from '@/db'
 import { ratings, reviewCreateSchema, reviewLikes, reviews } from '@/db/schema'
 import { isSome } from '@/lib/types'
-import { and, eq, getTableColumns, sql } from 'drizzle-orm'
+import { and, eq, getTableColumns, isNull, sql } from 'drizzle-orm'
+import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { getAuthenticatedUserId } from './actions.helpers'
-import { revalidatePath } from 'next/cache'
 
 /**
  * Get reviews for a book edition
@@ -21,16 +21,25 @@ export async function getReviews(
     offset: 0
   }
 ) {
-  const result = db
+  const result = await db
     .select({
       review: getTableColumns(reviews),
       rating: getTableColumns(ratings)
     })
     .from(reviews)
-    .leftJoin(ratings, eq(reviews.editionId, ratings.editionId))
-    .where(eq(reviews.editionId, bookEditionId))
+    .leftJoin(
+      ratings,
+      and(
+        eq(reviews.editionId, ratings.editionId),
+        eq(reviews.userId, ratings.userId)
+      )
+    )
+    .where(
+      and(eq(reviews.editionId, bookEditionId), isNull(reviews.deleted_at))
+    )
     .limit(options.limit)
     .offset(options.offset)
+  console.log(result)
 
   return result
 }
