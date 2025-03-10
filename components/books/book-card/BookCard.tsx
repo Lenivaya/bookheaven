@@ -129,6 +129,5 @@ export default function BookCard({
     </Card>
   )
 }
-
 // Separate file for client components
 import { ClientPriceAndBuy } from './ClientPriceAndBuy'

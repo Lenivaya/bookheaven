@@ -105,28 +105,28 @@ export default async function Home() {
       </section>
 
       {/* Featured Books Section */}
-      <section className='w-full py-12 md:py-24 bg-muted/50'>
-        <div className='container mx-auto px-4 md:px-6 max-w-6xl'>
-          <div className='flex flex-col items-center justify-center space-y-4 text-center'>
-            <div className='space-y-2'>
+      <section className='w-full py-12 md:py-24 lg:py-32 bg-muted/50'>
+        <div className='container mx-auto px-4 md:px-6'>
+          <div className='flex flex-col items-center justify-center space-y-6 text-center mb-8'>
+            <div className='space-y-3'>
               <h2 className='text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl'>
                 Featured Books
               </h2>
-              <p className='max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed'>
+              <p className='max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-xl/relaxed'>
                 Discover our handpicked selection of must-read books this
                 season.
               </p>
             </div>
           </div>
           <div className='py-8'>
-            <Carousel className='w-full max-w-5xl mx-auto'>
-              <CarouselContent>
+            <Carousel className='w-full mx-auto'>
+              <CarouselContent className='-ml-4 md:-ml-6'>
                 {featuredBooks.map((book) => (
                   <CarouselItem
                     key={book.edition.id}
-                    className='md:basis-1/2 lg:basis-1/3'
+                    className='pl-4 md:pl-6 sm:basis-1/2 md:basis-1/3'
                   >
-                    <div className='p-1'>
+                    <div className='h-full'>
                       <BookCard
                         book={book.work}
                         edition={book.edition}
@@ -137,11 +137,11 @@ export default async function Home() {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className='left-0' />
-              <CarouselNext className='right-0' />
+              <CarouselPrevious className='left-2 md:left-4 lg:left-8 opacity-70 hover:opacity-100' />
+              <CarouselNext className='right-2 md:right-4 lg:right-8 opacity-70 hover:opacity-100' />
             </Carousel>
           </div>
-          <div className='flex justify-center mt-8'>
+          <div className='flex justify-center mt-10'>
             <Link href='/books'>
               <Button variant='outline' size='lg' className='gap-1.5'>
                 View All Books
