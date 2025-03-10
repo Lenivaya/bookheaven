@@ -14,7 +14,8 @@ export const env = createEnv({
       .enum(['development', 'production', 'test'])
       .default('development'),
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
-    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1)
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1),
+    NEXT_PUBLIC_APP_URL: z.string().min(1).default('http://localhost:3000')
   },
   // If you're using Next.js < 13.4.4, you'll need to specify the runtimeEnv manually
   // runtimeEnv: {
@@ -28,7 +29,8 @@ export const env = createEnv({
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
-      process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+      process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL
   },
   extends: [vercel()]
 })
