@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge'
 import {
   Card,
   CardContent,
@@ -18,14 +17,10 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip'
 import { Author, BookEdition, BookWork, Tag } from '@/db/schema'
-import { Protect } from '@clerk/nextjs'
 import Link from 'next/link'
-import { BookActions } from './BookActions'
 import { BookCardAuthors } from './BookCardAuthors'
-import { BookCardBuyButton } from './BookCardBuyButton'
-import { BookCoverImage } from './BookCoverImage'
-import { BookPriceDisplay } from './BookPriceDisplay'
 import { BookTagsList } from './BookTagsList'
+import { ClientBookCover } from './ClientBookCover'
 
 interface BookCardProps {
   book: BookWork
@@ -45,36 +40,14 @@ export default function BookCard({
       <div className='grid grid-cols-[120px_1fr] gap-3 p-3'>
         {/* Book cover on the left */}
         <div className='relative h-[180px] w-[120px] overflow-hidden rounded-md shadow-sm transition-shadow duration-300 group-hover:shadow-md group'>
-          <Link
-            href={`/books/${book.id}`}
-            className='block h-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
-          >
-            <BookCoverImage
-              thumbnailUrl={edition.thumbnailUrl}
-              title={book.title}
-              bookEditionId={edition.id}
-            />
-          </Link>
-
-          {/* Book Actions Component */}
-          <Protect>
-            <BookActions
-              bookId={book.id}
-              bookTitle={book.title}
-              editionId={edition.id}
-            />
-          </Protect>
-
-          {edition.isOnSale && (
-            <div className='absolute right-0 top-0 z-10'>
-              <Badge
-                variant='destructive'
-                className='rounded-none rounded-bl-sm px-1.5 py-0.5 text-[10px] font-medium'
-              >
-                Sale
-              </Badge>
-            </div>
-          )}
+          {/* Client component for interactive book cover */}
+          <ClientBookCover
+            thumbnailUrl={edition.thumbnailUrl}
+            title={book.title}
+            bookId={book.id}
+            editionId={edition.id}
+            isOnSale={edition.isOnSale ?? false}
+          />
         </div>
 
         {/* Book details on the right */}
@@ -136,13 +109,11 @@ export default function BookCard({
 
             <div className='flex w-full items-center justify-between mt-1'>
               <div className='flex items-center gap-2.5'>
-                <BookPriceDisplay
+                <ClientPriceAndBuy
                   price={edition.price}
                   salePrice={edition.salePrice}
                   isOnSale={edition.isOnSale ?? false}
                 />
-
-                <BookCardBuyButton />
               </div>
 
               <div className='text-xs text-muted-foreground dark:text-slate-500'>
@@ -158,3 +129,6 @@ export default function BookCard({
     </Card>
   )
 }
+
+// Separate file for client components
+import { ClientPriceAndBuy } from './ClientPriceAndBuy'
