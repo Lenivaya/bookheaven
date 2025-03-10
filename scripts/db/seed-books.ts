@@ -62,6 +62,18 @@ const booksToSeed: Record<string, string[]> = {
   OL5765986A: [
     '9780374134754', // Day of the Oprichnik, by Vladimir Sorokin
     '9785933810049' // Roman, by Vladimir Sorokin
+  ],
+  // Robert M. Sapolsky
+  OL10273083A: [
+    '9780525560975' // Determined: A Science of Life without Free Will
+  ],
+  // Ernest Hemingway
+  OL13640A: [
+    '9780684830490', // The Old Man and the Sea, by Ernest Hemingway
+    '9780099910107', // A Farewell to Arms, by Ernest Hemingway
+    '9780099908609', // For Whom the Bell Tolls, by Ernest Hemingway
+    '9781416591313', // A Moveable Feast, by Ernest Hemingway
+    '9780099908500' // The Sun Also Rises, by Ernest Hemingway
   ]
 }
 
