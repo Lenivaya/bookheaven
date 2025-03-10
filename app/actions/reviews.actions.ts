@@ -29,6 +29,19 @@ export async function getReviews(
 }
 
 /**
+ * Has reviewed this book edition
+ */
+export async function hasReviewedBookEdition(editionId: string) {
+  const userId = await getAuthenticatedUserId()
+  return isSome(
+    await db.query.reviews.findFirst({
+      where: (reviews, { eq, and }) =>
+        and(eq(reviews.editionId, editionId), eq(reviews.userId, userId))
+    })
+  )
+}
+
+/**
  * Upsert a review
  */
 export async function upsertReview(

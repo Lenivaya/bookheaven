@@ -1,19 +1,26 @@
 import * as React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { getReviews } from '@/app/actions/reviews.actions'
+import {
+  getReviews,
+  hasReviewedBookEdition
+} from '@/app/actions/reviews.actions'
 import {
   ReviewCard,
   ReviewCardSkeleton
 } from '@/components/reviews/review-card/ReviewCard'
 import { ReviewForm } from '@/components/reviews/ReviewForm'
 import { Separator } from '@/components/ui/separator'
+import { Protect } from '@clerk/nextjs'
 
 interface BookReviewsProps {
   editionId: string
 }
 
 export default async function BookReviews({ editionId }: BookReviewsProps) {
-  const reviews = await getReviews(editionId)
+  const [reviews, hasReviewed] = await Promise.all([
+    getReviews(editionId),
+    hasReviewedBookEdition(editionId)
+  ])
 
   return (
     <Card>
@@ -21,11 +28,13 @@ export default async function BookReviews({ editionId }: BookReviewsProps) {
         <CardTitle>Reviews</CardTitle>
       </CardHeader>
       <CardContent className='space-y-6'>
-        <ReviewForm editionId={editionId} />
+        <Protect>
+          {hasReviewed ? null : <ReviewForm editionId={editionId} />}
+          <Separator className='my-6' />
+        </Protect>
 
         {reviews.length > 0 && (
           <>
-            <Separator className='my-6' />
             <div className='space-y-6'>
               {reviews.map((review) => (
                 <ReviewCard key={review.id} review={review} />
