@@ -9,7 +9,7 @@ import {
   uuid
 } from 'drizzle-orm/pg-core'
 import { bookEditions } from './books.schema'
-import { timestamps } from './columns.helpers'
+import { createInsertSchema, timestamps } from './columns.helpers'
 
 export const reviews = pgTable(
   'reviews',
@@ -55,3 +55,7 @@ export const reviewLikesRelations = relations(reviewLikes, ({ one }) => ({
     references: [reviews.id]
   })
 }))
+
+export type Review = typeof reviews.$inferSelect
+
+export const reviewCreateSchema = createInsertSchema(reviews)
