@@ -2,9 +2,8 @@
 
 import * as React from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { getUser } from '@/app/actions/users.actions'
-import { useQuery } from '@tanstack/react-query'
 import { formatDistanceToNow } from 'date-fns'
+import { useUser } from '@/hooks/use-user'
 
 interface ReviewUserInfoProps {
   userId: string
@@ -12,10 +11,7 @@ interface ReviewUserInfoProps {
 }
 
 export function ReviewUserInfo({ userId, createdAt }: ReviewUserInfoProps) {
-  const { data: user, isLoading } = useQuery({
-    queryKey: ['user', userId],
-    queryFn: () => getUser(userId)
-  })
+  const { data: user, isLoading } = useUser(userId)
 
   if (isLoading || !user) {
     return (
