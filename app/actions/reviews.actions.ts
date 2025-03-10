@@ -6,6 +6,7 @@ import { isSome } from '@/lib/types'
 import { and, eq, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { getAuthenticatedUserId } from './actions.helpers'
+import { revalidatePath } from 'next/cache'
 
 /**
  * Get reviews for a book edition
@@ -38,6 +39,9 @@ export async function upsertReview(
     userId: await getAuthenticatedUserId()
   })
   await db.insert(reviews).values(values).onConflictDoNothing()
+
+  // Revalidate the book detail page to show the new review
+  revalidatePath(`/books/${review.editionId}`)
 }
 
 /**
@@ -80,6 +84,12 @@ export async function toggleReviewLike(reviewId: string) {
     await unlikeReview(reviewId)
   } else {
     await upserBookLike(reviewId)
+  }
+
+  // Get the review to find its editionId for revalidation
+  const review = await getReviewById(reviewId)
+  if (review) {
+    revalidatePath(`/books/${review.editionId}`)
   }
 }
 

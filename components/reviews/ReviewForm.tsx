@@ -34,10 +34,9 @@ type ReviewFormValues = z.infer<typeof reviewFormSchema>
 
 interface ReviewFormProps {
   editionId: string
-  onSuccess?: () => void
 }
 
-export function ReviewForm({ editionId, onSuccess }: ReviewFormProps) {
+export function ReviewForm({ editionId }: ReviewFormProps) {
   const [isPending, startTransition] = useTransition()
 
   const form = useForm<ReviewFormValues>({
@@ -56,7 +55,6 @@ export function ReviewForm({ editionId, onSuccess }: ReviewFormProps) {
         })
         form.reset()
         toast.success('Review submitted successfully')
-        onSuccess?.()
       } catch (error: unknown) {
         console.error('Failed to submit review:', error)
         toast.error('Failed to submit review')

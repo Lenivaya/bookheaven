@@ -1,29 +1,19 @@
-'use client'
-
 import * as React from 'react'
-import { ReviewForm } from '@/components/reviews/ReviewForm'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { getReviews } from '@/app/actions/reviews.actions'
 import {
   ReviewCard,
   ReviewCardSkeleton
 } from '@/components/reviews/review-card/ReviewCard'
-import { getReviews } from '@/app/actions/reviews.actions'
-import { useQuery } from '@tanstack/react-query'
+import { ReviewForm } from '@/components/reviews/ReviewForm'
 import { Separator } from '@/components/ui/separator'
 
 interface BookReviewsProps {
   editionId: string
 }
 
-export default function BookReviews({ editionId }: BookReviewsProps) {
-  const { data: reviews, refetch } = useQuery({
-    queryKey: ['reviews', editionId],
-    queryFn: () => getReviews(editionId)
-  })
-
-  const handleReviewSuccess = () => {
-    refetch()
-  }
+export default async function BookReviews({ editionId }: BookReviewsProps) {
+  const reviews = await getReviews(editionId)
 
   return (
     <Card>
@@ -31,9 +21,9 @@ export default function BookReviews({ editionId }: BookReviewsProps) {
         <CardTitle>Reviews</CardTitle>
       </CardHeader>
       <CardContent className='space-y-6'>
-        <ReviewForm editionId={editionId} onSuccess={handleReviewSuccess} />
+        <ReviewForm editionId={editionId} />
 
-        {reviews && reviews.length > 0 && (
+        {reviews.length > 0 && (
           <>
             <Separator className='my-6' />
             <div className='space-y-6'>
