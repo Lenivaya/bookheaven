@@ -8,6 +8,7 @@ import BookInfo from '@/components/books/book-detail/BookInfo'
 import BookRatings from '@/components/books/book-detail/BookRatings'
 import BookActions from '@/components/books/book-detail/BookActions'
 import BookCover from '@/components/books/book-detail/BookCover'
+import BookReviews from '@/components/books/book-detail/BookReviews'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface BookPageProps {
@@ -69,6 +70,13 @@ export default async function BookPage({ params }: BookPageProps) {
             <Suspense fallback={<BookRatingsSkeleton />}>
               <BookRatings workId={work.id} />
             </Suspense>
+
+            <Separator className='my-6' />
+
+            {/* Reviews section */}
+            <Suspense fallback={<BookReviewsSkeleton />}>
+              <BookReviews editionId={edition.id} />
+            </Suspense>
           </div>
         </div>
       </div>
@@ -102,6 +110,16 @@ function BookRatingsSkeleton() {
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+// Skeleton loader for the BookReviews component
+function BookReviewsSkeleton() {
+  return (
+    <div className='space-y-4'>
+      <Skeleton className='h-8 w-40' />
+      <Skeleton className='h-32 w-full' />
     </div>
   )
 }

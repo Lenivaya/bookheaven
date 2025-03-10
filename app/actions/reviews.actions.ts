@@ -37,7 +37,7 @@ export async function upsertReview(
     ...review,
     userId: await getAuthenticatedUserId()
   })
-  return db.insert(reviews).values(values).onConflictDoNothing()
+  await db.insert(reviews).values(values).onConflictDoNothing()
 }
 
 /**
