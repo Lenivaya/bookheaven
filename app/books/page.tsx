@@ -12,7 +12,7 @@ interface BooksPageProps {
   searchParams: Promise<SearchParams>
 }
 
-const DEFAULT_PAGE_SIZE = 11
+const DEFAULT_PAGE_SIZE = 9
 
 // Separate component for the book list to allow for Suspense
 async function BooksList({

@@ -36,6 +36,19 @@ type Book = {
   tags: Tag[]
 }
 
+type FetchedBookRelations = BookEdition & {
+  work: BookWork & {
+    workToAuthors: WorkToAuthor &
+      {
+        author: Author
+      }[]
+    workToTags: WorkToTag &
+      {
+        tag: Tag
+      }[]
+  }
+}
+
 /**
  * Server action to fetch books with multi-criteria search at the database level
  */
@@ -55,7 +68,7 @@ export async function getBooks(
     authorsIds: [],
     bookWorksIds: []
   }
-) {
+): Promise<{ books: Book[]; totalCount: number; pageCount: number }> {
   const filters: SQL[] = []
 
   if (options.search) {
@@ -85,8 +98,10 @@ export async function getBooks(
     filters.push(inArray(bookWorks.id, options.bookWorksIds))
   }
 
-  const getBooks = db
-    .select()
+  const getFilteredBooks = db
+    .selectDistinct({
+      id: bookEditions.id
+    })
     .from(bookEditions)
     .innerJoin(bookWorks, eq(bookEditions.workId, bookWorks.id))
     .leftJoin(workToAuthors, eq(bookWorks.id, workToAuthors.workId))
@@ -94,8 +109,6 @@ export async function getBooks(
     .leftJoin(workToTags, eq(bookWorks.id, workToTags.workId))
     .leftJoin(tags, eq(workToTags.tagId, tags.id))
     .where(and(...filters))
-    .limit(options.limit)
-    .offset(options.offset)
   const getTotalCount = db
     .select({
       totalCount: countDistinct(bookEditions.id)
@@ -108,33 +121,42 @@ export async function getBooks(
     .leftJoin(tags, eq(workToTags.tagId, tags.id))
     .where(and(...filters))
 
-  const [books, [{ totalCount }]] = await Promise.all([getBooks, getTotalCount])
+  const getBookFinal = db.query.bookEditions.findMany({
+    where: (bookEditions, { inArray }) =>
+      inArray(bookEditions.id, getFilteredBooks),
+    limit: options.limit,
+    offset: options.offset,
+    with: {
+      work: {
+        with: {
+          workToAuthors: {
+            with: {
+              author: true
+            }
+          },
+          workToTags: {
+            with: {
+              tag: true
+            }
+          }
+        }
+      }
+    }
+  })
 
-  const result = books.reduce<Record<string, Book>>((acc, row) => {
-    const { book_editions, book_works, authors, tags } = row
-    if (!acc[book_works.id]) {
-      acc[book_works.id] = {
-        edition: book_editions,
-        work: book_works,
-        authors: [],
-        tags: []
-      }
-    }
-    if (authors) {
-      if (!acc[book_works.id].authors.some((a) => a.id === authors.id)) {
-        acc[book_works.id].authors.push(authors)
-      }
-    }
-    if (tags) {
-      if (!acc[book_works.id].tags.some((t) => t.id === tags.id)) {
-        acc[book_works.id].tags.push(tags)
-      }
-    }
-    return acc
-  }, {})
+  const [books, [{ totalCount }]] = await Promise.all([
+    getBookFinal,
+    getTotalCount
+  ])
 
   return {
-    books: Object.values(result),
+    // books: [],
+    books: (books as FetchedBookRelations[]).map((book) => ({
+      edition: book,
+      work: book.work!,
+      authors: book.work.workToAuthors.map(({ author }) => author),
+      tags: book.work.workToTags.map(({ tag }) => tag)
+    })),
     totalCount,
     pageCount: Math.ceil(Number(totalCount) / options.limit)
   }
