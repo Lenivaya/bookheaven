@@ -1,5 +1,6 @@
 import chalk from 'chalk'
 import 'dotenv/config'
+import { faker } from '@faker-js/faker'
 // import isbn from 'node-isbn'
 import { db } from '@/db'
 import { reviews } from '@/db/schema'
@@ -178,8 +179,8 @@ const main = async () => {
           pageCount: book.pageCount,
           thumbnailUrl: book.thumbnail,
           smallThumbnailUrl: book.thumbnailSmall,
-          price: '9.99',
-          stockQuantity: 100
+          price: faker.commerce.price({ min: 9.99, max: 49.99, dec: 2 }),
+          stockQuantity: faker.number.int({ min: 10, max: 200 })
         })
         .returning()
 
