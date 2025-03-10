@@ -2,12 +2,10 @@
 
 import { db } from '@/db'
 import { bookEditions } from '@/db/schema'
-import { ratings } from '@/db/schema/ratings.schema'
-import { mergeManyIfs } from '@/lib/objects'
+import { ratings, RatingValue } from '@/db/schema/ratings.schema'
 import { isNone, isSome } from '@/lib/types'
 import { and, avg, count, eq } from 'drizzle-orm'
 import { getAuthenticatedUserId } from './actions.helpers'
-import { RatingValue } from '@/db/schema/ratings.schema'
 
 /**
  * Get a user's rating for a book edition
@@ -46,52 +44,26 @@ export async function toggleBookRating(
 }
 
 /**
- * Get work ID from book edition ID
- */
-async function getWorkIdFromEdition(bookEditionId: string) {
-  const edition = await db.query.bookEditions.findFirst({
-    where: eq(bookEditions.id, bookEditionId),
-    columns: {
-      workId: true
-    }
-  })
-
-  if (!edition) {
-    throw new Error(`Book edition with ID ${bookEditionId} not found`)
-  }
-
-  return edition.workId
-}
-
-/**
  * Rate a book with a specific rating value
  */
 export async function upsertBookRating(
   bookEditionId: string,
-  ratingValue: RatingValue,
-  review?: string
+  ratingValue: RatingValue
 ) {
-  console.log('upsertBookRating', bookEditionId, ratingValue, review)
   const userId = await getAuthenticatedUserId()
-  const workId = await getWorkIdFromEdition(bookEditionId)
 
   const result = await db
     .insert(ratings)
     .values({
       editionId: bookEditionId,
-      workId,
       userId,
-      rating: ratingValue,
-      review
+      rating: ratingValue
     })
     .onConflictDoUpdate({
-      target: [ratings.userId, ratings.workId, ratings.editionId],
-      set: mergeManyIfs(
-        {
-          rating: ratingValue
-        },
-        [[isSome(review), { review }]]
-      )
+      target: [ratings.userId, ratings.editionId],
+      set: {
+        rating: ratingValue
+      }
     })
     .returning()
 
@@ -149,8 +121,9 @@ export async function getWorkAverageRating(workId: string) {
       totalRatings: count(ratings.id)
     })
     .from(ratings)
-    .where(eq(ratings.workId, workId))
-    .groupBy(ratings.workId)
+    .innerJoin(bookEditions, eq(ratings.editionId, bookEditions.id))
+    .where(eq(bookEditions.workId, workId))
+    .groupBy(bookEditions.workId)
 
   return {
     averageRating,
@@ -161,10 +134,15 @@ export async function getWorkAverageRating(workId: string) {
 /**
  * Server actions to get ratings distribution for a book by id
  */
-export async function getBookRatingsDistribution(id: string) {
-  const bookRatings = await db.query.ratings.findMany({
-    where: eq(ratings.workId, id)
-  })
+export async function getBookRatingsDistribution(workId: string) {
+  const bookRatings = await db
+    .select({
+      rating: ratings.rating
+    })
+    .from(ratings)
+    .innerJoin(bookEditions, eq(ratings.editionId, bookEditions.id))
+    .where(eq(bookEditions.workId, workId))
+
   const distribution = bookRatings.reduce<Record<RatingValue, number>>(
     (acc, rating) => {
       acc[rating.rating] = acc[rating.rating] + 1

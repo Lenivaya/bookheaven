@@ -1,10 +1,8 @@
-import 'dotenv/config'
 import chalk from 'chalk'
+import 'dotenv/config'
 // import isbn from 'node-isbn'
-import IsbnFetch from 'isbn-fetch'
-import createClient from 'openapi-fetch'
-import type { paths } from 'open-library-api'
 import { db } from '@/db'
+import { reviews } from '@/db/schema'
 import {
   authors,
   bookEditions,
@@ -16,6 +14,9 @@ import {
 import { ratings } from '@/db/schema/ratings.schema'
 import { Option } from '@/lib/types'
 import { seed } from 'drizzle-seed'
+import IsbnFetch from 'isbn-fetch'
+import type { paths } from 'open-library-api'
+import createClient from 'openapi-fetch'
 
 const openLibraryClient = createClient<paths>({
   baseUrl: 'https://openlibrary.org/'
@@ -106,13 +107,15 @@ const bookData: {
 
 const main = async () => {
   // Clear existing data
-  await db.delete(workToTags)
-  await db.delete(workToAuthors)
+  // await reset(db, { schema })
   await db.delete(bookEditions)
   await db.delete(bookWorks)
   await db.delete(authors)
   await db.delete(tags)
   await db.delete(ratings)
+  await db.delete(reviews)
+  await db.delete(workToAuthors)
+  await db.delete(workToTags)
 
   for (const [authorId, books] of Object.entries(booksToSeed)) {
     const authorResponse = await fetchAuthor(authorId)
@@ -213,73 +216,22 @@ const main = async () => {
   // Now use drizzle-seed to generate ratings
   console.log(chalk.yellow('Generating ratings using drizzle-seed...'))
 
-  // Generate 50 random user IDs
-  const userIds = Array.from({ length: 50 }, (_, i) => `user_${i + 1}`)
-
-  // Create positive review templates
-  const positiveReviews = [
-    'I really enjoyed this book. Highly recommended!',
-    "This was a fantastic read. Couldn't put it down.",
-    "One of the best books I've read this year.",
-    "The author's writing style is exceptional.",
-    'A masterpiece that will stand the test of time.'
-  ]
-
-  // Create neutral review templates
-  const neutralReviews = [
-    'This book was decent, but not exceptional.',
-    'An interesting read, though it dragged in some parts.',
-    'Had some good moments, but also some flaws.',
-    "Worth reading, but don't expect to be blown away.",
-    "A solid book, but not the author's best work."
-  ]
-
-  // Create negative review templates
-  const negativeReviews = [
-    'I struggled to finish this book.',
-    'Not what I expected. Disappointing overall.',
-    'The plot was confusing and the characters underdeveloped.',
-    "I wouldn't recommend this to others.",
-    'Had potential but failed to deliver.'
-  ]
+  // Generate 50 random user IDs to simulated some activity
+  const userIds = Array.from(
+    { length: bookData.length * 20 },
+    (_, i) => `user_${i + 1}`
+  )
 
   // Seed ratings using drizzle-seed
   await seed(db, { ratings }).refine((f) => ({
     ratings: {
-      count: bookData.length * 10, // Average 10 ratings per book
+      count: bookData.length * 20,
       columns: {
-        workId: f.valuesFromArray({
-          values: bookData.map((book) => book.workId)
+        editionId: f.valuesFromArray({
+          values: bookData.map((book) => book.editionId)
         }),
-        editionId: f.weightedRandom([
-          {
-            weight: 0.7,
-            value: f.valuesFromArray({
-              values: bookData.map((book) => book.editionId)
-            })
-          },
-          { weight: 0.3, value: f.default({ defaultValue: null }) }
-        ]),
-        userId: f.valuesFromArray({ values: userIds }),
-        rating: f.int({ minValue: 1, maxValue: 5 }),
-        review: f.weightedRandom([
-          {
-            weight: 0.3,
-            value: f.default({ defaultValue: null })
-          },
-          {
-            weight: 0.3,
-            value: f.valuesFromArray({ values: positiveReviews })
-          },
-          {
-            weight: 0.2,
-            value: f.valuesFromArray({ values: neutralReviews })
-          },
-          {
-            weight: 0.2,
-            value: f.valuesFromArray({ values: negativeReviews })
-          }
-        ])
+        userId: f.valuesFromArray({ values: userIds, isUnique: true }),
+        rating: f.int({ minValue: 1, maxValue: 5 })
       }
     }
   }))
