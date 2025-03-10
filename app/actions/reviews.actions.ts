@@ -51,7 +51,15 @@ export async function upsertReview(
     ...review,
     userId: await getAuthenticatedUserId()
   })
-  await db.insert(reviews).values(values).onConflictDoNothing()
+  await db
+    .insert(reviews)
+    .values(values)
+    .onConflictDoUpdate({
+      target: [reviews.id],
+      set: {
+        ...values
+      }
+    })
 
   // Revalidate the book detail page to show the new review
   revalidatePath(`/books/${review.editionId}`)
@@ -62,9 +70,14 @@ export async function upsertReview(
  */
 export async function deleteReview(reviewId: string) {
   const userId = await getAuthenticatedUserId()
-  return db
+  const [review] = await db
     .delete(reviews)
     .where(and(eq(reviews.id, reviewId), eq(reviews.userId, userId)))
+    .returning()
+
+  if (review) {
+    revalidatePath(`/books/${review.editionId}`)
+  }
 }
 
 /**

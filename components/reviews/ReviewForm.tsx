@@ -34,16 +34,25 @@ type ReviewFormValues = z.infer<typeof reviewFormSchema>
 
 interface ReviewFormProps {
   editionId: string
+  reviewId?: string
+  defaultValues?: Partial<ReviewFormValues>
+  onSuccess?: () => void
+  onCancel?: () => void
 }
 
-export function ReviewForm({ editionId }: ReviewFormProps) {
+export function ReviewForm({
+  editionId,
+  reviewId,
+  defaultValues = { content: '' },
+  onSuccess,
+  onCancel
+}: ReviewFormProps) {
   const [isPending, startTransition] = useTransition()
+  const isEditing = Boolean(reviewId)
 
   const form = useForm<ReviewFormValues>({
     resolver: zodResolver(reviewFormSchema),
-    defaultValues: {
-      content: ''
-    }
+    defaultValues
   })
 
   function onSubmit(data: ReviewFormValues) {
@@ -51,13 +60,22 @@ export function ReviewForm({ editionId }: ReviewFormProps) {
       try {
         await upsertReview({
           content: data.content,
-          editionId
+          editionId,
+          ...(reviewId ? { id: reviewId } : {})
         })
         form.reset()
-        toast.success('Review submitted successfully')
+        toast.success(
+          isEditing
+            ? 'Review updated successfully'
+            : 'Review submitted successfully'
+        )
+        onSuccess?.()
       } catch (error: unknown) {
-        console.error('Failed to submit review:', error)
-        toast.error('Failed to submit review')
+        console.error(
+          `Failed to ${isEditing ? 'update' : 'submit'} review:`,
+          error
+        )
+        toast.error(`Failed to ${isEditing ? 'update' : 'submit'} review`)
       }
     })
   }
@@ -85,9 +103,22 @@ export function ReviewForm({ editionId }: ReviewFormProps) {
             </FormItem>
           )}
         />
-        <Button type='submit' disabled={isPending}>
-          {isPending ? 'Submitting...' : 'Submit Review'}
-        </Button>
+        <div className='flex gap-2 justify-end'>
+          {onCancel && (
+            <Button type='button' variant='outline' onClick={onCancel}>
+              Cancel
+            </Button>
+          )}
+          <Button type='submit' disabled={isPending}>
+            {isPending
+              ? isEditing
+                ? 'Updating...'
+                : 'Submitting...'
+              : isEditing
+                ? 'Update Review'
+                : 'Submit Review'}
+          </Button>
+        </div>
       </form>
     </Form>
   )
