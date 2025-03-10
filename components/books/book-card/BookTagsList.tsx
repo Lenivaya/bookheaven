@@ -10,7 +10,6 @@ import { bookSearchParamsSchema } from '@/app/books/searchParams'
 
 interface BookTagsListProps {
   tags: Tag[]
-  onTagClick?: (tagId: string) => void
 }
 
 // Function to generate a consistent color based on tag name
@@ -36,7 +35,7 @@ function getTagColor(tagName: string) {
   return colors[Math.abs(hash) % colors.length]
 }
 
-export function BookTagsList({ tags, onTagClick }: BookTagsListProps) {
+export function BookTagsList({ tags }: BookTagsListProps) {
   const [showAllTags, setShowAllTags] = useState(false)
 
   const [{ tags: queryTags }, setSearchParams] = useQueryStates(
@@ -62,7 +61,6 @@ export function BookTagsList({ tags, onTagClick }: BookTagsListProps) {
     } else {
       setSearchParams({ tags: [tagId, ...queryTags] })
     }
-    onTagClick?.(tagId)
   }
 
   // Dynamically adjust how many tags to show based on total count

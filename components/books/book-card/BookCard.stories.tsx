@@ -1,6 +1,6 @@
+import { Author, BookEdition, BookWork, Tag } from '@/db/schema'
 import type { Meta, StoryObj } from '@storybook/react'
 import BookCard from './BookCard'
-import { Author, BookEdition, BookWork, Tag } from '@/db/schema'
 
 const meta: Meta<typeof BookCard> = {
   title: 'Components/Books/BookCard',
@@ -15,11 +15,7 @@ const meta: Meta<typeof BookCard> = {
       </div>
     )
   ],
-  tags: ['autodocs'],
-  argTypes: {
-    onBuyClick: { action: 'buy clicked' },
-    onTagClick: { action: 'tag clicked' }
-  }
+  tags: ['autodocs']
 }
 
 export default meta
@@ -53,6 +49,7 @@ const mockEdition: BookEdition = {
   isOnSale: false,
   salePrice: null,
   stockQuantity: 100,
+  likesCount: 100,
   thumbnailUrl:
     'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1490528560i/4671.jpg',
   smallThumbnailUrl:
@@ -105,11 +102,6 @@ const mockTags: Tag[] = [
   }
 ]
 
-// Mock handlers
-const handleBuyClick = (id: string) =>
-  console.log(`Buy clicked for edition ${id}`)
-const handleTagClick = (id: string) => console.log(`Tag clicked: ${id}`)
-
 // Stories
 export const Default: Story = {
   args: {
@@ -125,9 +117,7 @@ export const WithActions: Story = {
     book: mockBook,
     edition: mockEdition,
     authors: mockAuthors,
-    tags: mockTags,
-    onBuyClick: handleBuyClick,
-    onTagClick: handleTagClick
+    tags: mockTags
   }
 }
 
@@ -140,8 +130,7 @@ export const OnSale: Story = {
       salePrice: '9.99'
     },
     authors: mockAuthors,
-    tags: mockTags,
-    onBuyClick: handleBuyClick
+    tags: mockTags
   }
 }
 
@@ -154,8 +143,7 @@ export const NoImage: Story = {
       smallThumbnailUrl: ''
     },
     authors: mockAuthors,
-    tags: mockTags,
-    onBuyClick: handleBuyClick
+    tags: mockTags
   }
 }
 
@@ -190,9 +178,7 @@ export const ManyTags: Story = {
         updated_at: new Date(),
         deleted_at: null
       }
-    ],
-    onBuyClick: handleBuyClick,
-    onTagClick: handleTagClick
+    ]
   }
 }
 
@@ -216,8 +202,7 @@ export const MultipleAuthors: Story = {
         deleted_at: null
       }
     ],
-    tags: mockTags,
-    onBuyClick: handleBuyClick
+    tags: mockTags
   }
 }
 
@@ -230,7 +215,6 @@ export const LongTitle: Story = {
     },
     edition: mockEdition,
     authors: mockAuthors,
-    tags: mockTags,
-    onBuyClick: handleBuyClick
+    tags: mockTags
   }
 }

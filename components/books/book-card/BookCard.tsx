@@ -1,4 +1,4 @@
-import { Author, BookEdition, BookWork, Tag } from '@/db/schema'
+import { Badge } from '@/components/ui/badge'
 import {
   Card,
   CardContent,
@@ -17,33 +17,28 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from '@/components/ui/tooltip'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import { BookCoverImage } from './BookCoverImage'
-import { BookTagsList } from './BookTagsList'
-import { BookPriceDisplay } from './BookPriceDisplay'
-import { ShoppingCart } from 'lucide-react'
-import { BookCardAuthors } from './BookCardAuthors'
-import { BookActions } from './BookActions'
+import { Author, BookEdition, BookWork, Tag } from '@/db/schema'
 import { Protect } from '@clerk/nextjs'
+import Link from 'next/link'
+import { BookActions } from './BookActions'
+import { BookCardAuthors } from './BookCardAuthors'
+import { BookCardBuyButton } from './BookCardBuyButton'
+import { BookCoverImage } from './BookCoverImage'
+import { BookPriceDisplay } from './BookPriceDisplay'
+import { BookTagsList } from './BookTagsList'
 
 interface BookCardProps {
   book: BookWork
   edition: BookEdition
   authors: Author[]
   tags: Tag[]
-  onBuyClick?: (editionId: string) => void
-  onTagClick?: (tagId: string) => void
 }
 
 export default function BookCard({
   book,
   edition,
   authors,
-  tags,
-  onBuyClick,
-  onTagClick
+  tags
 }: BookCardProps) {
   return (
     <Card className='group h-full overflow-hidden border-border/40 bg-card/95 transition-all duration-300 hover:border-primary/30 hover:shadow-md dark:bg-card/95 dark:hover:border-primary/40 dark:hover:bg-card/100'>
@@ -136,7 +131,7 @@ export default function BookCard({
           <CardFooter className='mt-auto flex flex-col items-start gap-1.5 p-0 pt-1'>
             {/* Tag section with min-height instead of fixed height */}
             <div className='min-h-[32px] w-full'>
-              <BookTagsList tags={tags} onTagClick={onTagClick} />
+              <BookTagsList tags={tags} />
             </div>
 
             <div className='flex w-full items-center justify-between mt-1'>
@@ -147,20 +142,7 @@ export default function BookCard({
                   isOnSale={edition.isOnSale ?? false}
                 />
 
-                {onBuyClick && (
-                  <Button
-                    size='sm'
-                    variant='outline'
-                    className='h-7 px-2.5 text-xs font-medium border-primary/20 hover:bg-primary/10 hover:border-primary/30'
-                    onClick={(e) => {
-                      e.preventDefault()
-                      onBuyClick(edition.id)
-                    }}
-                  >
-                    <ShoppingCart className='mr-1 h-3.5 w-3.5' />
-                    Buy
-                  </Button>
-                )}
+                <BookCardBuyButton />
               </div>
 
               <div className='text-xs text-muted-foreground dark:text-slate-500'>
