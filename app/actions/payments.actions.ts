@@ -14,7 +14,6 @@ export const createCheckoutSessionForBookEditions = async (
   product: CartDetails
 ) => {
   const ids = Object.keys(product)
-  console.log('ids', ids)
 
   const foundProductsInDb = (await db.query.bookEditions.findMany({
     where: (bookEditions, { inArray }) => inArray(bookEditions.id, ids),
@@ -27,11 +26,8 @@ export const createCheckoutSessionForBookEditions = async (
   const inventory = foundProductsInDb.map((product) =>
     getProductFromBookEdition(product, product.work)
   )
-  console.log('inventory', inventory)
 
   const line_items = validateCartItems(inventory, product)
-  console.log('line_items', line_items)
-
   const checkoutSession = await stripe.checkout.sessions.create({
     line_items,
     mode: 'payment',
