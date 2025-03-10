@@ -25,7 +25,8 @@ export function ShoppingCartSheet({ children }: { children: React.ReactNode }) {
     incrementItem,
     decrementItem,
     redirectToCheckout,
-    formattedTotalPrice
+    formattedTotalPrice,
+    clearCart
   } = useShoppingCart()
 
   async function handleCheckoutClick(
@@ -50,7 +51,9 @@ export function ShoppingCartSheet({ children }: { children: React.ReactNode }) {
       if (result?.error) {
         toast.error('Checkout failed. Please try again.')
         console.error('Checkout error:', result.error)
+        return
       }
+      clearCart()
     } catch (err) {
       toast.error('Checkout failed. Please try again.')
       console.error('Checkout error:', err)
