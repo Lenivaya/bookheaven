@@ -244,7 +244,13 @@ const main = async () => {
           values: bookData.map((book) => book.editionId)
         }),
         userId: f.valuesFromArray({ values: userIds, isUnique: true }),
-        rating: f.int({ minValue: 1, maxValue: 5 })
+        rating: f.weightedRandom([
+          { weight: 0.4, value: f.default({ defaultValue: 5 }) },
+          { weight: 0.3, value: f.default({ defaultValue: 4 }) },
+          { weight: 0.15, value: f.default({ defaultValue: 3 }) },
+          { weight: 0.1, value: f.default({ defaultValue: 2 }) },
+          { weight: 0.05, value: f.default({ defaultValue: 1 }) }
+        ])
       }
     }
   }))
