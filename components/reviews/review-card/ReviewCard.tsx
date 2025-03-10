@@ -1,13 +1,16 @@
 import * as React from 'react'
 import { Suspense } from 'react'
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card'
-import { Review } from '@/db/schema'
+import { Rating, Review } from '@/db/schema'
 import { ReviewUserInfo } from '@/components/reviews/review-card/ReviewUserInfo'
 import { cn } from '@/lib/utils'
 import { ReviewActions } from '@/components/reviews/review-card/ReviewActions'
+import { BookRating } from '@/components/books/book-card/BookRating'
+import { Option } from '@/lib/types'
 
 interface ReviewCardProps {
   review: Review
+  rating?: Option<Rating>
   className?: string
 }
 
@@ -27,7 +30,7 @@ export function ReviewCardSkeleton() {
   )
 }
 
-export function ReviewCard({ review, className }: ReviewCardProps) {
+export function ReviewCard({ review, rating, className }: ReviewCardProps) {
   return (
     <Card
       className={cn(
@@ -50,7 +53,15 @@ export function ReviewCard({ review, className }: ReviewCardProps) {
         </Suspense>
       </CardHeader>
       <CardContent className='relative z-10'>
-        <div className='space-y-2'>
+        <div className='space-y-3'>
+          {rating && (
+            <div className='flex items-center gap-2'>
+              <BookRating rating={rating.rating} size='md' />
+              <span className='text-xs text-muted-foreground'>
+                {rating.rating}/5
+              </span>
+            </div>
+          )}
           <p className='text-sm text-muted-foreground leading-relaxed'>
             {review.content}
           </p>

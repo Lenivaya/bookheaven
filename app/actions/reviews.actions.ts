@@ -1,9 +1,9 @@
 'use server'
 
 import { db } from '@/db'
-import { reviewCreateSchema, reviewLikes, reviews } from '@/db/schema'
+import { ratings, reviewCreateSchema, reviewLikes, reviews } from '@/db/schema'
 import { isSome } from '@/lib/types'
-import { and, eq, sql } from 'drizzle-orm'
+import { and, eq, getTableColumns, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { getAuthenticatedUserId } from './actions.helpers'
 import { revalidatePath } from 'next/cache'
@@ -21,11 +21,18 @@ export async function getReviews(
     offset: 0
   }
 ) {
-  return db.query.reviews.findMany({
-    where: (reviews, { eq }) => eq(reviews.editionId, bookEditionId),
-    limit: options.limit,
-    offset: options.offset
-  })
+  const result = db
+    .select({
+      review: getTableColumns(reviews),
+      rating: getTableColumns(ratings)
+    })
+    .from(reviews)
+    .leftJoin(ratings, eq(reviews.editionId, ratings.editionId))
+    .where(eq(reviews.editionId, bookEditionId))
+    .limit(options.limit)
+    .offset(options.offset)
+
+  return result
 }
 
 /**

@@ -28,3 +28,5 @@ export const ratingsRelations = relations(ratings, ({ one }) => ({
     references: [bookEditions.id]
   })
 }))
+
+export type Rating = typeof ratings.$inferSelect

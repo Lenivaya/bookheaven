@@ -37,7 +37,11 @@ export default async function BookReviews({ editionId }: BookReviewsProps) {
           <>
             <div className='space-y-6'>
               {reviews.map((review) => (
-                <ReviewCard key={review.id} review={review} />
+                <ReviewCard
+                  key={review.review.id}
+                  review={review.review}
+                  rating={review.rating}
+                />
               ))}
             </div>
           </>

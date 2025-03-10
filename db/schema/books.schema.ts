@@ -13,6 +13,7 @@ import { relations } from 'drizzle-orm'
 import { ratings } from './ratings.schema'
 import { authorFollowers } from './followers.schema'
 import { createSelectSchema, createUpdateSchema } from 'drizzle-zod'
+import { reviews } from './reviews.schema'
 
 // Authors table
 export const authors = pgTable('authors', {
@@ -156,7 +157,8 @@ export const tagsRelations = relations(tags, ({ many }) => ({
 }))
 
 export const bookWorksRatingRelations = relations(bookWorks, ({ many }) => ({
-  ratings: many(ratings)
+  ratings: many(ratings),
+  reviews: many(reviews)
 }))
 
 export const bookEditionsRatingRelations = relations(
