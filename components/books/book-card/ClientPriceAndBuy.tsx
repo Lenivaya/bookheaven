@@ -1,5 +1,4 @@
-'use client'
-
+import { BookEdition, BookWork } from '@/db/schema'
 import { BookCardBuyButton } from './BookCardBuyButton'
 import { BookPriceDisplay } from './BookPriceDisplay'
 
@@ -7,12 +6,16 @@ interface ClientPriceAndBuyProps {
   price: string
   salePrice: string | null
   isOnSale: boolean
+  bookEdition: BookEdition
+  bookWork: BookWork
 }
 
 export function ClientPriceAndBuy({
   price,
   salePrice,
-  isOnSale
+  isOnSale,
+  bookEdition,
+  bookWork
 }: ClientPriceAndBuyProps) {
   return (
     <>
@@ -21,7 +24,7 @@ export function ClientPriceAndBuy({
         salePrice={salePrice}
         isOnSale={isOnSale}
       />
-      <BookCardBuyButton />
+      <BookCardBuyButton bookEdition={bookEdition} bookWork={bookWork} />
     </>
   )
 }

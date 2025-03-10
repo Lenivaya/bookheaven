@@ -1,8 +1,8 @@
-// Server Component
 import Link from 'next/link'
 import { MobileNavigation } from './MobileNavigation'
 import { NavbarUser } from './NavbarUser'
 import { NavLink } from './NavLink'
+import { NavbarCart } from './NavbarCart'
 
 export function Navbar() {
   return (
@@ -30,6 +30,7 @@ export function Navbar() {
           </div>
 
           <div className='flex items-center gap-2'>
+            <NavbarCart />
             <NavbarUser />
             <MobileNavigation />
           </div>

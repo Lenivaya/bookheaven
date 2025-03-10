@@ -7,6 +7,7 @@ import { dark } from '@clerk/themes'
 import { Navbar } from '../components/layout/navbar/Navbar'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
+import { ShoppingStripeCartProvider } from '@/components/providers/CartProdiver'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -41,9 +42,11 @@ export default function RootLayout({
         >
           <NuqsAdapter>
             <ReactQueryProvider>
-              <Navbar />
-              {children}
-              <Toaster position='bottom-right' />
+              <ShoppingStripeCartProvider>
+                <Navbar />
+                {children}
+                <Toaster position='bottom-right' />
+              </ShoppingStripeCartProvider>
             </ReactQueryProvider>
           </NuqsAdapter>
         </body>

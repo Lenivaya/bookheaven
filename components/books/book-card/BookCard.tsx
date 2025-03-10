@@ -113,6 +113,8 @@ export default function BookCard({
                   price={edition.price}
                   salePrice={edition.salePrice}
                   isOnSale={edition.isOnSale ?? false}
+                  bookEdition={edition}
+                  bookWork={book}
                 />
               </div>
 
