@@ -54,7 +54,8 @@ export function BookActions({
     queryKey: ['userShelves'],
     queryFn: () => getUserShelvesWithItems(DEFAULT_SYSTEM_SHELVES),
     refetchOnWindowFocus: false,
-    staleTime: 5 * 60 * 1000
+    staleTime: 5 * 60 * 1000,
+    enabled: open
   })
 
   const { currentShelf, isBookmarked } = useMemo(() => {
@@ -73,13 +74,15 @@ export function BookActions({
   const { data: userRating } = useQuery({
     queryKey: ['userRating', editionId],
     queryFn: () => getUserRating(editionId),
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    enabled: open
   })
 
   const { data: averageRating } = useQuery({
     queryKey: ['averageRating', editionId],
     queryFn: () => getBookEditionAverageRating(editionId),
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    enabled: open
   })
 
   const addToShelfMutation = useMutation({
