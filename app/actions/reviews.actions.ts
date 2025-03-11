@@ -3,7 +3,17 @@
 import { db } from '@/db'
 import { ratings, reviewCreateSchema, reviewLikes, reviews } from '@/db/schema'
 import { isSome } from '@/lib/types'
-import { and, eq, getTableColumns, isNull, sql } from 'drizzle-orm'
+import {
+  and,
+  eq,
+  getTableColumns,
+  ilike,
+  inArray,
+  isNull,
+  or,
+  SQL,
+  sql
+} from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { getAuthenticatedUserId } from './actions.helpers'
@@ -12,15 +22,33 @@ import { getAuthenticatedUserId } from './actions.helpers'
  * Get reviews for a book edition
  */
 export async function getReviews(
-  bookEditionId: string,
+  bookEditionId?: string,
   options: {
+    search?: string
     limit: number
     offset: number
+    userIds?: string[]
   } = {
     limit: 10,
-    offset: 0
+    offset: 0,
+    search: '',
+    userIds: []
   }
 ) {
+  const filters: SQL[] = []
+
+  if (options.search) {
+    const searchTerms = options.search.trim().split(/\s+/).filter(Boolean)
+    const orConditions: SQL[] = searchTerms.map((term) =>
+      or(ilike(reviews.content, `%${term}%`))
+    ) as SQL[]
+    filters.push(...orConditions)
+  }
+
+  if (isSome(options.userIds) && options.userIds.length > 0) {
+    filters.push(inArray(reviews.userId, options.userIds))
+  }
+
   const result = await db
     .select({
       review: getTableColumns(reviews),
@@ -35,11 +63,16 @@ export async function getReviews(
       )
     )
     .where(
-      and(eq(reviews.editionId, bookEditionId), isNull(reviews.deleted_at))
+      and(
+        isSome(bookEditionId)
+          ? eq(reviews.editionId, bookEditionId)
+          : undefined,
+        isNull(reviews.deleted_at),
+        ...filters
+      )
     )
     .limit(options.limit)
     .offset(options.offset)
-  console.log(result)
 
   return result
 }
