@@ -1,8 +1,9 @@
+import { Separator } from '@/components/ui/separator'
 import Link from 'next/link'
 import { MobileNavigation } from './MobileNavigation'
+import { NavbarCart } from './NavbarCart'
 import { NavbarUser } from './NavbarUser'
 import { NavLink } from './NavLink'
-import { NavbarCart } from './NavbarCart'
 
 export function Navbar() {
   return (
@@ -25,12 +26,12 @@ export function Navbar() {
             <nav className='hidden sm:flex items-center space-x-5'>
               <NavLink href='/books'>Books</NavLink>
               <NavLink href='/authors'>Authors</NavLink>
-              <NavLink href='/tags'>Tags</NavLink>
             </nav>
           </div>
 
           <div className='flex items-center gap-2'>
             <NavbarCart />
+            <Separator orientation='vertical' className='h-full' />
             <NavbarUser />
             <MobileNavigation />
           </div>

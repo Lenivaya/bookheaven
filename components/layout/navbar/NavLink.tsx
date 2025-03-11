@@ -7,9 +7,10 @@ import { usePathname } from 'next/navigation'
 interface NavLinkProps {
   href: string
   children: React.ReactNode
+  extraActiveClass?: string
 }
 
-export function NavLink({ href, children }: NavLinkProps) {
+export function NavLink({ href, children, extraActiveClass }: NavLinkProps) {
   const pathname = usePathname()
   const isActive = pathname.startsWith(href)
 
@@ -18,7 +19,9 @@ export function NavLink({ href, children }: NavLinkProps) {
       href={href}
       className={cn(
         'text-sm font-medium transition-colors hover:text-primary',
-        isActive ? 'text-primary' : 'text-muted-foreground'
+        isActive
+          ? cn('text-primary', extraActiveClass)
+          : 'text-muted-foreground'
       )}
     >
       {children}

@@ -7,6 +7,7 @@ import {
 } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
 import { BookOpen } from 'lucide-react'
+import { NavbarDashboard } from './NavbarDashboard'
 
 export function NavbarUser() {
   return (
@@ -33,6 +34,8 @@ export function NavbarUser() {
         </SignUpButton>
       </SignedOut>
       <SignedIn>
+        <div className='hidden h-5 w-[1px] bg-border/40 sm:block' />
+        <NavbarDashboard />
         <UserButton
           appearance={{
             elements: {
