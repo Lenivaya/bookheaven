@@ -1,6 +1,8 @@
 'use client'
 
+import { createCheckoutSessionForBookEditions } from '@/app/actions/payments.actions'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import {
   Sheet,
   SheetContent,
@@ -9,13 +11,12 @@ import {
   SheetTitle,
   SheetTrigger
 } from '@/components/ui/sheet'
-import { Separator } from '@/components/ui/separator'
+import { isNone } from '@/lib/types'
+import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs'
 import { Minus, Plus, ShoppingCart, X } from 'lucide-react'
 import Image from 'next/image'
-import { useShoppingCart } from 'use-shopping-cart'
 import { toast } from 'sonner'
-import { createCheckoutSessionForBookEditions } from '@/app/actions/payments.actions'
-import { isNone } from '@/lib/types'
+import { useShoppingCart } from 'use-shopping-cart'
 
 export function ShoppingCartSheet({ children }: { children: React.ReactNode }) {
   const {
@@ -193,14 +194,24 @@ export function ShoppingCartSheet({ children }: { children: React.ReactNode }) {
               </div>
 
               <SheetFooter className='flex-col gap-2 sm:flex-col mt-4'>
-                <Button
-                  onClick={handleCheckoutClick}
-                  className='w-full'
-                  disabled={cartCount === 0}
-                  size='lg'
-                >
-                  Checkout
-                </Button>
+                <SignedIn>
+                  <Button
+                    onClick={handleCheckoutClick}
+                    className='w-full'
+                    disabled={cartCount === 0}
+                    size='lg'
+                  >
+                    Checkout
+                  </Button>
+                </SignedIn>
+                <SignedOut>
+                  <SignInButton>
+                    <Button className='w-full' size='lg'>
+                      Sign in to checkout
+                    </Button>
+                  </SignInButton>
+                </SignedOut>
+
                 <SheetTrigger asChild>
                   <Button variant='outline' className='w-full' size='lg'>
                     Continue Shopping
