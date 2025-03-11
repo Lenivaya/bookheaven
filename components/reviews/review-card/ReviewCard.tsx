@@ -8,7 +8,7 @@ import { ReviewActions } from '@/components/reviews/review-card/ReviewActions'
 import { BookRating } from '@/components/books/book-card/BookRating'
 import { Option } from '@/lib/types'
 
-interface ReviewCardProps {
+export interface ReviewCardProps {
   review: Review
   rating?: Option<Rating>
   className?: string

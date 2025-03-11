@@ -1,8 +1,6 @@
 import { getReviews } from '@/app/actions/reviews.actions'
-import {
-  ReviewCard,
-  ReviewCardSkeleton
-} from '@/components/reviews/review-card/ReviewCard'
+import { ReviewCardSkeleton } from '@/components/reviews/review-card/ReviewCard'
+import { ReviewCardWithReviewedBook } from '@/components/reviews/review-card/ReviewCardWithReviewedBook'
 import { ReviewsPagination } from '@/components/reviews/review-pagination/ReviewsPagination'
 import { ReviewsSearch } from '@/components/reviews/review-search/ReviewsSearch'
 import { Separator } from '@/components/ui/separator'
@@ -64,7 +62,7 @@ async function UserReviewsList({
       <div className='min-h-[70vh]'>
         <div className='grid grid-cols-1 gap-6'>
           {reviews.map((item) => (
-            <ReviewCard
+            <ReviewCardWithReviewedBook
               key={item.review.id}
               review={item.review}
               rating={item.rating}
