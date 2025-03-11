@@ -11,12 +11,17 @@ import { getAuthenticatedUserId } from './actions.helpers'
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY)
 
+/**
+ * Create a checkout session for book editions
+ * @param products - CartDetails
+ * @returns checkout session id
+ */
 export const createCheckoutSessionForBookEditions = async (
-  product: CartDetails
+  products: CartDetails
 ) => {
   const userId = await getAuthenticatedUserId()
 
-  const ids = Object.keys(product)
+  const ids = Object.keys(products)
   const foundProductsInDb = (await db.query.bookEditions.findMany({
     where: (bookEditions, { inArray }) => inArray(bookEditions.id, ids),
     with: {
@@ -29,7 +34,8 @@ export const createCheckoutSessionForBookEditions = async (
     getProductFromBookEdition(product, product.work)
   )
 
-  const line_items = validateCartItems(inventory, product)
+  validateCartItemsQuantities(products, foundProductsInDb)
+  const line_items = validateCartItems(inventory, products)
   const checkoutSession = await stripe.checkout.sessions.create({
     line_items,
     mode: 'payment',
@@ -45,6 +51,22 @@ export const createCheckoutSessionForBookEditions = async (
   })
 
   return checkoutSession.id
+}
+
+/**
+ * Validate the quantities of the products in the cart against the inventory
+ * @param products - CartDetails
+ * @param BookEditions - BookEdition[]
+ */
+const validateCartItemsQuantities = (
+  products: CartDetails,
+  BookEditions: BookEdition[]
+) => {
+  for (const product of BookEditions) {
+    if (products[product.id].quantity > product.stockQuantity) {
+      throw new Error(`Insufficient inventory for product ${product.id}`)
+    }
+  }
 }
 
 export const retrieveCheckoutSession = async (sessionId: string) => {
