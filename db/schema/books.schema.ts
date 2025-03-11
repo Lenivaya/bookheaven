@@ -77,6 +77,7 @@ export const tags = pgTable('tags', {
   id: uuid('id').defaultRandom().primaryKey(),
   name: text('name').notNull().unique(),
   description: text('description'),
+  coverUrl: text('cover_url'),
   ...timestamps
 })
 

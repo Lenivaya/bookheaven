@@ -3,10 +3,11 @@ import 'dotenv/config'
 import { faker } from '@faker-js/faker'
 // import isbn from 'node-isbn'
 import { db } from '@/db'
-import { reviews } from '@/db/schema'
+import { orders, reviews } from '@/db/schema'
 import {
   authors,
   bookEditions,
+  bookLikes,
   bookWorks,
   tags,
   workToAuthors,
@@ -22,6 +23,25 @@ import createClient from 'openapi-fetch'
 const openLibraryClient = createClient<paths>({
   baseUrl: 'https://openlibrary.org/'
 })
+
+const tagsCovers = [
+  'https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=3546&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=2787&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1587876931567-564ce588bfbd?q=80&w=2832&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=2874&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3',
+  'https://images.unsplash.com/photo-1535905557558-afc4877a26fc?q=80&w=2787&auto=format&fit=crop&ixlib=rb-4.0.3',
+  'https://images.unsplash.com/photo-1526243741027-444d633d7365?q=80&w=2971&auto=format&fit=crop&ixlib=rb-4.0.3',
+  'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3',
+  'https://images.unsplash.com/photo-1519682337058-a94d519337bc?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3',
+  'https://images.unsplash.com/photo-1550399105-c4db5fb85c18?q=80&w=2894&auto=format&fit=crop&ixlib=rb-4.0.3',
+  'https://images.unsplash.com/photo-1524578271613-d550eacf6090?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3',
+  'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2841&auto=format&fit=crop&ixlib=rb-4.0.3',
+  'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2890&auto=format&fit=crop&ixlib=rb-4.0.3',
+  'https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?q=80&w=2874&auto=format&fit=crop&ixlib=rb-4.0.3'
+]
 
 // authors -> books
 const booksToSeed: Record<string, string[]> = {
@@ -123,6 +143,8 @@ const main = async () => {
   // await reset(db, { schema })
   await db.delete(bookEditions)
   await db.delete(bookWorks)
+  await db.delete(bookLikes)
+  await db.delete(orders)
   await db.delete(authors)
   await db.delete(tags)
   await db.delete(ratings)
@@ -206,12 +228,16 @@ const main = async () => {
       // Insert genres as tags and link them to work
       if (book.genres) {
         for (const genre of book.genres) {
+          const coverUrl = faker.helpers.arrayElement(tagsCovers)
           const [tag] = await db
             .insert(tags)
-            .values({ name: genre })
+            .values({
+              name: genre,
+              coverUrl
+            })
             .onConflictDoUpdate({
               target: tags.name,
-              set: { name: genre }
+              set: { name: genre, coverUrl }
             })
             .returning()
 

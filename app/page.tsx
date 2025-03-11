@@ -12,13 +12,18 @@ import {
 import { FocusCards } from '@/components/ui/focus-cards'
 import { ArrowRight, BookOpen, Heart, ShoppingBag, Star } from 'lucide-react'
 import Link from 'next/link'
+import { getPopularTags } from './actions/tags.actions'
 
 export default async function Home() {
   // Fetch featured books for the carousel
-  const { books: featuredBooks } = await getBooks({
-    limit: 6,
-    offset: 0
-  })
+
+  const [featuredBooks, popularTags] = await Promise.all([
+    getBooks({
+      limit: 6,
+      offset: 0
+    }),
+    getPopularTags({ limit: 9 })
+  ])
 
   return (
     <div className='flex flex-col min-h-screen'>
@@ -121,7 +126,7 @@ export default async function Home() {
           <div className='py-8'>
             <Carousel className='w-full mx-auto'>
               <CarouselContent className='-ml-4 md:-ml-6'>
-                {featuredBooks.map((book) => (
+                {featuredBooks.books.map((book) => (
                   <CarouselItem
                     key={book.edition.id}
                     className='pl-4 md:pl-6 sm:basis-1/2 md:basis-1/3'
@@ -167,32 +172,11 @@ export default async function Home() {
           </div>
           <div className='mx-auto py-12'>
             <FocusCards
-              cards={[
-                {
-                  title: 'Fiction',
-                  src: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-                },
-                {
-                  title: 'Non-Fiction',
-                  src: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=3546&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-                },
-                {
-                  title: 'Sci-Fi & Fantasy',
-                  src: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=2787&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-                },
-                {
-                  title: 'Mystery & Thriller',
-                  src: 'https://images.unsplash.com/photo-1587876931567-564ce588bfbd?q=80&w=2832&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-                },
-                {
-                  title: 'Biography',
-                  src: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=2874&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-                },
-                {
-                  title: 'Poetry',
-                  src: 'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-                }
-              ]}
+              cards={popularTags.map((tag) => ({
+                title: tag.name,
+                src: tag.coverUrl ?? '',
+                id: tag.id
+              }))}
             />
           </div>
           <div className='flex justify-center mt-8'>
