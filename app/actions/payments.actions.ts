@@ -31,6 +31,10 @@ export const createCheckoutSessionForBookEditions = async (
   const checkoutSession = await stripe.checkout.sessions.create({
     line_items,
     mode: 'payment',
+    billing_address_collection: 'auto',
+    shipping_address_collection: {
+      allowed_countries: ['US', 'CA', 'UA', 'GB', 'AU', 'NZ', 'IE', 'ZA', 'RU']
+    },
     success_url: `${env.NEXT_PUBLIC_APP_URL}/payments/success`,
     cancel_url: `${env.NEXT_PUBLIC_APP_URL}/payments/cancel`
   })
