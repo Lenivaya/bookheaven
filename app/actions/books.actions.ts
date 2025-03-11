@@ -60,13 +60,15 @@ export async function getBooks(
     tagsIds?: string[]
     authorsIds?: string[]
     bookWorksIds?: string[]
+    bookEditionsIds?: string[]
   } = {
     limit: 10,
     offset: 0,
     search: '',
     tagsIds: [],
     authorsIds: [],
-    bookWorksIds: []
+    bookWorksIds: [],
+    bookEditionsIds: []
   }
 ): Promise<{ books: Book[]; totalCount: number; pageCount: number }> {
   const filters: SQL[] = []
@@ -96,6 +98,10 @@ export async function getBooks(
 
   if (isSome(options.bookWorksIds) && options.bookWorksIds.length > 0) {
     filters.push(inArray(bookWorks.id, options.bookWorksIds))
+  }
+
+  if (isSome(options.bookEditionsIds) && options.bookEditionsIds.length > 0) {
+    filters.push(inArray(bookEditions.id, options.bookEditionsIds))
   }
 
   const getFilteredBooks = db
