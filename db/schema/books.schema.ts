@@ -51,7 +51,7 @@ export const bookEditions = pgTable('book_editions', {
   format: text('format'), // hardcover, paperback, ebook, etc.
   edition: text('edition'), // "First Edition", "Second Revised Edition", etc.
   price: decimal('price', { precision: 10, scale: 2 }).notNull(),
-  isOnSale: boolean('is_on_sale').default(false),
+  isOnSale: boolean('is_on_sale').notNull().default(false),
   salePrice: decimal('sale_price', { precision: 10, scale: 2 }),
   stockQuantity: integer('stock_quantity').notNull().default(0),
   thumbnailUrl: text('thumbnail_url'),

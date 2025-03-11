@@ -7,14 +7,16 @@ import { CartDetails } from 'use-shopping-cart/core'
 import { validateCartItems } from 'use-shopping-cart/utilities'
 import Stripe from 'stripe'
 import { env } from '@/env'
+import { getAuthenticatedUserId } from './actions.helpers'
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY)
 
 export const createCheckoutSessionForBookEditions = async (
   product: CartDetails
 ) => {
-  const ids = Object.keys(product)
+  const userId = await getAuthenticatedUserId()
 
+  const ids = Object.keys(product)
   const foundProductsInDb = (await db.query.bookEditions.findMany({
     where: (bookEditions, { inArray }) => inArray(bookEditions.id, ids),
     with: {
@@ -36,7 +38,10 @@ export const createCheckoutSessionForBookEditions = async (
       allowed_countries: ['US', 'CA', 'UA', 'GB', 'AU', 'NZ', 'IE', 'ZA', 'RU']
     },
     success_url: `${env.NEXT_PUBLIC_APP_URL}/payments/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${env.NEXT_PUBLIC_APP_URL}/payments/cancel`
+    cancel_url: `${env.NEXT_PUBLIC_APP_URL}/payments/cancel`,
+    metadata: {
+      userId
+    }
   })
 
   return checkoutSession.id

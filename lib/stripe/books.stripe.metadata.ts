@@ -1,8 +1,12 @@
 import { BookEdition, BookWork } from '@/db/schema'
 import { Product } from 'use-shopping-cart/core'
 
-const convertToCents = (price: string) => {
+export const convertToCents = (price: string) => {
   return Math.round(Number(price) * 100)
+}
+
+export const convertToDollars = (price: number) => {
+  return price / 100
 }
 
 export function getProductFromBookEdition(
@@ -23,6 +27,7 @@ export function getProductFromBookEdition(
       description: bookWork.description,
       metadata: {
         // Extra
+        dbId: bookEdition.id,
         format: bookEdition.format,
         language: bookEdition.language,
         isbn: bookEdition.isbn,

@@ -51,8 +51,8 @@ export default async function PaymentsSuccess({
     : null
 
   return (
-    <div className='min-h-screen flex items-center justify-center mt-15 p-4 sm:p-6 bg-gradient-to-b from-black to-zinc-950'>
-      <Card className='w-full max-w-xl border-zinc-800/50 bg-black/95 backdrop-blur-sm shadow-2xl'>
+    <div className='min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gradient-to-b from-black to-zinc-950'>
+      <Card className='w-full max-w-xl border-zinc-800/50 mt-20 bg-black/95 backdrop-blur-sm shadow-2xl'>
         <CardHeader className='text-center pb-8 pt-12 space-y-6'>
           <div className='flex justify-center'>
             <div className='rounded-full bg-green-500/10 p-4 ring-4 ring-green-500/20'>
