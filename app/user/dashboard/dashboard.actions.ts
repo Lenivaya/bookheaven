@@ -2,7 +2,7 @@
 
 import { getAuthenticatedUserId } from '@/app/actions/actions.helpers'
 import { db } from '@/db'
-import { bookLikes, orders, shelves } from '@/db/schema'
+import { bookLikes, orders, reviews, shelves } from '@/db/schema'
 import { count, eq } from 'drizzle-orm'
 
 export async function getUserDashboardData() {
@@ -20,20 +20,27 @@ export async function getUserDashboardData() {
     .select({ count: count() })
     .from(shelves)
     .where(eq(shelves.userId, user))
+  const getTotalReviewsCount = db
+    .select({ count: count() })
+    .from(reviews)
+    .where(eq(reviews.userId, user))
 
   const [
     [{ count: ordersCount }],
     [{ count: likedBooksCount }],
-    [{ count: bookShelvesCount }]
+    [{ count: bookShelvesCount }],
+    [{ count: totalReviewsCount }]
   ] = await Promise.all([
     getOrdersCount,
     getLikedBooksCount,
-    getBookShelvesCount
+    getBookShelvesCount,
+    getTotalReviewsCount
   ])
 
   return {
     ordersCount,
     likedBooksCount,
-    bookShelvesCount
+    bookShelvesCount,
+    totalReviewsCount
   }
 }

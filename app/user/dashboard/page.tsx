@@ -10,7 +10,7 @@ import { getUserDashboardData } from './dashboard.actions'
 import { BookMarked, Heart, ShoppingBag, TimerIcon } from 'lucide-react'
 
 export default async function DashboardPage() {
-  const { ordersCount, likedBooksCount, bookShelvesCount } =
+  const { ordersCount, likedBooksCount, bookShelvesCount, totalReviewsCount } =
     await getUserDashboardData()
 
   return (
@@ -25,7 +25,7 @@ export default async function DashboardPage() {
 
       <Separator />
 
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-2'>
         <Card>
           <CardHeader className='pb-2'>
             <div className='flex items-center gap-2'>
@@ -68,18 +68,19 @@ export default async function DashboardPage() {
             <div className='text-2xl font-bold'>{bookShelvesCount}</div>
           </CardContent>
         </Card>
-      </div>
 
-      <div>
-        <div className='flex items-center gap-2 mb-4'>
-          <TimerIcon className='h-5 w-5 text-muted-foreground' />
-          <h3 className='text-lg font-medium'>Recent Activity</h3>
-        </div>
-        <div className='rounded-lg border bg-card text-card-foreground shadow-sm'>
-          <div className='p-6 text-center text-muted-foreground'>
-            No recent activity to display.
-          </div>
-        </div>
+        <Card>
+          <CardHeader className='pb-2'>
+            <div className='flex items-center gap-2'>
+              <TimerIcon className='h-4 w-4 text-muted-foreground' />
+              <CardTitle className='text-sm font-medium'>Reviews</CardTitle>
+            </div>
+            <CardDescription>Total reviews you&apos;ve written</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold'>{totalReviewsCount}</div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
