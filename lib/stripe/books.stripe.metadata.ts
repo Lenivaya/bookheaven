@@ -20,7 +20,15 @@ export function getProductFromBookEdition(
     description: bookWork.description!,
     product_data: {
       name: bookWork.title,
-      description: bookWork.description
+      description: bookWork.description,
+      metadata: {
+        // Extra
+        format: bookEdition.format,
+        language: bookEdition.language,
+        isbn: bookEdition.isbn,
+        publisher: bookEdition.publisher,
+        publicationYear: bookWork.writingCompletedAt?.getFullYear()
+      }
     }
   }
 }
