@@ -11,9 +11,20 @@ import {
   SheetTitle,
   SheetTrigger
 } from '@/components/ui/sheet'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog'
 import { isNone } from '@/lib/types'
 import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs'
-import { Minus, Plus, ShoppingCart, X } from 'lucide-react'
+import { Minus, Plus, ShoppingCart, X, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { toast } from 'sonner'
 import { useShoppingCart } from 'use-shopping-cart'
@@ -194,6 +205,38 @@ export function ShoppingCartSheet({ children }: { children: React.ReactNode }) {
               </div>
 
               <SheetFooter className='flex-col gap-2 sm:flex-col mt-4'>
+                {cartCount > 0 && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant='ghost'
+                        size='sm'
+                        className='w-full text-muted-foreground hover:text-destructive border'
+                      >
+                        <Trash2 className='h-4 w-4 mr-2' />
+                        Clear Cart
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Clear Shopping Cart</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to remove all items from your
+                          cart? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => clearCart()}
+                          className='bg-destructive hover:bg-destructive/90'
+                        >
+                          Clear Cart
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
                 <SignedIn>
                   <Button
                     onClick={handleCheckoutClick}
