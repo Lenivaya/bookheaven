@@ -35,9 +35,24 @@ export const createCheckoutSessionForBookEditions = async (
     shipping_address_collection: {
       allowed_countries: ['US', 'CA', 'UA', 'GB', 'AU', 'NZ', 'IE', 'ZA', 'RU']
     },
-    success_url: `${env.NEXT_PUBLIC_APP_URL}/payments/success`,
+    success_url: `${env.NEXT_PUBLIC_APP_URL}/payments/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${env.NEXT_PUBLIC_APP_URL}/payments/cancel`
   })
 
   return checkoutSession.id
+}
+
+export const retrieveCheckoutSession = async (sessionId: string) => {
+  if (!sessionId) return null
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['line_items', 'line_items.data.price.product']
+    })
+
+    return session
+  } catch (error) {
+    console.error('Error retrieving checkout session:', error)
+    return null
+  }
 }
