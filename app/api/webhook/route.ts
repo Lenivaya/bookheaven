@@ -7,6 +7,9 @@ import { db } from '@/db'
 import { orders, orderItems } from '@/db/schema/orders.schema'
 import { isNone } from '@/lib/types'
 import { convertToDollars } from '@/lib/stripe/books.stripe.metadata'
+import { sql } from 'drizzle-orm'
+import { bookEditions } from '@/db/schema/books.schema'
+import { eq } from 'drizzle-orm'
 
 export async function POST(req: Request) {
   let event: Stripe.Event
@@ -101,8 +104,16 @@ async function handleCheckoutSessionCompleted(
       quantity: item.quantity || 1,
       price: String(convertToDollars(item.amount_total!))
     }))
-
     await tx.insert(orderItems).values(orderItemsData)
+
+    for (const item of orderItemsData) {
+      await tx
+        .update(bookEditions)
+        .set({
+          stockQuantity: sql`${bookEditions.stockQuantity} - ${item.quantity}`
+        })
+        .where(eq(bookEditions.id, item.bookEditionId))
+    }
   })
   console.log(`💰 Order created ${session.id} for user ${userId}`)
 }
