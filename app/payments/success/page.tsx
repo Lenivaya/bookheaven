@@ -14,12 +14,14 @@ import { retrieveCheckoutSession } from '@/app/actions/payments.actions'
 import { formatCurrency } from '@/lib/utils'
 import { CopyableText } from '@/components/ui/copyable-text'
 
+interface PaymentsSuccessProps {
+  searchParams: Promise<{ session_id: string }>
+}
+
 export default async function PaymentsSuccess({
   searchParams
-}: {
-  searchParams: { session_id?: string }
-}) {
-  const sessionId = searchParams.session_id
+}: PaymentsSuccessProps) {
+  const { session_id: sessionId } = await searchParams
   const session = sessionId ? await retrieveCheckoutSession(sessionId) : null
 
   const items = session?.line_items?.data || []

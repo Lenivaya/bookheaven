@@ -14,7 +14,7 @@ export function NavbarCart() {
         variant='ghost'
         size='sm'
         className='relative flex items-center gap-2'
-        aria-label={`Shopping cart with ${cartCount} items, total: ${formattedTotalPrice}`}
+        aria-label={`Shopping cart`}
       >
         <ShoppingCart className='h-5 w-5' />
         {cartCount && cartCount > 0 && (

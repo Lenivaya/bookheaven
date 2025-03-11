@@ -24,35 +24,35 @@ export function CopyableText({
   iconClassName
 }: CopyableTextProps) {
   const [copied, setCopied] = useState(false)
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false)
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (error) {
+      console.error('Failed to copy text:', error)
+    }
   }
 
   return (
-    <div
-      className={cn(
-        'flex items-center gap-1.5 group cursor-pointer',
-        className
-      )}
-      onClick={handleCopy}
-    >
-      <span className='truncate max-w-[180px]'>{displayText || text}</span>
-      <TooltipProvider>
-        <Tooltip>
+    <TooltipProvider>
+      <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
+        <span
+          className={cn('inline-flex items-center gap-1.5 group', className)}
+        >
+          <span className='truncate max-w-[180px]'>{displayText || text}</span>
           <TooltipTrigger asChild>
             <button
               type='button'
+              onClick={handleCopy}
               className={cn(
                 'flex-shrink-0 transition-colors',
                 iconClassName,
-                copied
-                  ? 'text-green-500'
-                  : 'text-zinc-500 group-hover:text-zinc-300'
+                copied ? 'text-green-500' : 'text-zinc-500 hover:text-zinc-300'
               )}
-              aria-label='Copy to clipboard'
+              aria-label={copied ? 'Copied to clipboard' : 'Copy to clipboard'}
             >
               {copied ? (
                 <Check className='h-3.5 w-3.5' />
@@ -64,8 +64,8 @@ export function CopyableText({
           <TooltipContent side='top' className='text-xs'>
             {copied ? 'Copied!' : 'Copy to clipboard'}
           </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    </div>
+        </span>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
