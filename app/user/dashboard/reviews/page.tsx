@@ -24,7 +24,8 @@ async function UserReviewsList({
     limit: DEFAULT_PAGE_SIZE,
     offset: (Number(params.page) - 1) * DEFAULT_PAGE_SIZE,
     search: params.q,
-    userIds: userIds
+    userIds: userIds,
+    searchOverBooks: true
   })
 
   if (reviews.length === 0) {

@@ -1,7 +1,14 @@
 'use server'
 
 import { db } from '@/db'
-import { ratings, reviewCreateSchema, reviewLikes, reviews } from '@/db/schema'
+import {
+  bookEditions,
+  bookWorks,
+  ratings,
+  reviewCreateSchema,
+  reviewLikes,
+  reviews
+} from '@/db/schema'
 import { isSome } from '@/lib/types'
 import {
   and,
@@ -28,11 +35,13 @@ export async function getReviews(
     limit: number
     offset: number
     userIds?: string[]
+    searchOverBooks?: boolean
   } = {
     limit: 10,
     offset: 0,
     search: '',
-    userIds: []
+    userIds: [],
+    searchOverBooks: false
   }
 ) {
   const filters: SQL[] = []
@@ -40,7 +49,18 @@ export async function getReviews(
   if (options.search) {
     const searchTerms = options.search.trim().split(/\s+/).filter(Boolean)
     const orConditions: SQL[] = searchTerms.map((term) =>
-      or(ilike(reviews.content, `%${term}%`))
+      or(
+        ilike(reviews.content, `%${term}%`),
+        ...(options.searchOverBooks
+          ? ([
+              ilike(bookWorks.title, `%${term}%`),
+              ilike(bookWorks.originalTitle, `%${term}%`),
+              ilike(bookEditions.edition, `%${term}%`),
+              ilike(bookEditions.publisher, `%${term}%`),
+              ilike(bookEditions.isbn, `%${term}%`)
+            ] as SQL[])
+          : [])
+      )
     ) as SQL[]
     filters.push(...orConditions)
   }
@@ -49,7 +69,7 @@ export async function getReviews(
     filters.push(inArray(reviews.userId, options.userIds))
   }
 
-  const result = await db
+  const getResultsQuery = db
     .select({
       review: getTableColumns(reviews),
       rating: getTableColumns(ratings)
@@ -74,7 +94,13 @@ export async function getReviews(
     .limit(options.limit)
     .offset(options.offset)
 
-  return result
+  if (options.searchOverBooks) {
+    getResultsQuery
+      .innerJoin(bookEditions, eq(reviews.editionId, bookEditions.id))
+      .innerJoin(bookWorks, eq(bookEditions.workId, bookWorks.id))
+  }
+
+  return await getResultsQuery
 }
 
 /**
