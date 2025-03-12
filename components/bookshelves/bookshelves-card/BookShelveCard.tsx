@@ -1,4 +1,5 @@
 import { FetchedShelfRelations } from '@/app/actions/bookShelves.actions'
+import { Badge } from '@/components/ui/badge'
 import {
   Card,
   CardContent,
@@ -7,16 +8,15 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
+import { BookOpenIcon, ChevronRightIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { BookOpenIcon, ChevronRightIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { Suspense } from 'react'
 import { BookShelveUserInfo } from './BookShelveUserInfo'
-import { ShelfLikeButton } from './ShelfLikeButton'
 import { ShelfDeleteButton } from './ShelfDeleteButton'
 import { ShelfEditButton } from './ShelfEditButton'
+import { ShelfLikeButton } from './ShelfLikeButton'
 
 interface BookShelveCardProps {
   shelf: FetchedShelfRelations
@@ -70,21 +70,24 @@ export function BookShelveCard({ shelf }: BookShelveCardProps) {
                   key={`${item.shelfId}-${item.editionId}`}
                   className='relative flex-shrink-0 group'
                 >
-                  <div className='relative h-[140px] w-[90px] overflow-hidden rounded-md shadow-sm'>
-                    {item.bookEdition.thumbnailUrl ? (
-                      <Image
-                        src={item.bookEdition.thumbnailUrl}
-                        alt={item.bookEdition.work.title || 'Book cover'}
-                        fill
-                        sizes='90px'
-                        className='object-cover transition-transform group-hover:scale-105'
-                      />
-                    ) : (
-                      <div className='flex h-full w-full items-center justify-center bg-muted'>
-                        <BookOpenIcon className='h-8 w-8 text-muted-foreground' />
-                      </div>
-                    )}
-                  </div>
+                  <Link href={`/books/${item.editionId}`}>
+                    <div className='relative h-[140px] w-[90px] overflow-hidden rounded-md shadow-sm'>
+                      {item.bookEdition.thumbnailUrl ? (
+                        <Image
+                          src={item.bookEdition.thumbnailUrl}
+                          alt={item.bookEdition.work.title || 'Book cover'}
+                          fill
+                          sizes='90px'
+                          className='object-cover transition-transform group-hover:scale-105'
+                        />
+                      ) : (
+                        <div className='flex h-full w-full items-center justify-center bg-muted'>
+                          <BookOpenIcon className='h-8 w-8 text-muted-foreground' />
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+
                   <div className='mt-1 w-[90px] text-xs'>
                     <p className='font-medium line-clamp-1'>
                       {item.bookEdition.work.title}
