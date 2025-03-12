@@ -51,7 +51,7 @@ export function BookCard({
             {book.work.title}
           </p>
           {book.authors.length > 0 && (
-            <p className='text-xs text-muted-foreground/70 group-hover:text-white line-clamp-1'>
+            <p className='text-xs text-white/70 group-hover:text-white line-clamp-1'>
               {book.authors.map((a) => a.name).join(', ')}
             </p>
           )}
