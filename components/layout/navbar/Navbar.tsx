@@ -26,6 +26,7 @@ export function Navbar() {
             <nav className='hidden sm:flex items-center space-x-5'>
               <NavLink href='/books'>Books</NavLink>
               <NavLink href='/authors'>Authors</NavLink>
+              <NavLink href='/book-shelves'>Shelves</NavLink>
             </nav>
           </div>
 

@@ -60,13 +60,15 @@ export async function getBookShelves(
     tagsIds?: string[]
     authorsIds?: string[]
     bookWorksIds?: string[]
+    onlyPublic?: boolean
   } = {
     limit: 10,
     offset: 0,
     search: '',
     userIds: [],
     tagsIds: [],
-    authorsIds: []
+    authorsIds: [],
+    onlyPublic: false
   }
 ) {
   const filters: SQL[] = []
@@ -85,6 +87,10 @@ export async function getBookShelves(
 
   if (isSome(options.bookWorksIds) && options.bookWorksIds.length > 0) {
     filters.push(inArray(bookEditions.workId, options.bookWorksIds))
+  }
+
+  if (options.onlyPublic) {
+    filters.push(eq(shelves.isPublic, true))
   }
 
   if (options.search) {
