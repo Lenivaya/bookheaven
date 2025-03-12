@@ -16,6 +16,7 @@ import { Suspense } from 'react'
 import { BookShelveUserInfo } from './BookShelveUserInfo'
 import { ShelfLikeButton } from './ShelfLikeButton'
 import { ShelfDeleteButton } from './ShelfDeleteButton'
+import { ShelfEditButton } from './ShelfEditButton'
 
 interface BookShelveCardProps {
   shelf: FetchedShelfRelations
@@ -40,7 +41,10 @@ export function BookShelveCard({ shelf }: BookShelveCardProps) {
               createdAt={shelf.created_at}
             />
           </Suspense>
-          <ShelfDeleteButton shelfId={shelf.id} shelfUserId={shelf.userId} />
+          <div className='flex gap-1'>
+            <ShelfEditButton shelfId={shelf.id} shelfUserId={shelf.userId} />
+            <ShelfDeleteButton shelfId={shelf.id} shelfUserId={shelf.userId} />
+          </div>
         </div>
 
         <div className='flex justify-between items-start'>
