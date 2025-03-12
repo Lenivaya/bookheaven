@@ -36,7 +36,7 @@ export function OrdersSearch({ isAutoFocusable }: OrdersSearchProps) {
         ref={inputRef}
         type='search'
         placeholder='Search orders...'
-        className='pl-8'
+        className='pl-8 text-center'
         value={searchValue}
         autoFocus={isAutoFocusable}
         onChange={(e) => {

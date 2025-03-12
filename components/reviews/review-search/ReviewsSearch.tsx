@@ -36,7 +36,7 @@ export function ReviewsSearch({ isAutoFocusable }: ReviewsSearchProps) {
         ref={inputRef}
         type='search'
         placeholder='Search reviews...'
-        className='pl-8'
+        className='pl-8 text-center'
         value={searchValue}
         autoFocus={isAutoFocusable}
         onChange={(e) => {
