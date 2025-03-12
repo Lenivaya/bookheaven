@@ -10,7 +10,10 @@ interface BookShelveUserInfoProps {
   createdAt: Date
 }
 
-export function BookShelveUserInfo({ userId, createdAt }: BookShelveUserInfoProps) {
+export function BookShelveUserInfo({
+  userId,
+  createdAt
+}: BookShelveUserInfoProps) {
   const { data: user, isLoading } = useUser(userId)
 
   if (isLoading || !user) {
