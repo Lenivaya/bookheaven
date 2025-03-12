@@ -12,6 +12,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { BookOpenIcon, ChevronRightIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Suspense } from 'react'
+import { BookShelveUserInfo } from './BookShelveUserInfo'
 
 interface BookShelveCardProps {
   shelf: FetchedShelfRelations
@@ -26,6 +28,18 @@ export function BookShelveCard({ shelf }: BookShelveCardProps) {
   return (
     <Card className='overflow-hidden transition-all hover:shadow-md'>
       <CardHeader className='pb-3'>
+        {/* User information section */}
+        <div className='mb-3'>
+          <Suspense
+            fallback={<div className='h-8 animate-pulse bg-muted rounded' />}
+          >
+            <BookShelveUserInfo
+              userId={shelf.userId}
+              createdAt={shelf.created_at}
+            />
+          </Suspense>
+        </div>
+
         <div className='flex justify-between items-start'>
           <div>
             <CardTitle className='text-xl font-bold'>{shelf.name}</CardTitle>
