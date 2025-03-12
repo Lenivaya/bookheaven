@@ -44,7 +44,6 @@ export default function BookCard({
           <ClientBookCover
             thumbnailUrl={edition.thumbnailUrl}
             title={book.title}
-            bookId={book.id}
             editionId={edition.id}
             isOnSale={edition.isOnSale ?? false}
           />

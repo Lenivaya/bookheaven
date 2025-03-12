@@ -2,18 +2,177 @@
 
 import { db } from '@/db'
 import {
+  authors,
+  bookEditions,
+  bookWorks,
   insertShelfItemSchema,
   insertShelfSchema,
   shelfItems,
   shelfLikes,
-  shelves
+  shelves,
+  tags,
+  workToAuthors,
+  workToTags
 } from '@/db/schema'
 import { isNone, isSome } from '@/lib/types'
 import { auth } from '@clerk/nextjs/server'
-import { and, eq, inArray, or, sql } from 'drizzle-orm'
+import {
+  and,
+  countDistinct,
+  eq,
+  getTableColumns,
+  ilike,
+  inArray,
+  or,
+  SQL,
+  sql
+} from 'drizzle-orm'
 import { z } from 'zod'
 import { getAuthenticatedUserId } from './actions.helpers'
 import { DefaultShelves } from '@/lib/constants'
+
+export type FetchedShelfRelations = typeof shelves.$inferSelect & {
+  items: (typeof shelfItems.$inferSelect & {
+    bookEdition: typeof bookEditions.$inferSelect & {
+      work: typeof bookWorks.$inferSelect & {
+        workToAuthors: typeof workToAuthors.$inferSelect &
+          {
+            author: typeof authors.$inferSelect
+          }[]
+        workToTags: typeof workToTags.$inferSelect &
+          {
+            tag: typeof tags.$inferSelect
+          }[]
+      }
+    }
+  })[]
+}
+
+/**
+ * Server action to fetch book shelves with multi-criteria search at the database level
+ */
+export async function getBookShelves(
+  options: {
+    limit: number
+    offset: number
+    search?: string
+    userIds?: string[]
+    tagsIds?: string[]
+    authorsIds?: string[]
+    bookWorksIds?: string[]
+  } = {
+    limit: 10,
+    offset: 0,
+    search: '',
+    userIds: [],
+    tagsIds: [],
+    authorsIds: []
+  }
+) {
+  const filters: SQL[] = []
+
+  if (isSome(options.userIds) && options.userIds.length > 0) {
+    filters.push(inArray(shelves.userId, options.userIds))
+  }
+
+  if (isSome(options.tagsIds) && options.tagsIds.length > 0) {
+    filters.push(inArray(tags.id, options.tagsIds))
+  }
+
+  if (isSome(options.authorsIds) && options.authorsIds.length > 0) {
+    filters.push(inArray(authors.id, options.authorsIds))
+  }
+
+  if (isSome(options.bookWorksIds) && options.bookWorksIds.length > 0) {
+    filters.push(inArray(bookEditions.workId, options.bookWorksIds))
+  }
+
+  if (options.search) {
+    const searchTerms = options.search.trim().split(/\s+/).filter(Boolean)
+    const orConditions: SQL[] = searchTerms.map((term) =>
+      or(
+        ilike(shelves.name, `%${term}%`),
+        ilike(shelves.description, `%${term}%`),
+        ilike(bookWorks.title, `%${term}%`),
+        ilike(bookWorks.originalTitle, `%${term}%`),
+        ilike(bookWorks.description, `%${term}%`),
+        ilike(bookEditions.publisher, `%${term}%`),
+        ilike(bookEditions.edition, `%${term}%`),
+        ilike(tags.name, `%${term}%`),
+        ilike(authors.name, `%${term}%`)
+      )
+    ) as SQL[]
+    filters.push(...orConditions)
+  }
+
+  const filteredShelvesQuery = db
+    .select({
+      ...getTableColumns(shelves)
+    })
+    .from(shelves)
+    .innerJoin(shelfItems, eq(shelves.id, shelfItems.shelfId))
+    .innerJoin(bookEditions, eq(shelfItems.editionId, bookEditions.id))
+    .innerJoin(bookWorks, eq(bookEditions.workId, bookWorks.id))
+    .leftJoin(workToAuthors, eq(bookWorks.id, workToAuthors.workId))
+    .leftJoin(authors, eq(workToAuthors.authorId, authors.id))
+    .leftJoin(workToTags, eq(bookWorks.id, workToTags.workId))
+    .leftJoin(tags, eq(workToTags.tagId, tags.id))
+    .where(and(...filters))
+    .as('filteredShelves')
+
+  const getFilteredShelves = db
+    .selectDistinct({
+      id: filteredShelvesQuery.id
+    })
+    .from(filteredShelvesQuery)
+
+  const getTotalCount = db
+    .select({
+      totalCount: countDistinct(filteredShelvesQuery.id)
+    })
+    .from(filteredShelvesQuery)
+
+  const getShelvesFinal = db.query.shelves.findMany({
+    where: inArray(shelves.id, getFilteredShelves),
+    limit: options.limit,
+    offset: options.offset,
+    with: {
+      items: {
+        with: {
+          bookEdition: {
+            with: {
+              work: {
+                with: {
+                  workToAuthors: {
+                    with: {
+                      author: true
+                    }
+                  },
+                  workToTags: {
+                    with: {
+                      tag: true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  })
+
+  const [finalShelves, [{ totalCount }]] = await Promise.all([
+    getShelvesFinal,
+    getTotalCount
+  ])
+
+  return {
+    shelves: finalShelves as FetchedShelfRelations[],
+    totalCount,
+    pageCount: Math.ceil(Number(totalCount) / options.limit)
+  }
+}
 
 /**
  * Ensure the authenticated user is the author of the shelf
@@ -101,7 +260,7 @@ export async function upsertShelfItem(
     .insert(shelfItems)
     .values(itemData)
     .onConflictDoUpdate({
-      target: [shelfItems.shelfId, shelfItems.workId],
+      target: [shelfItems.shelfId, shelfItems.editionId],
       set: {
         ...itemData
       }
@@ -142,13 +301,13 @@ export async function upsertShelfItemWithShelfName(
 /**
  * Checks if shelf has the book in it given shelf name and user id
  */
-export async function hasBookInShelf(shelfName: string, workId: string) {
+export async function hasBookInShelf(shelfName: string, editionId: string) {
   const userId = await getAuthenticatedUserId()
   const shelf = await db.query.shelves.findFirst({
     where: and(eq(shelves.userId, userId), eq(shelves.name, shelfName)),
     with: {
       items: {
-        where: eq(shelfItems.workId, workId)
+        where: eq(shelfItems.editionId, editionId)
       }
     }
   })
@@ -158,11 +317,13 @@ export async function hasBookInShelf(shelfName: string, workId: string) {
 /**
  * Delete an item from a shelf
  */
-export async function deleteShelfItem(shelfId: string, workId: string) {
+export async function deleteShelfItem(shelfId: string, editionId: string) {
   await ensureShelfAuthor(shelfId)
   const result = await db
     .delete(shelfItems)
-    .where(and(eq(shelfItems.shelfId, shelfId), eq(shelfItems.workId, workId)))
+    .where(
+      and(eq(shelfItems.shelfId, shelfId), eq(shelfItems.editionId, editionId))
+    )
     .returning()
 
   return result.length > 0
@@ -244,11 +405,7 @@ export async function getUserShelvesWithItems(shelfNames?: DefaultShelves[]) {
       ? and(eq(shelves.userId, userId), inArray(shelves.name, shelfNames))
       : eq(shelves.userId, userId),
     with: {
-      items: {
-        columns: {
-          workId: true
-        }
-      }
+      items: true
     },
     columns: {
       id: true,

@@ -8,7 +8,7 @@ import {
   unique,
   uuid
 } from 'drizzle-orm/pg-core'
-import { bookWorks } from './books.schema'
+import { bookEditions } from './books.schema'
 import {
   createInsertSchema,
   createSelectSchema,
@@ -49,13 +49,13 @@ export const shelfItems = pgTable(
     shelfId: uuid('shelf_id')
       .notNull()
       .references(() => shelves.id, { onDelete: 'cascade' }),
-    workId: uuid('work_id')
+    editionId: uuid('edition_id')
       .notNull()
-      .references(() => bookWorks.id, { onDelete: 'cascade' }),
+      .references(() => bookEditions.id, { onDelete: 'cascade' }),
     notes: text('notes'),
     ...timestamps
   },
-  (t) => [primaryKey({ columns: [t.shelfId, t.workId] })]
+  (t) => [primaryKey({ columns: [t.shelfId, t.editionId] })]
 )
 
 // Relations
@@ -69,9 +69,9 @@ export const shelfItemsRelations = relations(shelfItems, ({ one }) => ({
     fields: [shelfItems.shelfId],
     references: [shelves.id]
   }),
-  work: one(bookWorks, {
-    fields: [shelfItems.workId],
-    references: [bookWorks.id]
+  bookEdition: one(bookEditions, {
+    fields: [shelfItems.editionId],
+    references: [bookEditions.id]
   })
 }))
 

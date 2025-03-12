@@ -36,17 +36,12 @@ import { match } from 'ts-pattern'
 import { BookRating } from './BookRating'
 
 interface BookActionsProps {
-  bookId: string
   editionId: string
   bookTitle: string
   currentShelf?: DefaultShelves[] | null
 }
 
-export function BookActions({
-  bookId,
-  editionId,
-  bookTitle
-}: BookActionsProps) {
+export function BookActions({ editionId, bookTitle }: BookActionsProps) {
   const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
 
@@ -54,22 +49,21 @@ export function BookActions({
     queryKey: ['userShelves'],
     queryFn: () => getUserShelvesWithItems(DEFAULT_SYSTEM_SHELVES),
     refetchOnWindowFocus: false,
-    staleTime: 5 * 60 * 1000,
-    enabled: open
+    staleTime: 5 * 60 * 1000
   })
 
   const { currentShelf, isBookmarked } = useMemo(() => {
     if (!userShelves) return { currentShelf: null, isBookmarked: false }
 
     const shelfWithBook = userShelves.find((shelf) =>
-      shelf.items.some((item) => item.workId === bookId)
+      shelf.items.some((item) => item.editionId === editionId)
     )
 
     return {
       currentShelf: shelfWithBook?.name as DefaultShelves | null,
       isBookmarked: !!shelfWithBook
     }
-  }, [userShelves, bookId])
+  }, [userShelves, editionId])
 
   const { data: userRating } = useQuery({
     queryKey: ['userRating', editionId],
@@ -87,7 +81,7 @@ export function BookActions({
 
   const addToShelfMutation = useMutation({
     mutationFn: (shelfName: DefaultShelves) =>
-      upsertShelfItemWithShelfName({ workId: bookId }, shelfName),
+      upsertShelfItemWithShelfName({ editionId }, shelfName),
     onSuccess: (_, shelfName) => {
       queryClient.invalidateQueries({ queryKey: ['userShelves'] })
       toast.success(`Added "${bookTitle}" to ${shelfName}`)
@@ -102,7 +96,7 @@ export function BookActions({
     mutationFn: async (shelfName: DefaultShelves) => {
       const shelf = userShelves?.find((s) => s.name === shelfName)
       if (!shelf) throw new Error(`Shelf ${shelfName} not found`)
-      return deleteShelfItem(shelf.id, bookId)
+      return deleteShelfItem(shelf.id, editionId)
     },
     onSuccess: (_, shelfName) => {
       queryClient.invalidateQueries({ queryKey: ['userShelves'] })
@@ -165,8 +159,8 @@ export function BookActions({
           (s) => s.name === currentShelf
         )
         if (currentShelfObj) {
-          await deleteShelfItem(currentShelfObj.id, bookId)
-          await upsertShelfItemWithShelfName({ workId: bookId }, shelf)
+          await deleteShelfItem(currentShelfObj.id, editionId)
+          await upsertShelfItemWithShelfName({ editionId }, shelf)
           queryClient.invalidateQueries({ queryKey: ['userShelves'] })
           toast.success(`Moved "${bookTitle}" from ${currentShelf} to ${shelf}`)
           setOpen(false)

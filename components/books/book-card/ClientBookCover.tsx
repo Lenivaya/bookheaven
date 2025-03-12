@@ -7,7 +7,6 @@ import { BookCoverImage } from './BookCoverImage'
 interface ClientBookCoverProps {
   thumbnailUrl: string | null
   title: string
-  bookId: string
   editionId: string
   isOnSale: boolean
 }
@@ -15,14 +14,13 @@ interface ClientBookCoverProps {
 export function ClientBookCover({
   thumbnailUrl,
   title,
-  bookId,
   editionId,
   isOnSale
 }: ClientBookCoverProps) {
   return (
     <>
       <Link
-        href={`/books/${bookId}`}
+        href={`/books/${editionId}`}
         className='block h-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
       >
         <BookCoverImage
@@ -34,7 +32,7 @@ export function ClientBookCover({
 
       {/* Book Actions Component */}
       <Protect>
-        <BookActions bookId={bookId} bookTitle={title} editionId={editionId} />
+        <BookActions editionId={editionId} bookTitle={title} />
       </Protect>
 
       {isOnSale && (

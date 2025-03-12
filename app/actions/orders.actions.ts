@@ -65,6 +65,7 @@ export async function getOrders(
     ) as SQL[]
     filters.push(...orConditions)
   }
+
   const getFilteredOrdersQuery = db
     .select({
       ...getTableColumns(orders)
