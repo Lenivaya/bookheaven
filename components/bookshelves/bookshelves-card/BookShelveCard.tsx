@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils'
 import { Suspense } from 'react'
 import { BookShelveUserInfo } from './BookShelveUserInfo'
 import { ShelfLikeButton } from './ShelfLikeButton'
+import { ShelfDeleteButton } from './ShelfDeleteButton'
 
 interface BookShelveCardProps {
   shelf: FetchedShelfRelations
@@ -30,7 +31,7 @@ export function BookShelveCard({ shelf }: BookShelveCardProps) {
     <Card className='overflow-hidden transition-all hover:shadow-md'>
       <CardHeader className='pb-3'>
         {/* User information section */}
-        <div className='mb-3'>
+        <div className='mb-3 flex justify-between items-start'>
           <Suspense
             fallback={<div className='h-8 animate-pulse bg-muted rounded' />}
           >
@@ -39,6 +40,7 @@ export function BookShelveCard({ shelf }: BookShelveCardProps) {
               createdAt={shelf.created_at}
             />
           </Suspense>
+          <ShelfDeleteButton shelfId={shelf.id} shelfUserId={shelf.userId} />
         </div>
 
         <div className='flex justify-between items-start'>
@@ -120,8 +122,10 @@ export function BookShelveCard({ shelf }: BookShelveCardProps) {
           <span>View shelf</span>
           <ChevronRightIcon className='h-4 w-4 ml-1' />
         </Link>
-        
-        <Suspense fallback={<div className='h-8 w-16 animate-pulse bg-muted rounded' />}>
+
+        <Suspense
+          fallback={<div className='h-8 w-16 animate-pulse bg-muted rounded' />}
+        >
           <ShelfLikeButton shelfId={shelf.id} likesCount={shelf.likesCount} />
         </Suspense>
       </CardFooter>

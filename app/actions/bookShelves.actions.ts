@@ -322,7 +322,7 @@ export async function updateShelf(
  */
 export async function deleteShelf(id: string) {
   const userId = await getAuthenticatedUserId()
-  return db
+  await db
     .delete(shelves)
     .where(and(eq(shelves.id, id), eq(shelves.userId, userId)))
 }
