@@ -18,8 +18,10 @@ import {
   getTableColumns,
   ilike,
   or,
+  sql,
   SQL
 } from 'drizzle-orm'
+import { revalidatePath } from 'next/cache'
 import { getAuthenticatedUserId } from './actions.helpers'
 
 export type FetchedOrderRelations = typeof orders.$inferSelect & {
@@ -116,4 +118,40 @@ export async function getOrders(
     totalCount,
     pageCount: Math.ceil(Number(totalCount) / options.limit)
   }
+}
+
+/**
+ * Cancel an order
+ */
+export async function cancelOrder(orderId: string) {
+  const user = await getAuthenticatedUserId()
+  await db.transaction(async (tx) => {
+    const order = await tx.query.orders.findFirst({
+      where: (orders, { eq, and, ne }) =>
+        and(
+          eq(orders.id, orderId),
+          eq(orders.userId, user),
+          ne(orders.status, 'Cancelled')
+        ),
+      with: {
+        items: true
+      }
+    })
+    if (!order) {
+      throw new Error('Order not found or already cancelled')
+    }
+    await tx
+      .update(orders)
+      .set({ status: 'Cancelled' })
+      .where(and(eq(orders.id, orderId), eq(orders.userId, user)))
+    for (const item of order.items) {
+      await tx
+        .update(bookEditions)
+        .set({
+          stockQuantity: sql`${bookEditions.stockQuantity} + ${item.quantity}`
+        })
+        .where(eq(bookEditions.id, item.bookEditionId))
+    }
+  })
+  revalidatePath('/user/dashboard/orders')
 }

@@ -1,4 +1,6 @@
 import { FetchedOrderRelations } from '@/app/actions/orders.actions'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -7,16 +9,14 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card'
-import { OrderCardBooks } from './OrderCardBooks'
-import { Badge } from '@/components/ui/badge'
-import { formatDistanceToNow } from 'date-fns'
-import { cn } from '@/lib/utils'
-import { MapPin, Receipt } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import { Separator } from '@/components/ui/separator'
-import { formatCurrency } from '@/lib/utils'
 import { CopyableText } from '@/components/ui/copyable-text'
+import { Separator } from '@/components/ui/separator'
+import { cn, formatCurrency } from '@/lib/utils'
+import { formatDistanceToNow } from 'date-fns'
+import { MapPin, Receipt } from 'lucide-react'
+import Link from 'next/link'
+import { OrderCardBooks } from './OrderCardBooks'
+import { OrderCardCancelButton } from './OrderCardCancelButton'
 
 interface OrderCardProps {
   order: FetchedOrderRelations
@@ -121,6 +121,7 @@ export function OrderCard({ order }: OrderCardProps) {
       </CardContent>
 
       <CardFooter className='flex justify-end gap-3'>
+        <OrderCardCancelButton orderId={order.id} />
         <Button variant='outline' asChild>
           <Link href={`/user/dashboard/orders/${order.id}`}>View Details</Link>
         </Button>

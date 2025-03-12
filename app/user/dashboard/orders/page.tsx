@@ -20,7 +20,6 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
     offset: (Number(params.page) - 1) * DEFAULT_PAGE_SIZE,
     search: params.q
   })
-  console.log(orders)
 
   return (
     <div className='space-y-6'>
