@@ -18,10 +18,11 @@ export function NavLink({ href, children, extraActiveClass }: NavLinkProps) {
     <Link
       href={href}
       className={cn(
-        'text-sm font-medium transition-colors hover:text-primary',
+        'group flex items-center gap-1 rounded-full px-2.5 py-1.5 text-sm font-medium transition-all duration-200',
+        'hover:bg-primary/10',
         isActive
-          ? cn('text-primary', extraActiveClass)
-          : 'text-muted-foreground'
+          ? cn('bg-primary/15 text-primary shadow-sm', extraActiveClass)
+          : 'text-muted-foreground hover:text-primary'
       )}
     >
       {children}

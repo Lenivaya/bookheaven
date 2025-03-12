@@ -4,6 +4,8 @@ import { MobileNavigation } from './MobileNavigation'
 import { NavbarCart } from './NavbarCart'
 import { NavbarUser } from './NavbarUser'
 import { NavLink } from './NavLink'
+import { BookOpen, Users, Library } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export function Navbar() {
   return (
@@ -23,10 +25,40 @@ export function Navbar() {
 
             <div className='hidden h-5 w-[1px] bg-border/40 sm:block' />
 
-            <nav className='hidden sm:flex items-center space-x-5'>
-              <NavLink href='/books'>Books</NavLink>
-              <NavLink href='/authors'>Authors</NavLink>
-              <NavLink href='/book-shelves'>Shelves</NavLink>
+            <nav className='hidden sm:flex items-center space-x-1.5'>
+              <NavLink href='/books'>
+                <BookOpen
+                  size={16}
+                  className={cn(
+                    'transition-all duration-200',
+                    'text-muted-foreground group-hover:text-primary',
+                    'group-[:has([aria-current])]:text-primary'
+                  )}
+                />
+                <span>Books</span>
+              </NavLink>
+              <NavLink href='/authors'>
+                <Users
+                  size={16}
+                  className={cn(
+                    'transition-all duration-200',
+                    'text-muted-foreground group-hover:text-primary',
+                    'group-[:has([aria-current])]:text-primary'
+                  )}
+                />
+                <span>Authors</span>
+              </NavLink>
+              <NavLink href='/book-shelves'>
+                <Library
+                  size={16}
+                  className={cn(
+                    'transition-all duration-200',
+                    'text-muted-foreground group-hover:text-primary',
+                    'group-[:has([aria-current])]:text-primary'
+                  )}
+                />
+                <span>Shelves</span>
+              </NavLink>
             </nav>
           </div>
 
