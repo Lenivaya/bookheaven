@@ -3,7 +3,11 @@
 import { db } from '@/db'
 import {
   authors,
+  BookEdition,
   bookEditions,
+  BookShelf,
+  BookShelfItems,
+  BookWork,
   bookWorks,
   insertShelfItemSchema,
   insertShelfSchema,
@@ -11,11 +15,12 @@ import {
   shelfLikes,
   shelves,
   tags,
+  updateShelfSchema,
   workToAuthors,
   workToTags
 } from '@/db/schema'
+import { DefaultShelves } from '@/lib/constants'
 import { isNone, isSome } from '@/lib/types'
-import { auth } from '@clerk/nextjs/server'
 import {
   and,
   countDistinct,
@@ -29,7 +34,6 @@ import {
 } from 'drizzle-orm'
 import { z } from 'zod'
 import { getAuthenticatedUserId } from './actions.helpers'
-import { DefaultShelves } from '@/lib/constants'
 
 export type FetchedShelfRelations = typeof shelves.$inferSelect & {
   items: (typeof shelfItems.$inferSelect & {
@@ -208,7 +212,7 @@ export async function getShelves() {
  * Gets a shelf by id
  */
 export async function getShelfById(id: string) {
-  const { userId } = await auth()
+  const userId = await getAuthenticatedUserId()
   return await db.query.shelves.findFirst({
     where: and(
       eq(shelves.id, id),
@@ -224,26 +228,93 @@ export async function getShelfById(id: string) {
   })
 }
 
+/**
+ * Gets a shelf by id with books
+ */
+export async function getShelfByIdWithBooks(id: string) {
+  const userId = await getAuthenticatedUserId()
+  return (await db.query.shelves.findFirst({
+    where: and(
+      eq(shelves.id, id),
+      // Show only if shelf is public or the authenticated user is the owner
+      or(
+        eq(shelves.isPublic, true),
+        isSome(userId) ? eq(shelves.userId, userId) : undefined
+      )
+    ),
+    with: {
+      items: {
+        with: {
+          bookEdition: {
+            with: {
+              work: true
+            }
+          }
+        }
+      }
+    }
+  })) as BookShelf & {
+    items: (BookShelfItems & {
+      bookEdition: BookEdition & {
+        work: BookWork
+      }
+    })[]
+  }
+}
+
 const createShelfSchema = insertShelfSchema.omit({ userId: true })
 /**
  * Create a shelf for the user
  */
 export async function upsertShelf(
-  shelfData: z.infer<typeof createShelfSchema>
+  shelfData: z.infer<typeof createShelfSchema>,
+  items?: z.infer<typeof insertShelfItemSchema>[]
 ) {
   const userId = await getAuthenticatedUserId()
-  return db
-    .insert(shelves)
-    .values({
-      ...shelfData,
-      userId
-    })
-    .onConflictDoUpdate({
-      target: [shelves.userId, shelves.name],
-      set: {
-        ...shelfData
-      }
-    })
+  await db.transaction(async (tx) => {
+    const upsert = tx
+      .insert(shelves)
+      .values({
+        ...shelfData,
+        userId
+      })
+      .onConflictDoUpdate({
+        target: [shelves.userId, shelves.name],
+        set: {
+          ...shelfData
+        }
+      })
+    if (isSome(items)) {
+      const [shelf] = await upsert.returning()
+      const itemsWithShelfId = items.map((item) => ({
+        ...item,
+        shelfId: shelf.id
+      }))
+      await tx.insert(shelfItems).values(itemsWithShelfId)
+    }
+    await upsert
+  })
+}
+
+/**
+ * Update a shelf
+ */
+export async function updateShelf(
+  shelfId: string,
+  shelfData: z.infer<typeof updateShelfSchema>,
+  items: z.infer<typeof insertShelfItemSchema>[]
+) {
+  const userId = await getAuthenticatedUserId()
+  await db.transaction(async (tx) => {
+    await tx
+      .update(shelves)
+      .set(shelfData)
+      .where(and(eq(shelves.id, shelfId), eq(shelves.userId, userId)))
+
+    // Recreating is faster
+    await tx.delete(shelfItems).where(eq(shelfItems.shelfId, shelfId))
+    await tx.insert(shelfItems).values(items)
+  })
 }
 
 /**

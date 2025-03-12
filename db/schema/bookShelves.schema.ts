@@ -24,7 +24,7 @@ export const shelves = pgTable(
     userId: text('user_id').notNull(),
     name: text('name').notNull(), // Currently reading, to read, favorites, etc.
     description: text('description'),
-    isPublic: boolean('is_public').default(false),
+    isPublic: boolean('is_public').notNull().default(false),
     likesCount: integer('likes_count').notNull().default(0),
     ...timestamps
   },
@@ -74,6 +74,9 @@ export const shelfItemsRelations = relations(shelfItems, ({ one }) => ({
     references: [bookEditions.id]
   })
 }))
+
+export type BookShelf = typeof shelves.$inferSelect
+export type BookShelfItems = typeof shelfItems.$inferSelect
 
 export const selectShelfSchema = createSelectSchema(shelves)
 export const insertShelfSchema = createInsertSchema(shelves)

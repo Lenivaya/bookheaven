@@ -10,6 +10,7 @@ import { SearchParams } from 'nuqs/server'
 import { bookShelvesSearchParamsCache } from '@/components/bookshelves/bookshelves-search/shelves.searchParams'
 import { BookShelveCard } from '@/components/bookshelves/bookshelves-card/BookShelveCard'
 import { BookShelvesSearch } from '@/components/bookshelves/bookshelves-search/BookShelvesSearch'
+import Link from 'next/link'
 
 const DEFAULT_PAGE_SIZE = 10
 
@@ -46,9 +47,11 @@ export default async function BookShelvesPage({
           </p>
         </div>
 
-        <Button size='sm' className='gap-1'>
-          <PlusIcon className='h-4 w-4' />
-          <span>New Shelf</span>
+        <Button size='sm' className='gap-1' asChild>
+          <Link href='/forms/book-shelves'>
+            <PlusIcon className='h-4 w-4' />
+            <span>New Shelf</span>
+          </Link>
         </Button>
       </div>
 
