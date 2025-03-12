@@ -14,6 +14,7 @@ import { BookOpenIcon, ChevronRightIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Suspense } from 'react'
 import { BookShelveUserInfo } from './BookShelveUserInfo'
+import { ShelfLikeButton } from './ShelfLikeButton'
 
 interface BookShelveCardProps {
   shelf: FetchedShelfRelations
@@ -108,17 +109,21 @@ export function BookShelveCard({ shelf }: BookShelveCardProps) {
         )}
       </CardContent>
 
-      <CardFooter className='pt-2'>
+      <CardFooter className='pt-2 flex justify-between items-center'>
         <Link
           href={`book-shelves/${shelf.id}`}
           className={cn(
-            'flex w-full items-center justify-between text-sm font-medium',
+            'flex items-center text-sm font-medium',
             'text-primary hover:underline'
           )}
         >
           <span>View shelf</span>
-          <ChevronRightIcon className='h-4 w-4' />
+          <ChevronRightIcon className='h-4 w-4 ml-1' />
         </Link>
+        
+        <Suspense fallback={<div className='h-8 w-16 animate-pulse bg-muted rounded' />}>
+          <ShelfLikeButton shelfId={shelf.id} likesCount={shelf.likesCount} />
+        </Suspense>
       </CardFooter>
     </Card>
   )

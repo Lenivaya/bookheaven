@@ -25,7 +25,7 @@ export const shelves = pgTable(
     name: text('name').notNull(), // Currently reading, to read, favorites, etc.
     description: text('description'),
     isPublic: boolean('is_public').default(false),
-    likesCount: integer('likes_count').default(0),
+    likesCount: integer('likes_count').notNull().default(0),
     ...timestamps
   },
   (t) => [unique('user_shelf_unique').on(t.userId, t.name)]
