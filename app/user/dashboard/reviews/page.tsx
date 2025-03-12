@@ -6,6 +6,7 @@ import { ReviewsSearch } from '@/components/reviews/review-search/ReviewsSearch'
 import { Separator } from '@/components/ui/separator'
 import { Suspense } from 'react'
 import { reviewSearchParamsCache } from './searchParams'
+import { SearchParams } from 'nuqs/server'
 
 const DEFAULT_PAGE_SIZE = 6
 
@@ -86,7 +87,7 @@ async function UserReviewsList({
 }
 
 interface ReviewsPageProps {
-  searchParams: Promise<Record<string, string | string[]>>
+  searchParams: Promise<SearchParams>
 }
 
 export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {

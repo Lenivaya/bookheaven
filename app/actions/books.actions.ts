@@ -21,6 +21,7 @@ import {
   and,
   countDistinct,
   eq,
+  getTableColumns,
   ilike,
   inArray,
   or,
@@ -82,7 +83,8 @@ export async function getBooks(
         ilike(bookWorks.description, `%${term}%`),
         ilike(bookEditions.publisher, `%${term}%`),
         ilike(bookEditions.edition, `%${term}%`),
-        ilike(tags.name, `%${term}%`)
+        ilike(tags.name, `%${term}%`),
+        ilike(authors.name, `%${term}%`)
       )
     ) as SQL[]
     filters.push(...orConditions)
@@ -104,28 +106,29 @@ export async function getBooks(
     filters.push(inArray(bookEditions.id, options.bookEditionsIds))
   }
 
+  const filterebBooksQuery = db
+    .select({
+      ...getTableColumns(bookEditions)
+    })
+    .from(bookEditions)
+    .innerJoin(bookWorks, eq(bookEditions.workId, bookWorks.id))
+    .leftJoin(workToAuthors, eq(bookWorks.id, workToAuthors.workId))
+    .leftJoin(authors, eq(workToAuthors.authorId, authors.id))
+    .leftJoin(workToTags, eq(bookWorks.id, workToTags.workId))
+    .leftJoin(tags, eq(workToTags.tagId, tags.id))
+    .where(and(...filters))
+    .as('filteredBooks')
+
   const getFilteredBooks = db
     .selectDistinct({
-      id: bookEditions.id
+      id: filterebBooksQuery.id
     })
-    .from(bookEditions)
-    .innerJoin(bookWorks, eq(bookEditions.workId, bookWorks.id))
-    .leftJoin(workToAuthors, eq(bookWorks.id, workToAuthors.workId))
-    .leftJoin(authors, eq(workToAuthors.authorId, authors.id))
-    .leftJoin(workToTags, eq(bookWorks.id, workToTags.workId))
-    .leftJoin(tags, eq(workToTags.tagId, tags.id))
-    .where(and(...filters))
+    .from(filterebBooksQuery)
   const getTotalCount = db
     .select({
-      totalCount: countDistinct(bookEditions.id)
+      totalCount: countDistinct(filterebBooksQuery.id)
     })
-    .from(bookEditions)
-    .innerJoin(bookWorks, eq(bookEditions.workId, bookWorks.id))
-    .leftJoin(workToAuthors, eq(bookWorks.id, workToAuthors.workId))
-    .leftJoin(authors, eq(workToAuthors.authorId, authors.id))
-    .leftJoin(workToTags, eq(bookWorks.id, workToTags.workId))
-    .leftJoin(tags, eq(workToTags.tagId, tags.id))
-    .where(and(...filters))
+    .from(filterebBooksQuery)
 
   const getBookFinal = db.query.bookEditions.findMany({
     where: (bookEditions, { inArray }) =>

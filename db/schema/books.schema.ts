@@ -14,6 +14,7 @@ import { ratings } from './ratings.schema'
 import { authorFollowers } from './followers.schema'
 import { createSelectSchema, createUpdateSchema } from 'drizzle-zod'
 import { reviews } from './reviews.schema'
+import { orderItems } from './orders.schema'
 
 // Authors table
 export const authors = pgTable('authors', {
@@ -123,7 +124,8 @@ export const bookEditionsRelations = relations(
       fields: [bookEditions.workId],
       references: [bookWorks.id]
     }),
-    likes: many(bookLikes)
+    likes: many(bookLikes),
+    orders: many(orderItems)
   })
 )
 
