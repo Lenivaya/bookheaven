@@ -24,6 +24,7 @@ import {
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { getAuthenticatedUserId } from './actions.helpers'
+import { auth } from '@clerk/nextjs/server'
 
 /**
  * Get reviews for a book edition
@@ -107,7 +108,7 @@ export async function getReviews(
  * Has reviewed this book edition
  */
 export async function hasReviewedBookEdition(editionId: string) {
-  const userId = await getAuthenticatedUserId()
+  const { userId } = await auth()
   return isSome(
     await db.query.reviews.findFirst({
       where: (reviews, { eq, and }) =>

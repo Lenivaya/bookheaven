@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/carousel'
 import { FocusCards } from '@/components/ui/focus-cards'
 import { ArrowRight, BookOpen, Heart, ShoppingBag, Star } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 import { getPopularTags } from './actions/tags.actions'
 
 export default async function Home() {

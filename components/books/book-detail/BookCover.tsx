@@ -6,6 +6,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { ZoomableImage } from '@/components/generic/ZoomableImage'
 
+import { unstable_ViewTransition as ViewTransition } from 'react'
+
 interface BookCoverProps {
   thumbnailUrl: string | null
   title: string
@@ -44,19 +46,21 @@ export default function BookCover({
             </div>
           )}
           <ZoomableImage src={thumbnailUrl} alt={`Cover of ${title}`}>
-            <Image
-              src={thumbnailUrl}
-              alt={`Cover of ${title}`}
-              fill
-              sizes='(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw'
-              className={cn(
-                'object-cover transition-opacity duration-300',
-                isLoading ? 'opacity-0' : 'opacity-100'
-              )}
-              priority
-              onLoad={handleImageLoad}
-              onError={handleImageError}
-            />
+            <ViewTransition name='book-cover-image'>
+              <Image
+                src={thumbnailUrl}
+                alt={`Cover of ${title}`}
+                fill
+                sizes='(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw'
+                className={cn(
+                  'object-cover transition-opacity duration-300',
+                  isLoading ? 'opacity-0' : 'opacity-100'
+                )}
+                priority
+                onLoad={handleImageLoad}
+                onError={handleImageError}
+              />
+            </ViewTransition>
           </ZoomableImage>
         </>
       ) : (
