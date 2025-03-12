@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator'
 import { cn, formatCurrency } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
 import { MapPin, Receipt } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 import { OrderCardBooks } from './OrderCardBooks'
 import { OrderCardCancelButton } from './OrderCardCancelButton'
 

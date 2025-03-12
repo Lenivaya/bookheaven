@@ -7,6 +7,7 @@ import { ZoomableImage } from '@/components/generic/ZoomableImage'
 import { cn } from '@/lib/utils'
 import { LikeButton } from './LikeButton'
 import { Protect } from '@clerk/nextjs'
+import { unstable_ViewTransition as ViewTransition } from 'react'
 
 interface BookCoverImageProps {
   thumbnailUrl: string | null
@@ -43,22 +44,24 @@ export function BookCoverImage({
       onMouseLeave={() => setIsHovering(false)}
     >
       <ZoomableImage src={thumbnailUrl} alt={`Cover of ${title}`}>
-        <Image
-          src={thumbnailUrl}
-          alt={`Cover of ${title}`}
-          fill
-          className={`
-          object-cover transition-opacity duration-300
-          ${isLoading ? 'opacity-0' : 'opacity-100'}
-          ${hasError ? 'hidden' : 'block'}
-        `}
-          sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
-          onLoad={() => setIsLoading(false)}
-          onError={() => {
-            setIsLoading(false)
-            setHasError(true)
-          }}
-        />
+        <ViewTransition name='book-cover-image'>
+          <Image
+            src={thumbnailUrl}
+            alt={`Cover of ${title}`}
+            fill
+            className={cn(
+              'object-cover transition-opacity duration-300',
+              isLoading ? 'opacity-0' : 'opacity-100',
+              hasError ? 'hidden' : 'block'
+            )}
+            sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
+            onLoad={() => setIsLoading(false)}
+            onError={() => {
+              setIsLoading(false)
+              setHasError(true)
+            }}
+          />
+        </ViewTransition>
       </ZoomableImage>
 
       {/* Hover overlay with like button */}

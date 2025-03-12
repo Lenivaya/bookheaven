@@ -1,9 +1,10 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { BookOpenIcon, Users, Library } from 'lucide-react'
 
 export function MobileNavigation() {
   const pathname = usePathname()
@@ -11,13 +12,16 @@ export function MobileNavigation() {
   return (
     <nav className='flex sm:hidden items-center space-x-1'>
       <MobileNavLink href='/books' isActive={pathname.startsWith('/books')}>
+        <BookOpenIcon size={16} />
         Books
       </MobileNavLink>
       <MobileNavLink href='/authors' isActive={pathname.startsWith('/authors')}>
+        <Users size={16} />
         Authors
       </MobileNavLink>
       <MobileNavLink href='/tags' isActive={pathname.startsWith('/tags')}>
-        Tags
+        <Library size={16} />
+        Shelves
       </MobileNavLink>
     </nav>
   )

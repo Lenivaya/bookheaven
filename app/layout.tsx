@@ -8,6 +8,7 @@ import { Navbar } from '../components/layout/navbar/Navbar'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 import { ShoppingStripeCartProvider } from '@/components/providers/CartProdiver'
+import { ViewTransitions } from 'next-view-transitions'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -31,26 +32,28 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <ClerkProvider
-      appearance={{
-        baseTheme: dark
-      }}
-    >
-      <html lang='en' className='dark' suppressHydrationWarning>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-          <NuqsAdapter>
-            <ReactQueryProvider>
-              <ShoppingStripeCartProvider>
-                <Navbar />
-                {children}
-                <Toaster position='bottom-right' />
-              </ShoppingStripeCartProvider>
-            </ReactQueryProvider>
-          </NuqsAdapter>
-        </body>
-      </html>
-    </ClerkProvider>
+    <ViewTransitions>
+      <ClerkProvider
+        appearance={{
+          baseTheme: dark
+        }}
+      >
+        <html lang='en' className='dark' suppressHydrationWarning>
+          <body
+            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          >
+            <NuqsAdapter>
+              <ReactQueryProvider>
+                <ShoppingStripeCartProvider>
+                  <Navbar />
+                  {children}
+                  <Toaster position='bottom-right' />
+                </ShoppingStripeCartProvider>
+              </ReactQueryProvider>
+            </NuqsAdapter>
+          </body>
+        </html>
+      </ClerkProvider>
+    </ViewTransitions>
   )
 }

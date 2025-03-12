@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { Protect } from '@clerk/nextjs'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 import { BookActions } from './BookActions'
 import { BookCoverImage } from './BookCoverImage'
 

@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { PencilIcon } from 'lucide-react'
 import { useAuth } from '@clerk/nextjs'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 
 interface ShelfEditButtonProps {
   shelfId: string
