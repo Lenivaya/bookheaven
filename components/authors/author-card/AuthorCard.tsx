@@ -50,19 +50,20 @@ export default function AuthorCard({
       )}
 
       <CardHeader className='flex flex-row items-center gap-4 p-4'>
-        <ZoomableImage src={author.photoUrl || ''} alt={author.name}>
-          <Avatar
-            className={cn(
-              'h-16 w-16 border shadow-sm',
-              isFollowing ? 'border-primary/50' : 'border-border/50'
-            )}
-          >
-            <AvatarImage src={author.photoUrl || ''} alt={author.name} />
-            <AvatarFallback className='text-lg font-medium bg-primary/10 text-primary'>
-              {getInitials(author.name)}
-            </AvatarFallback>
-          </Avatar>
-        </ZoomableImage>
+        <Avatar
+          key={author.id}
+          className={cn(
+            'h-16 w-16 border shadow-sm',
+            isFollowing ? 'border-primary/50' : 'border-border/50'
+          )}
+        >
+          <ZoomableImage src={author.photoUrl || ''} alt={author.name}>
+            <AvatarImage src={author.photoUrl ?? undefined} alt={author.name} />
+          </ZoomableImage>
+          <AvatarFallback className='text-lg font-medium bg-primary/10 text-primary'>
+            {getInitials(author.name)}
+          </AvatarFallback>
+        </Avatar>
 
         <div className='flex flex-col'>
           <Link
