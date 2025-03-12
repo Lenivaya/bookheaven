@@ -1,125 +1,138 @@
-import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { getBookById } from '@/app/actions/books.actions'
-import { isNone } from '@/lib/types'
+import Image from 'next/image'
+import { Link } from 'next-view-transitions'
+import { Suspense } from 'react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import BookHeader from '@/components/books/book-detail/BookHeader'
-import BookInfo from '@/components/books/book-detail/BookInfo'
-import BookRatings from '@/components/books/book-detail/BookRatings'
-import BookActions from '@/components/books/book-detail/BookActions'
-import BookCover from '@/components/books/book-detail/BookCover'
-import BookReviews from '@/components/books/book-detail/BookReviews'
-import { Skeleton } from '@/components/ui/skeleton'
+import { BookOpenIcon } from 'lucide-react'
+import { getShelfByIdWithBooks } from '@/app/actions/bookShelves.actions'
+import { BookShelveUserInfo } from '@/components/bookshelves/bookshelves-card/BookShelveUserInfo'
+import { ShelfEditButton } from '@/components/bookshelves/bookshelves-card/ShelfEditButton'
+import { ShelfLikeButton } from '@/components/bookshelves/bookshelves-card/ShelfLikeButton'
+import { unstable_ViewTransition as ViewTransition } from 'react'
 
-interface BookPageProps {
+interface BookShelvePageProps {
   params: Promise<{
     id: string
   }>
 }
 
-export default async function BookPage({ params }: BookPageProps) {
+export default async function BookShelvePage({ params }: BookShelvePageProps) {
   // Always await params in Next.js App Router
   const { id } = await params
 
-  // Fetch the basic book data needed for the page structure
-  const bookData = await getBookById(id)
+  // Fetch the shelf with books
+  const shelf = await getShelfByIdWithBooks(id)
 
-  if (isNone(bookData)) {
-    notFound()
+  if (!shelf) {
+    return notFound()
   }
 
-  const { edition, work, authors, tags } = bookData
-
   return (
-    <main className='container max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-16 mt-24'>
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-        {/* Left column - Book cover and actions */}
-        <div className='md:col-span-1'>
-          <div className='sticky top-32'>
-            <BookCover
-              thumbnailUrl={edition.thumbnailUrl}
-              title={work.title}
-              className='mb-6'
-            />
+    <div className='container py-8 max-w-6xl mx-auto'>
+      {/* Header section with shelf info */}
+      <div className='mb-8 space-y-6 mt-25'>
+        <div className='flex justify-between items-start gap-4 flex-wrap'>
+          <div className='space-y-2 flex-1 min-w-[280px]'>
+            <ViewTransition name='book-shelf-name'>
+              <h1 className='text-3xl font-bold tracking-tight'>
+                {shelf.name}
+              </h1>
+            </ViewTransition>
+            {shelf.description && (
+              <p className='text-muted-foreground'>{shelf.description}</p>
+            )}
+            <div className='flex flex-wrap items-center gap-2 mt-3'>
+              <Badge variant='outline' className='flex items-center gap-1'>
+                <BookOpenIcon className='h-3 w-3' />
+                <span>{shelf.items.length} books</span>
+              </Badge>
+              {!shelf.isPublic && <Badge variant='secondary'>Private</Badge>}
+            </div>
+          </div>
 
-            <BookActions editionId={edition.id} />
+          <div className='flex gap-2'>
+            <ShelfEditButton shelfId={shelf.id} shelfUserId={shelf.userId} />
+            <ShelfLikeButton shelfId={shelf.id} likesCount={shelf.likesCount} />
           </div>
         </div>
 
-        {/* Right column - Book details */}
-        <div className='md:col-span-2'>
-          <div className='bg-background rounded-lg p-6 shadow-sm'>
-            {/* BookHeader fetches rating data, so it needs Suspense */}
-            <Suspense fallback={<BookHeaderSkeleton />}>
-              <BookHeader
-                title={work.title}
-                originalTitle={work.originalTitle}
-                authors={authors}
-                workId={work.id}
-              />
-            </Suspense>
+        <Suspense
+          fallback={<div className='h-8 animate-pulse bg-muted rounded' />}
+        >
+          <BookShelveUserInfo
+            userId={shelf.userId}
+            createdAt={shelf.created_at}
+          />
+        </Suspense>
 
-            <Separator className='my-6' />
-
-            {/* BookInfo doesn't fetch data, so no Suspense needed */}
-            <BookInfo book={edition} work={work} tags={tags} />
-
-            <Separator className='my-6' />
-
-            {/* BookRatings fetches rating distribution data, so it needs Suspense */}
-            <Suspense fallback={<BookRatingsSkeleton />}>
-              <BookRatings workId={work.id} />
-            </Suspense>
-
-            <Separator className='my-6' />
-
-            {/* Reviews section */}
-            <Suspense fallback={<BookReviewsSkeleton />}>
-              <BookReviews editionId={edition.id} />
-            </Suspense>
-          </div>
-        </div>
+        <Separator />
       </div>
-    </main>
-  )
-}
 
-// Skeleton loader for the BookHeader component while it fetches rating data
-function BookHeaderSkeleton() {
-  return (
-    <div className='space-y-4'>
-      <Skeleton className='h-10 w-3/4' />
-      <Skeleton className='h-6 w-1/2' />
-      <Skeleton className='h-6 w-1/3' />
-    </div>
-  )
-}
+      {/* Books grid section */}
+      <div className='space-y-6'>
+        <h2 className='text-xl font-semibold'>Books in this shelf</h2>
 
-// Skeleton loader for the BookRatings component while it fetches rating distribution data
-function BookRatingsSkeleton() {
-  return (
-    <div className='space-y-6'>
-      <div className='space-y-4'>
-        <Skeleton className='h-8 w-40' />
-        <div className='flex flex-col md:flex-row items-start md:items-center gap-6'>
-          <Skeleton className='h-32 w-32' />
-          <div className='flex-1 w-full space-y-2'>
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Skeleton key={i} className='h-3 w-full' />
+        {shelf.items.length > 0 ? (
+          <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6'>
+            {shelf.items.map((item) => (
+              <Link
+                href={`/books/${item.editionId}`}
+                key={`${item.shelfId}-${item.editionId}`}
+                className='group'
+              >
+                <div className='flex flex-col h-full'>
+                  <div className='relative aspect-[2/3] w-full overflow-hidden rounded-md shadow-sm mb-3 bg-muted/50'>
+                    {item.bookEdition.thumbnailUrl ? (
+                      <Image
+                        src={item.bookEdition.thumbnailUrl}
+                        alt={item.bookEdition.work.title || 'Book cover'}
+                        fill
+                        sizes='(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw'
+                        className='object-cover transition-transform group-hover:scale-105'
+                      />
+                    ) : (
+                      <div className='flex h-full w-full items-center justify-center'>
+                        <BookOpenIcon className='h-12 w-12 text-muted-foreground' />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className='flex-1 space-y-1'>
+                    <h3 className='font-medium line-clamp-2 group-hover:text-primary transition-colors'>
+                      {item.bookEdition.work.title}
+                    </h3>
+                    <p className='text-sm text-muted-foreground line-clamp-1'>
+                      {item.bookEdition.work.workToAuthors?.length > 0
+                        ? item.bookEdition.work.workToAuthors
+                            .map((wa) => wa.author.name)
+                            .join(', ')
+                        : 'Unknown author'}
+                    </p>
+                    {item.bookEdition.publisher && (
+                      <p className='text-xs text-muted-foreground'>
+                        {item.bookEdition.publisher}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </Link>
             ))}
           </div>
-        </div>
+        ) : (
+          <div className='flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center'>
+            <BookOpenIcon className='h-12 w-12 text-muted-foreground mb-4' />
+            <h3 className='text-lg font-medium mb-1'>No books yet</h3>
+            <p className='text-muted-foreground mb-4'>
+              This shelf doesn&apos;t have any books added to it.
+            </p>
+            <Button asChild variant='outline'>
+              <Link href='/books'>Browse books</Link>
+            </Button>
+          </div>
+        )}
       </div>
-    </div>
-  )
-}
-
-// Skeleton loader for the BookReviews component
-function BookReviewsSkeleton() {
-  return (
-    <div className='space-y-4'>
-      <Skeleton className='h-8 w-40' />
-      <Skeleton className='h-32 w-full' />
     </div>
   )
 }

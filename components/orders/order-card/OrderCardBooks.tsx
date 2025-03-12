@@ -1,7 +1,7 @@
 import { FetchedOrderRelations } from '@/app/actions/orders.actions'
 import { Package } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 import { cn } from '@/lib/utils'
 
 interface OrderCardBooksProps {
