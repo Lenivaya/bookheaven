@@ -77,18 +77,28 @@ export function BookShelvesForm({ shelf }: BookShelvesFormProps) {
       authors: { id: string; name: string }[]
     }>
   >([])
-  const [selectedBooks, setSelectedBooks] = useState<
-    Array<{
-      edition: BookEdition
-      work: BookWork
-      authors: { id: string; name: string }[]
-    }>
+
+  // Replace array with Map for O(1) lookups
+  const [selectedBooksMap, setSelectedBooksMap] = useState<
+    Map<
+      string,
+      {
+        edition: BookEdition
+        work: BookWork
+        authors: { id: string; name: string }[]
+      }
+    >
   >(
-    shelf?.items.map((item) => ({
-      edition: item.bookEdition,
-      work: item.bookEdition.work,
-      authors: []
-    })) || []
+    new Map(
+      shelf?.items.map((item) => [
+        item.bookEdition.id,
+        {
+          edition: item.bookEdition,
+          work: item.bookEdition.work,
+          authors: []
+        }
+      ]) || []
+    )
   )
 
   const searchBooks = useCallback(async (query: string) => {
@@ -134,7 +144,7 @@ export function BookShelvesForm({ shelf }: BookShelvesFormProps) {
           {
             ...data
           },
-          selectedBooks.map((book) => ({
+          Array.from(selectedBooksMap.values()).map((book) => ({
             shelfId: shelf.id,
             editionId: book.edition.id,
             notes: null
@@ -144,7 +154,7 @@ export function BookShelvesForm({ shelf }: BookShelvesFormProps) {
         // Create new shelf with selected books
         await upsertShelf(
           data,
-          selectedBooks.map((book) => ({
+          Array.from(selectedBooksMap.values()).map((book) => ({
             shelfId: '', // This will be set by the server
             editionId: book.edition.id,
             notes: null
@@ -165,23 +175,27 @@ export function BookShelvesForm({ shelf }: BookShelvesFormProps) {
     }
   }
 
-  // Handle book selection
+  // Handle book selection - now O(1) operation
   const toggleBook = (book: (typeof searchResults)[0]) => {
-    setSelectedBooks((current) => {
-      const exists = current.some((b) => b.edition.id === book.edition.id)
-      if (exists) {
-        return current.filter((b) => b.edition.id !== book.edition.id)
+    setSelectedBooksMap((current) => {
+      const newMap = new Map(current)
+      if (newMap.has(book.edition.id)) {
+        newMap.delete(book.edition.id)
+      } else {
+        newMap.set(book.edition.id, book)
       }
-      return [...current, book]
+      return newMap
     })
     setOpen(false)
   }
 
-  // Remove a selected book
+  // Remove a selected book - now O(1) operation
   const removeBook = (editionId: string) => {
-    setSelectedBooks((current) =>
-      current.filter((book) => book.edition.id !== editionId)
-    )
+    setSelectedBooksMap((current) => {
+      const newMap = new Map(current)
+      newMap.delete(editionId)
+      return newMap
+    })
   }
 
   return (
@@ -262,7 +276,7 @@ export function BookShelvesForm({ shelf }: BookShelvesFormProps) {
             <h3 className='text-lg font-medium'>Books in Shelf</h3>
             <div className='flex items-center gap-2'>
               <Badge variant='secondary' className='font-mono'>
-                {selectedBooks.length} books
+                {selectedBooksMap.size} books
               </Badge>
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
@@ -296,8 +310,8 @@ export function BookShelvesForm({ shelf }: BookShelvesFormProps) {
                       </CommandEmpty>
                       <CommandGroup>
                         {searchResults.map((book) => {
-                          const isSelected = selectedBooks.some(
-                            (b) => b.edition.id === book.edition.id
+                          const isSelected = selectedBooksMap.has(
+                            book.edition.id
                           )
                           return (
                             <CommandItem
@@ -322,13 +336,13 @@ export function BookShelvesForm({ shelf }: BookShelvesFormProps) {
           </div>
 
           <ScrollArea className='h-[300px] rounded-md border p-4'>
-            {selectedBooks.length === 0 ? (
+            {selectedBooksMap.size === 0 ? (
               <div className='flex h-full items-center justify-center text-sm text-muted-foreground'>
                 No books added to this shelf yet.
               </div>
             ) : (
               <div className='grid grid-cols-2 gap-4'>
-                {selectedBooks.map((book) => (
+                {Array.from(selectedBooksMap.values()).map((book) => (
                   <BookCard
                     key={book.edition.id}
                     book={book}
