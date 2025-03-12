@@ -1,23 +1,47 @@
-import 'dotenv/config'
 import chalk from 'chalk'
+import 'dotenv/config'
+import { faker } from '@faker-js/faker'
 // import isbn from 'node-isbn'
-import IsbnFetch from 'isbn-fetch'
-import createClient from 'openapi-fetch'
-import type { paths } from 'open-library-api'
 import { db } from '@/db'
+import { orders, reviews } from '@/db/schema'
 import {
   authors,
   bookEditions,
+  bookLikes,
   bookWorks,
   tags,
   workToAuthors,
   workToTags
 } from '@/db/schema/books.schema'
+import { ratings } from '@/db/schema/ratings.schema'
 import { Option } from '@/lib/types'
+import { seed } from 'drizzle-seed'
+import IsbnFetch from 'isbn-fetch'
+import type { paths } from 'open-library-api'
+import createClient from 'openapi-fetch'
 
 const openLibraryClient = createClient<paths>({
   baseUrl: 'https://openlibrary.org/'
 })
+
+const tagsCovers = [
+  'https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=3546&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=2787&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1587876931567-564ce588bfbd?q=80&w=2832&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=2874&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3',
+  'https://images.unsplash.com/photo-1535905557558-afc4877a26fc?q=80&w=2787&auto=format&fit=crop&ixlib=rb-4.0.3',
+  'https://images.unsplash.com/photo-1526243741027-444d633d7365?q=80&w=2971&auto=format&fit=crop&ixlib=rb-4.0.3',
+  'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3',
+  'https://images.unsplash.com/photo-1519682337058-a94d519337bc?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3',
+  'https://images.unsplash.com/photo-1550399105-c4db5fb85c18?q=80&w=2894&auto=format&fit=crop&ixlib=rb-4.0.3',
+  'https://images.unsplash.com/photo-1524578271613-d550eacf6090?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3',
+  'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2841&auto=format&fit=crop&ixlib=rb-4.0.3',
+  'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2890&auto=format&fit=crop&ixlib=rb-4.0.3',
+  'https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?q=80&w=2874&auto=format&fit=crop&ixlib=rb-4.0.3'
+]
 
 // authors -> books
 const booksToSeed: Record<string, string[]> = {
@@ -58,7 +82,28 @@ const booksToSeed: Record<string, string[]> = {
   OL5765986A: [
     '9780374134754', // Day of the Oprichnik, by Vladimir Sorokin
     '9785933810049' // Roman, by Vladimir Sorokin
+  ],
+  // Robert M. Sapolsky
+  OL10273083A: [
+    '9780525560975' // Determined: A Science of Life without Free Will
+  ],
+  // Ernest Hemingway
+  OL13640A: [
+    '9780684830490', // The Old Man and the Sea, by Ernest Hemingway
+    '9780099910107', // A Farewell to Arms, by Ernest Hemingway
+    '9780099908609', // For Whom the Bell Tolls, by Ernest Hemingway
+    '9781416591313', // A Moveable Feast, by Ernest Hemingway
+    '9780099908500' // The Sun Also Rises, by Ernest Hemingway
   ]
+}
+
+// https://covers.openlibrary.org/a/$key/$value-$size.jpg
+// size can be one of S, M and L for small, medium and large respectively.
+//
+// For example the following is the photograph of Donald E. Knuth from the Open Library.
+// https://covers.openlibrary.org/a/olid/OL229501A-S.jpg
+const getAuthorPhotoUrl = (authorId: string, size: 'S' | 'M' | 'L' = 'S') => {
+  return `https://covers.openlibrary.org/a/olid/${authorId}-${size}.jpg`
 }
 
 const fetchBook = async (isbn: string) => {
@@ -86,14 +131,26 @@ const getText = (field: Option<{ type: string; value: string }>) => {
   return field.value
 }
 
+// Store book and author data for later use with drizzle-seed
+const bookData: {
+  workId: string
+  editionId: string
+  title: string
+}[] = []
+
 const main = async () => {
   // Clear existing data
-  await db.delete(workToTags)
-  await db.delete(workToAuthors)
+  // await reset(db, { schema })
   await db.delete(bookEditions)
   await db.delete(bookWorks)
+  await db.delete(bookLikes)
+  await db.delete(orders)
   await db.delete(authors)
   await db.delete(tags)
+  await db.delete(ratings)
+  await db.delete(reviews)
+  await db.delete(workToAuthors)
+  await db.delete(workToTags)
 
   for (const [authorId, books] of Object.entries(booksToSeed)) {
     const authorResponse = await fetchAuthor(authorId)
@@ -115,7 +172,7 @@ const main = async () => {
         birthDate: parseDate(authorData.birth_date),
         deathDate: parseDate(authorData.death_date),
         photoUrl: authorData.photos?.[0]
-          ? `https://covers.openlibrary.org/a/id/${authorData.photos[0]}-L.jpg`
+          ? getAuthorPhotoUrl(authorId, 'L')
           : null
       })
       .returning()
@@ -126,11 +183,13 @@ const main = async () => {
     for (const book of authorBooks) {
       if (!book) continue
 
+      const bookTitle = book.title || 'Unknown Title'
+
       // Insert work
       const [insertedWork] = await db
         .insert(bookWorks)
         .values({
-          title: book.title || 'Unknown Title',
+          title: bookTitle,
           description: book.description,
           originalLanguage: book.language?.toLowerCase() || 'en'
         })
@@ -143,28 +202,42 @@ const main = async () => {
       })
 
       // Insert edition
-      await db.insert(bookEditions).values({
+      const [insertedEdition] = await db
+        .insert(bookEditions)
+        .values({
+          workId: insertedWork.id,
+          isbn: book.isbn13,
+          publisher: book.publishers?.[0],
+          publishedAt: parseDate(book.publishedDate),
+          language: book.language?.toLowerCase() || 'en',
+          pageCount: book.pageCount,
+          thumbnailUrl: book.thumbnail,
+          smallThumbnailUrl: book.thumbnailSmall,
+          price: faker.commerce.price({ min: 9, max: 50, dec: 0 }),
+          stockQuantity: faker.number.int({ min: 10, max: 200 })
+        })
+        .returning()
+
+      // Store book data for later use with drizzle-seed
+      bookData.push({
         workId: insertedWork.id,
-        isbn: book.isbn13,
-        publisher: book.publishers?.[0],
-        publishedAt: parseDate(book.publishedDate),
-        language: book.language?.toLowerCase() || 'en',
-        pageCount: book.pageCount,
-        thumbnailUrl: book.thumbnail,
-        smallThumbnailUrl: book.thumbnailSmall,
-        price: '9.99',
-        stockQuantity: 100
+        editionId: insertedEdition.id,
+        title: bookTitle
       })
 
       // Insert genres as tags and link them to work
       if (book.genres) {
         for (const genre of book.genres) {
+          const coverUrl = faker.helpers.arrayElement(tagsCovers)
           const [tag] = await db
             .insert(tags)
-            .values({ name: genre })
+            .values({
+              name: genre,
+              coverUrl
+            })
             .onConflictDoUpdate({
               target: tags.name,
-              set: { name: genre }
+              set: { name: genre, coverUrl }
             })
             .returning()
 
@@ -175,9 +248,41 @@ const main = async () => {
         }
       }
 
-      console.log(chalk.blue(`Processed book: ${book.title}`))
+      console.log(chalk.blue(`Processed book: ${bookTitle}`))
     }
   }
+
+  // Now use drizzle-seed to generate ratings
+  console.log(chalk.yellow('Generating ratings using drizzle-seed...'))
+
+  // Generate 50 random user IDs to simulated some activity
+  const userIds = Array.from(
+    { length: bookData.length * 20 },
+    (_, i) => `user_${i + 1}`
+  )
+
+  // Seed ratings using drizzle-seed
+  await seed(db, { ratings }).refine((f) => ({
+    ratings: {
+      count: bookData.length * 20,
+      columns: {
+        editionId: f.valuesFromArray({
+          values: bookData.map((book) => book.editionId)
+        }),
+        userId: f.valuesFromArray({ values: userIds, isUnique: true }),
+        rating: f.weightedRandom([
+          { weight: 0.4, value: f.default({ defaultValue: 5 }) },
+          { weight: 0.3, value: f.default({ defaultValue: 4 }) },
+          { weight: 0.15, value: f.default({ defaultValue: 3 }) },
+          { weight: 0.1, value: f.default({ defaultValue: 2 }) },
+          { weight: 0.05, value: f.default({ defaultValue: 1 }) }
+        ]),
+        deletedAt: f.default({ defaultValue: null })
+      }
+    }
+  }))
+
+  console.log(chalk.green('Ratings generated successfully'))
 }
 
 main()

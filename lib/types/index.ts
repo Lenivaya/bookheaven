@@ -1,4 +1,5 @@
 export type Option<T> = T | null | undefined
+export type Nullable<T> = T | null
 
 export function isSome<T>(value: Option<T>): value is T {
   return value !== null && value !== undefined

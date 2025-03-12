@@ -8,7 +8,7 @@ import {
   uuid
 } from 'drizzle-orm/pg-core'
 import { bookEditions, bookWorks } from './books.schema'
-import { timestamps } from './columns.helpers'
+import { createInsertSchema, timestamps } from './columns.helpers'
 
 export const quotes = pgTable(
   'quotes',
@@ -63,3 +63,5 @@ export const quoteLikesRelations = relations(quoteLikes, ({ one }) => ({
     references: [quotes.id]
   })
 }))
+
+export const insertQuoteSchema = createInsertSchema(quotes)
