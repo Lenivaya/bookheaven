@@ -43,7 +43,7 @@ export default async function AdminAuthorsPage({
           <AuthorsSearch />
 
           <div className='min-h-[70vh]'>
-            <AuthorList authors={authors} />
+            <AuthorList authors={authors} layout='narrow' />
           </div>
 
           {totalCount > DEFAULT_PAGE_SIZE && (

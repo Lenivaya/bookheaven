@@ -1,14 +1,33 @@
 import { Author } from '@/db/schema'
 import AuthorCard from '../author-card/AuthorCard'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from '@/lib/utils'
 
-interface AuthorListProps {
+const authorListVariants = cva('grid gap-4', {
+  variants: {
+    layout: {
+      default: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+      compact: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+      narrow: 'grid-cols-1 sm:grid-cols-2',
+      single: 'grid-cols-1'
+    }
+  },
+  defaultVariants: {
+    layout: 'default'
+  }
+})
+
+interface AuthorListProps extends VariantProps<typeof authorListVariants> {
   authors: Author[]
   followedAuthorIds?: string[]
+  className?: string
 }
 
 export default function AuthorList({
   authors,
-  followedAuthorIds = []
+  followedAuthorIds = [],
+  layout,
+  className
 }: AuthorListProps) {
   if (!authors.length) {
     return (
@@ -24,7 +43,7 @@ export default function AuthorList({
   }
 
   return (
-    <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+    <div className={cn(authorListVariants({ layout }), className)}>
       {authors.map((author) => (
         <AuthorCard
           key={author.id}
