@@ -52,7 +52,7 @@ export default function RootLayout({
                   <NextSSRPlugin
                     routerConfig={extractRouterConfig(ourFileRouter)}
                   />
-                  {children}
+                  <main className='px-2 sm:px-0'>{children}</main>
                   <Toaster position='bottom-right' />
                 </ShoppingStripeCartProvider>
               </ReactQueryProvider>
