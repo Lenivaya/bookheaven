@@ -1,7 +1,7 @@
 'use server'
 
 import { db } from '@/db'
-import { authorImages, authors } from '@/db/schema'
+import { authorImages, authors, bookEditions, bookImages } from '@/db/schema'
 import { eq } from 'drizzle-orm'
 import { utapi } from '../api/uploadthing/utapi'
 
@@ -28,7 +28,9 @@ export async function uploadAuthorImage(
         photoUrl: url
       })
       .where(eq(authors.id, authorId))
-    await utapi.deleteFiles(previousImages)
+    if (previousImages.length > 0) {
+      await utapi.deleteFiles(previousImages)
+    }
   })
 }
 
@@ -45,6 +47,53 @@ export async function deleteAuthorImage(authorId: string) {
         photoUrl: null
       })
       .where(eq(authors.id, authorId))
+    await utapi.deleteFiles([image.fileKey])
+  })
+}
+
+export async function uploadBookImage(
+  editionId: string,
+  fileKey: string,
+  url: string
+) {
+  await db.transaction(async (tx) => {
+    const previousImages = await tx.query.bookImages.findMany({
+      where: eq(bookImages.editionId, editionId)
+    })
+    await tx.delete(bookImages).where(eq(bookImages.editionId, editionId))
+    await tx.insert(bookImages).values({
+      editionId,
+      fileKey,
+      url
+    })
+    await tx
+      .update(bookEditions)
+      .set({
+        thumbnailUrl: url,
+        smallThumbnailUrl: url
+      })
+      .where(eq(bookEditions.id, editionId))
+    const previousImagesIds = previousImages.map((image) => image.id)
+    if (previousImagesIds.length > 0) {
+      await utapi.deleteFiles(previousImagesIds)
+    }
+  })
+}
+
+export async function deleteBookImage(editionId: string) {
+  await db.transaction(async (tx) => {
+    const image = await tx.query.bookImages.findFirst({
+      where: eq(bookImages.editionId, editionId)
+    })
+    if (!image) return
+    await tx.delete(bookImages).where(eq(bookImages.id, image.id))
+    await tx
+      .update(bookEditions)
+      .set({
+        thumbnailUrl: null,
+        smallThumbnailUrl: null
+      })
+      .where(eq(bookEditions.id, editionId))
     await utapi.deleteFiles([image.fileKey])
   })
 }

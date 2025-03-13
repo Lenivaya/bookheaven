@@ -54,6 +54,7 @@ export default async function AdminBooksPage({
                   edition={book.edition}
                   authors={book.authors}
                   tags={book.tags}
+                  showAdminActions={true}
                 />
               ))}
             </div>

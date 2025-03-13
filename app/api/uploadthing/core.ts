@@ -1,4 +1,7 @@
-import { uploadAuthorImage } from '@/app/actions/images.actions'
+import {
+  uploadAuthorImage,
+  uploadBookImage
+} from '@/app/actions/images.actions'
 import { checkRole } from '@/lib/auth/utils'
 import { isNone } from '@/lib/types'
 import { auth } from '@clerk/nextjs/server'
@@ -32,9 +35,32 @@ export const ourFileRouter = {
     )
     .middleware(authMiddleware)
     .onUploadComplete(async ({ metadata, file }) => {
-      console.log('Upload complete for userId:', metadata.userId)
-      console.log('file url', file.ufsUrl)
       await uploadAuthorImage(metadata.input.authorId, file.key, file.ufsUrl)
+      console.log(
+        'Upload complete for author image for authorId:',
+        metadata.input.authorId
+      )
+      return { uploadedBy: metadata.userId, fileUrl: file.ufsUrl }
+    }),
+  bookImageUploader: f({
+    image: {
+      maxFileSize: '2MB',
+      maxFileCount: 1,
+      minFileCount: 1
+    }
+  })
+    .input(
+      z.object({
+        editionId: z.string()
+      })
+    )
+    .middleware(authMiddleware)
+    .onUploadComplete(async ({ metadata, file }) => {
+      await uploadBookImage(metadata.input.editionId, file.key, file.ufsUrl)
+      console.log(
+        'Upload complete for book image for editionId:',
+        metadata.input.editionId
+      )
       return { uploadedBy: metadata.userId, fileUrl: file.ufsUrl }
     })
 } satisfies FileRouter
