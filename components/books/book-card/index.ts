@@ -2,6 +2,8 @@
 export { default as BookCard } from './BookCard'
 export { default as CompactBookCard } from './CompactBookCard'
 export { default as HorizontalBookCard } from './HorizontalBookCard'
+export { AuthorPageBookCard } from './AuthorPageBookCard'
+export { AuthorPageBookCardSkeleton } from './AuthorPageBookCardSkeleton'
 
 // Layout components
 export {
@@ -10,6 +12,7 @@ export {
   SidebarBookCardGrid
 } from './ResponsiveBookCardGrid'
 export { HorizontalBookScroll } from './HorizontalBookScroll'
+export { AuthorPageBookGrid } from './AuthorPageBookGrid'
 
 // Sub-components
 export { BookCardAuthors } from './BookCardAuthors'
