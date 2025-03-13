@@ -81,7 +81,11 @@ export async function getAuthors(
     getTotalCount
   ])
 
-  return { authors: resultAuthors, totalCount }
+  return {
+    authors: resultAuthors,
+    totalCount,
+    pageCount: Math.ceil(totalCount / options.limit)
+  }
 }
 
 /**
