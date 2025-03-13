@@ -29,7 +29,6 @@ import Image from 'next/image'
 import { toast } from 'sonner'
 import { useShoppingCart } from 'use-shopping-cart'
 import { Link } from 'next-view-transitions'
-import { unstable_ViewTransition as ViewTransition } from 'react'
 
 export function ShoppingCartSheet({ children }: { children: React.ReactNode }) {
   const {
@@ -116,15 +115,13 @@ export function ShoppingCartSheet({ children }: { children: React.ReactNode }) {
                     <div className='flex items-start gap-5'>
                       <div className='h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border bg-muted'>
                         {item.image && (
-                          <ViewTransition name='book-cover-image'>
-                            <Image
-                              src={item.image as string}
-                              alt={item.name}
-                              width={100}
-                              height={100}
-                              className='h-full w-full object-cover object-center'
-                            />
-                          </ViewTransition>
+                          <Image
+                            src={item.image as string}
+                            alt={item.name}
+                            width={100}
+                            height={100}
+                            className='h-full w-full object-cover object-center'
+                          />
                         )}
                       </div>
 
