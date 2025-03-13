@@ -10,7 +10,6 @@ import { getShelfByIdWithBooks } from '@/app/actions/bookShelves.actions'
 import { BookShelveUserInfo } from '@/components/bookshelves/bookshelves-card/BookShelveUserInfo'
 import { ShelfEditButton } from '@/components/bookshelves/bookshelves-card/ShelfEditButton'
 import { ShelfLikeButton } from '@/components/bookshelves/bookshelves-card/ShelfLikeButton'
-import { unstable_ViewTransition as ViewTransition } from 'react'
 
 interface BookShelvePageProps {
   params: Promise<{
@@ -35,11 +34,7 @@ export default async function BookShelvePage({ params }: BookShelvePageProps) {
       <div className='mb-8 space-y-6 mt-25'>
         <div className='flex justify-between items-start gap-4 flex-wrap'>
           <div className='space-y-2 flex-1 min-w-[280px]'>
-            <ViewTransition name='book-shelf-name'>
-              <h1 className='text-3xl font-bold tracking-tight'>
-                {shelf.name}
-              </h1>
-            </ViewTransition>
+            <h1 className='text-3xl font-bold tracking-tight'>{shelf.name}</h1>
             {shelf.description && (
               <p className='text-muted-foreground'>{shelf.description}</p>
             )}

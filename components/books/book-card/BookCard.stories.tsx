@@ -82,7 +82,8 @@ const mockTags: Tag[] = [
     description: 'Classic literature',
     created_at: new Date(),
     updated_at: new Date(),
-    deleted_at: null
+    deleted_at: null,
+    coverUrl: null
   },
   {
     id: '2',
@@ -90,7 +91,8 @@ const mockTags: Tag[] = [
     description: 'Fiction books',
     created_at: new Date(),
     updated_at: new Date(),
-    deleted_at: null
+    deleted_at: null,
+    coverUrl: null
   },
   {
     id: '3',
@@ -98,7 +100,8 @@ const mockTags: Tag[] = [
     description: 'American literature',
     created_at: new Date(),
     updated_at: new Date(),
-    deleted_at: null
+    deleted_at: null,
+    coverUrl: null
   }
 ]
 
@@ -160,7 +163,8 @@ export const ManyTags: Story = {
         description: 'Set in the Jazz Age',
         created_at: new Date(),
         updated_at: new Date(),
-        deleted_at: null
+        deleted_at: null,
+        coverUrl: null
       },
       {
         id: '5',
@@ -168,7 +172,8 @@ export const ManyTags: Story = {
         description: 'Literary fiction',
         created_at: new Date(),
         updated_at: new Date(),
-        deleted_at: null
+        deleted_at: null,
+        coverUrl: null
       },
       {
         id: '6',
@@ -176,7 +181,8 @@ export const ManyTags: Story = {
         description: 'Set in the 1920s',
         created_at: new Date(),
         updated_at: new Date(),
-        deleted_at: null
+        deleted_at: null,
+        coverUrl: null
       }
     ]
   }
