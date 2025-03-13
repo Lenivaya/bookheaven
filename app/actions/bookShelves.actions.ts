@@ -253,7 +253,7 @@ export async function getShelfByIdMinimal(id: string) {
  * Gets a shelf by id with books
  */
 export async function getShelfByIdWithBooks(id: string) {
-  const userId = await getAuthenticatedUserId()
+  const { userId } = await auth()
   return (await db.query.shelves.findFirst({
     where: and(
       eq(shelves.id, id),

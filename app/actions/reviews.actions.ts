@@ -9,7 +9,7 @@ import {
   reviewLikes,
   reviews
 } from '@/db/schema'
-import { isSome } from '@/lib/types'
+import { isNone, isSome } from '@/lib/types'
 import {
   and,
   eq,
@@ -108,7 +108,10 @@ export async function getReviews(
  * Has reviewed this book edition
  */
 export async function hasReviewedBookEdition(editionId: string) {
-  const userId = await getAuthenticatedUserId()
+  const { userId } = await auth()
+  if (isNone(userId)) {
+    return false
+  }
   return isSome(
     await db.query.reviews.findFirst({
       where: (reviews, { eq, and }) =>
