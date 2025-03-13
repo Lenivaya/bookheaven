@@ -1,16 +1,15 @@
-import { Author } from '@/db/schema'
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { ZoomableImage } from '@/components/generic/ZoomableImage'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { Author } from '@/db/schema'
+import { cn } from '@/lib/utils'
 import { CalendarIcon, CheckCircle2 } from 'lucide-react'
 import { Link } from 'next-view-transitions'
+import { AuthorAdminActions } from './AuthorAdminActions'
 import { AuthorFollowButton } from './AuthorFollowButton'
 import { AuthorViewBooksButton } from './AuthorViewBooksButton'
-import { ZoomableImage } from '@/components/generic/ZoomableImage'
-import { cn } from '@/lib/utils'
-import { checkRole } from '@/lib/auth/utils'
-import { AuthorAdminActions } from './AuthorAdminActions'
 
 interface AuthorCardProps {
   author: Author

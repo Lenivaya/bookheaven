@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { PlusIcon } from 'lucide-react'
+import { PlusIcon, BookMarkedIcon, HeartIcon } from 'lucide-react'
 import { auth } from '@clerk/nextjs/server'
 import { getBookShelves } from '@/app/actions/bookShelves.actions'
 import { notFound } from 'next/navigation'
@@ -11,6 +11,7 @@ import { bookShelvesSearchParamsCache } from '@/components/bookshelves/bookshelv
 import { BookShelveCard } from '@/components/bookshelves/bookshelves-card/BookShelveCard'
 import { BookShelvesSearch } from '@/components/bookshelves/bookshelves-search/BookShelvesSearch'
 import { Link } from 'next-view-transitions'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 const DEFAULT_PAGE_SIZE = 10
 
@@ -28,12 +29,20 @@ export default async function BookShelvesPage({
     return notFound()
   }
 
-  const { shelves, totalCount, pageCount } = await getBookShelves({
-    userIds: [userId],
-    limit: DEFAULT_PAGE_SIZE,
-    offset: (Number(params.page) - 1) * DEFAULT_PAGE_SIZE,
-    search: params.q
-  })
+  const [personalShelves, likedShelves] = await Promise.all([
+    getBookShelves({
+      userIds: [userId],
+      limit: DEFAULT_PAGE_SIZE,
+      offset: (Number(params.page) - 1) * DEFAULT_PAGE_SIZE,
+      search: params.q
+    }),
+    getBookShelves({
+      limit: DEFAULT_PAGE_SIZE,
+      offset: (Number(params.page) - 1) * DEFAULT_PAGE_SIZE,
+      search: params.q,
+      likedByUser: true
+    })
+  ])
 
   return (
     <div className='space-y-6'>
@@ -57,31 +66,70 @@ export default async function BookShelvesPage({
 
       <Separator />
 
-      <BookShelvesSearch />
+      <Tabs defaultValue='personal' className='w-full'>
+        <TabsList className='w-full justify-center'>
+          <TabsTrigger value='personal' className='flex items-center gap-2'>
+            <BookMarkedIcon className='h-4 w-4' />
+            My Shelves
+          </TabsTrigger>
+          <TabsTrigger value='liked' className='flex items-center gap-2'>
+            <HeartIcon className='h-4 w-4' />
+            Liked Shelves
+          </TabsTrigger>
+        </TabsList>
 
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-        {shelves.map((shelf) => (
-          <BookShelveCard key={shelf.id} shelf={shelf} />
-        ))}
-      </div>
-      {totalCount > DEFAULT_PAGE_SIZE && (
-        <div className='mt-8'>
-          <BookShelvesPagination
-            currentPage={Number(params.page)}
-            pageCount={pageCount}
-            totalCount={totalCount}
-            pageSize={DEFAULT_PAGE_SIZE}
-          />
-        </div>
-      )}
+        <BookShelvesSearch />
 
-      {shelves.length <= 0 && (
-        <div className='rounded-lg border bg-card text-card-foreground shadow-sm'>
-          <div className='p-6 text-center text-muted-foreground'>
-            You haven&apos;t created any book shelves yet.
+        <TabsContent value='personal'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            {personalShelves.shelves.map((shelf) => (
+              <BookShelveCard key={shelf.id} shelf={shelf} />
+            ))}
           </div>
-        </div>
-      )}
+          {personalShelves.totalCount > DEFAULT_PAGE_SIZE && (
+            <div className='mt-8'>
+              <BookShelvesPagination
+                currentPage={Number(params.page)}
+                pageCount={personalShelves.pageCount}
+                totalCount={personalShelves.totalCount}
+                pageSize={DEFAULT_PAGE_SIZE}
+              />
+            </div>
+          )}
+          {personalShelves.shelves.length <= 0 && (
+            <div className='rounded-lg border bg-card text-card-foreground shadow-sm'>
+              <div className='p-6 text-center text-muted-foreground'>
+                You haven&apos;t created any book shelves yet.
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value='liked'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            {likedShelves.shelves.map((shelf) => (
+              <BookShelveCard key={shelf.id} shelf={shelf} />
+            ))}
+          </div>
+          {likedShelves.totalCount > DEFAULT_PAGE_SIZE && (
+            <div className='mt-8'>
+              <BookShelvesPagination
+                currentPage={Number(params.page)}
+                pageCount={likedShelves.pageCount}
+                totalCount={likedShelves.totalCount}
+                pageSize={DEFAULT_PAGE_SIZE}
+              />
+            </div>
+          )}
+          {likedShelves.shelves.length <= 0 && (
+            <div className='rounded-lg border bg-card text-card-foreground shadow-sm'>
+              <div className='p-6 text-center text-muted-foreground'>
+                You haven&apos;t liked any book shelves yet.
+              </div>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

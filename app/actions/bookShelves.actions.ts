@@ -39,6 +39,7 @@ import {
 import { z } from 'zod'
 import { getAuthenticatedUserId } from './actions.helpers'
 import { revalidatePath } from 'next/cache'
+import { auth } from '@clerk/nextjs/server'
 
 export type FetchedShelfRelations = typeof shelves.$inferSelect & {
   items: (typeof shelfItems.$inferSelect & {
@@ -70,6 +71,7 @@ export async function getBookShelves(
     authorsIds?: string[]
     bookWorksIds?: string[]
     onlyPublic?: boolean
+    likedByUser?: boolean
   } = {
     limit: 10,
     offset: 0,
@@ -77,7 +79,8 @@ export async function getBookShelves(
     userIds: [],
     tagsIds: [],
     authorsIds: [],
-    onlyPublic: false
+    onlyPublic: false,
+    likedByUser: false
   }
 ) {
   const filters: SQL[] = []
@@ -100,6 +103,19 @@ export async function getBookShelves(
 
   if (options.onlyPublic) {
     filters.push(eq(shelves.isPublic, true))
+  }
+
+  if (options.likedByUser) {
+    const { userId } = await auth()
+    if (isSome(userId)) {
+      const likedShelves = db
+        .select({
+          shelfId: shelfLikes.shelfId
+        })
+        .from(shelfLikes)
+        .where(eq(shelfLikes.userId, userId))
+      filters.push(inArray(shelves.id, likedShelves))
+    }
   }
 
   if (options.search) {
