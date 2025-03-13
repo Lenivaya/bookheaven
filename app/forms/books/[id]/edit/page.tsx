@@ -6,13 +6,13 @@ import { notFound } from 'next/navigation'
 import { BookForm } from '../../BookForm'
 
 interface EditBookPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function EditBookPage({ params }: EditBookPageProps) {
-  const { id } = params
+  const { id } = await params
 
   // Fetch the book
   const book = await getBook(id)

@@ -108,7 +108,7 @@ export async function getReviews(
  * Has reviewed this book edition
  */
 export async function hasReviewedBookEdition(editionId: string) {
-  const { userId } = await auth()
+  const userId = await getAuthenticatedUserId()
   return isSome(
     await db.query.reviews.findFirst({
       where: (reviews, { eq, and }) =>

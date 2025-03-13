@@ -5,7 +5,6 @@ import Image from 'next/image'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { ZoomableImage } from '@/components/generic/ZoomableImage'
-
 import { unstable_ViewTransition as ViewTransition } from 'react'
 
 interface BookCoverProps {
