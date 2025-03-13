@@ -3,44 +3,14 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CalendarIcon, CheckCircle2, Pencil, Trash2 } from 'lucide-react'
+import { CalendarIcon, CheckCircle2 } from 'lucide-react'
 import { Link } from 'next-view-transitions'
 import { AuthorFollowButton } from './AuthorFollowButton'
 import { AuthorViewBooksButton } from './AuthorViewBooksButton'
 import { ZoomableImage } from '@/components/generic/ZoomableImage'
 import { cn } from '@/lib/utils'
 import { checkRole } from '@/lib/auth/utils'
-
-interface AuthorAdminActionsProps {
-  authorId: string
-}
-
-async function AuthorAdminActions({ authorId }: AuthorAdminActionsProps) {
-  const isAdmin = await checkRole('admin')
-
-  if (!isAdmin) return null
-
-  return (
-    <div className='flex gap-2'>
-      <Button
-        variant='outline'
-        size='sm'
-        className='text-yellow-600 hover:text-yellow-700'
-      >
-        <Pencil className='h-4 w-4' />
-        <span className='sr-only'>Edit author</span>
-      </Button>
-      <Button
-        variant='outline'
-        size='sm'
-        className='text-red-600 hover:text-red-700'
-      >
-        <Trash2 className='h-4 w-4' />
-        <span className='sr-only'>Delete author</span>
-      </Button>
-    </div>
-  )
-}
+import { AuthorAdminActions } from './AuthorAdminActions'
 
 interface AuthorCardProps {
   author: Author
@@ -158,7 +128,9 @@ export default function AuthorCard({
         </div>
 
         <div className='flex gap-2 items-center'>
-          {showAdminActions && <AuthorAdminActions authorId={author.id} />}
+          {showAdminActions && (
+            <AuthorAdminActions authorId={author.id} authorName={author.name} />
+          )}
           <Link href={`/authors/${author.id}`}>
             <Button variant='ghost' size='sm'>
               Profile

@@ -4,6 +4,8 @@ import { db } from '@/db'
 import {
   authorFollowers,
   authors,
+  authorsInsertSchema,
+  authorsUpdateSchema,
   bookEditions,
   bookWorks,
   shelfItems,
@@ -21,6 +23,8 @@ import {
   SQL,
   sum
 } from 'drizzle-orm'
+import { z } from 'zod'
+import { ensureAdmin } from './actions.helpers'
 
 /**
  * Server action to fetch authors with multi-criteria search at the database level
@@ -58,10 +62,10 @@ export async function getAuthors(
       ...getTableColumns(authors)
     })
     .from(authors)
-    .innerJoin(workToAuthors, eq(authors.id, workToAuthors.authorId))
-    .innerJoin(bookWorks, eq(workToAuthors.workId, bookWorks.id))
-    .innerJoin(workToTags, eq(bookWorks.id, workToTags.workId))
-    .innerJoin(tags, eq(workToTags.tagId, tags.id))
+    .leftJoin(workToAuthors, eq(authors.id, workToAuthors.authorId))
+    .leftJoin(bookWorks, eq(workToAuthors.workId, bookWorks.id))
+    .leftJoin(workToTags, eq(bookWorks.id, workToTags.workId))
+    .leftJoin(tags, eq(workToTags.tagId, tags.id))
     .where(and(...filters))
     .limit(options.limit)
     .offset(options.offset)
@@ -70,10 +74,10 @@ export async function getAuthors(
       totalCount: countDistinct(authors.id)
     })
     .from(authors)
-    .innerJoin(workToAuthors, eq(authors.id, workToAuthors.authorId))
-    .innerJoin(bookWorks, eq(workToAuthors.workId, bookWorks.id))
-    .innerJoin(workToTags, eq(bookWorks.id, workToTags.workId))
-    .innerJoin(tags, eq(workToTags.tagId, tags.id))
+    .leftJoin(workToAuthors, eq(authors.id, workToAuthors.authorId))
+    .leftJoin(bookWorks, eq(workToAuthors.workId, bookWorks.id))
+    .leftJoin(workToTags, eq(bookWorks.id, workToTags.workId))
+    .leftJoin(tags, eq(workToTags.tagId, tags.id))
     .where(and(...filters))
 
   const [resultAuthors, [{ totalCount }]] = await Promise.all([
@@ -143,4 +147,44 @@ export async function getAuthorStats(authorId: string) {
     followersCount,
     mentionedInShelvesCount
   }
+}
+
+/**
+ * Upserts author to database
+ */
+export async function upsertAuthor(
+  author: z.infer<typeof authorsInsertSchema>
+) {
+  await ensureAdmin()
+  const parsedAuthor = authorsInsertSchema.parse(author)
+  const [insertedAuthor] = await db
+    .insert(authors)
+    .values(parsedAuthor)
+    .returning()
+  return insertedAuthor
+}
+
+/**
+ * Deletes author from database
+ */
+export async function deleteAuthor(authorId: string) {
+  await ensureAdmin()
+  await db.delete(authors).where(eq(authors.id, authorId))
+}
+
+/**
+ * Updates author
+ */
+export async function updateAuthor(
+  authorId: string,
+  values: z.infer<typeof authorsUpdateSchema>
+) {
+  await ensureAdmin()
+  const parsedValues = authorsUpdateSchema.parse(values)
+  const [updatedAuthor] = await db
+    .update(authors)
+    .set(parsedValues)
+    .where(eq(authors.id, authorId))
+    .returning()
+  return updatedAuthor
 }

@@ -6,6 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { SearchParams } from 'nuqs/server'
 import AuthorList from '@/components/authors/author-list/AuthorList'
+import { Button } from '@/components/ui/button'
+import { PlusIcon } from 'lucide-react'
+import { Link } from 'next-view-transitions'
 
 const DEFAULT_PAGE_SIZE = 12
 
@@ -26,11 +29,20 @@ export default async function AdminAuthorsPage({
 
   return (
     <div className='space-y-6'>
-      <div>
-        <h2 className='text-2xl font-semibold tracking-tight'>Authors</h2>
-        <p className='text-muted-foreground'>
-          Manage authors and their information.
-        </p>
+      <div className='flex items-center justify-between'>
+        <div>
+          <h2 className='text-2xl font-semibold tracking-tight'>Authors</h2>
+          <p className='text-muted-foreground'>
+            Manage authors and their information.
+          </p>
+        </div>
+
+        <Button size='sm' className='gap-1' asChild>
+          <Link href='/forms/authors'>
+            <PlusIcon className='h-4 w-4' />
+            <span>Add Author</span>
+          </Link>
+        </Button>
       </div>
 
       <Separator />
