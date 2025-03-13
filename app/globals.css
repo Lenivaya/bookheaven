@@ -167,4 +167,33 @@
   *:focus {
     @apply focus:ring-0 focus:outline-none;
   }
+
+  /* Custom Scrollbar Styles */
+  ::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/20 hover:bg-primary/40 rounded-full transition-all duration-150 hover:w-2;
+  }
+
+  /* Hide scrollbar buttons */
+  ::-webkit-scrollbar-button {
+    @apply hidden;
+  }
+
+  /* Hide on inactive scroll but show on hover/active */
+  ::-webkit-scrollbar-thumb:vertical {
+    @apply min-h-[48px];
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) transparent;
+  }
 }
