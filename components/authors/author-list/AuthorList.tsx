@@ -21,13 +21,15 @@ interface AuthorListProps extends VariantProps<typeof authorListVariants> {
   authors: Author[]
   followedAuthorIds?: string[]
   className?: string
+  showAdminActions?: boolean
 }
 
 export default function AuthorList({
   authors,
   followedAuthorIds = [],
   layout,
-  className
+  className,
+  showAdminActions = false
 }: AuthorListProps) {
   if (!authors.length) {
     return (
@@ -49,6 +51,7 @@ export default function AuthorList({
           key={author.id}
           author={author}
           isFollowing={followedAuthorIds.includes(author.id)}
+          showAdminActions={showAdminActions}
         />
       ))}
     </div>
