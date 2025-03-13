@@ -3,7 +3,7 @@ import { getTags } from '@/app/actions/tags.actions'
 import { getBook, upsertBook } from '@/app/actions/books.actions'
 import { isNone } from '@/lib/types'
 import { notFound } from 'next/navigation'
-import { BookForm } from '../../BookForm'
+import { BookForm, BookFormData } from '../../BookForm'
 
 interface EditBookPageProps {
   params: Promise<{
@@ -23,7 +23,7 @@ export default async function EditBookPage({ params }: EditBookPageProps) {
     getTags()
   ])
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: BookFormData) => {
     'use server'
     return upsertBook(data, id)
   }

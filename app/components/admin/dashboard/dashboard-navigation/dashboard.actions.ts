@@ -1,6 +1,5 @@
 'use server'
 
-import { getAuthenticatedUserId } from '@/app/actions/actions.helpers'
 import { db } from '@/db'
 import {
   authors,

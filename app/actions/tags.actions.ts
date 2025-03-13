@@ -2,7 +2,7 @@
 
 import { db } from '@/db'
 import { tags, workToTags } from '@/db/schema'
-import { and, desc, eq, ilike, sql } from 'drizzle-orm'
+import { and, desc, eq, ilike, sql, SQL } from 'drizzle-orm'
 
 /**
  * Server action to fetch tag by id
@@ -30,7 +30,7 @@ export async function getTags(
   } = {}
 ) {
   const { limit = 100, offset = 0, search = '' } = options
-  const filters: any[] = []
+  const filters: SQL<unknown>[] = []
 
   if (search) {
     filters.push(ilike(tags.name, `%${search}%`))

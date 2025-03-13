@@ -41,7 +41,7 @@ export function AuthorForm({ initialData, onSubmit }: AuthorFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [photoUrl, setPhotoUrl] = useState(initialData?.photoUrl || '')
   const [isAuthorCreated, setIsAuthorCreated] = useState(!!initialData)
-  const [isUploading, setIsUploading] = useState(false)
+  const [isUploading] = useState(false)
   const [createdAuthor, setCreatedAuthor] = useState<Author | null>(null)
 
   const form = useForm<AuthorFormData>({

@@ -28,9 +28,6 @@ export function LikeButton({ bookEditionId, isHovering }: LikeButtonProps) {
     }
   })
 
-  // Show the button if hovering or if the book is already liked
-  const shouldShow = isHovering || isLiked
-
   return (
     <div
       className={cn(

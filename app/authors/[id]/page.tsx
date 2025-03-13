@@ -113,15 +113,6 @@ function PaginationSkeleton() {
   )
 }
 
-// Skeleton for the author profile
-function AuthorProfileSkeleton() {
-  return (
-    <div className='mb-6 sm:mb-8'>
-      <Skeleton className='w-full h-[300px] sm:h-[350px] md:h-[400px] rounded-lg' />
-    </div>
-  )
-}
-
 export default async function AuthorPage({
   params,
   searchParams

@@ -1,7 +1,7 @@
 import { getAuthors } from '@/app/actions/authors.actions'
 import { getTags } from '@/app/actions/tags.actions'
 import { upsertBook } from '@/app/actions/books.actions'
-import { BookForm } from './BookForm'
+import { BookForm, BookFormData } from './BookForm'
 
 export default async function NewBookPage() {
   // Fetch available authors and tags for the form
@@ -10,7 +10,7 @@ export default async function NewBookPage() {
     getTags()
   ])
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: BookFormData) => {
     'use server'
     return upsertBook(data)
   }
