@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator'
 import { SearchParams } from 'nuqs/server'
 import BookCard from '@/components/books/book-card/BookCard'
 
-const DEFAULT_PAGE_SIZE = 12
+const DEFAULT_PAGE_SIZE = 6
 
 interface AdminBooksPageProps {
   searchParams: Promise<SearchParams>

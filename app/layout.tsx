@@ -32,12 +32,12 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <ViewTransitions>
-      <ClerkProvider
-        appearance={{
-          baseTheme: dark
-        }}
-      >
+    <ClerkProvider
+      appearance={{
+        baseTheme: dark
+      }}
+    >
+      <ViewTransitions>
         <html lang='en' className='dark' suppressHydrationWarning>
           <body
             className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -53,7 +53,7 @@ export default function RootLayout({
             </NuqsAdapter>
           </body>
         </html>
-      </ClerkProvider>
-    </ViewTransitions>
+      </ViewTransitions>
+    </ClerkProvider>
   )
 }

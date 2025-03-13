@@ -23,10 +23,8 @@ export default function BookInfo({ book, work, tags }: BookInfoProps) {
       {work.description && (
         <div className='space-y-2'>
           <h2 className='text-xl font-semibold'>Description</h2>
-          <div className='text-muted-foreground leading-relaxed prose prose-sm max-w-none'>
-            {work.description.split('\n\n').map((paragraph, i) => (
-              <p key={i}>{paragraph}</p>
-            ))}
+          <div className='text-muted-foreground leading-relaxed prose prose-sm max-w-none whitespace-pre-line'>
+            {work.description}
           </div>
         </div>
       )}
