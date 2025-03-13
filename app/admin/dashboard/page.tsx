@@ -1,3 +1,4 @@
+import { getAdminDashboardData } from '@/app/components/admin/dashboard/dashboard-navigation/dashboard.actions'
 import {
   Card,
   CardContent,
@@ -6,15 +7,24 @@ import {
   CardTitle
 } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { BookIcon, PackageIcon, UsersIcon } from 'lucide-react'
+import {
+  BookIcon,
+  BookmarkIcon,
+  HeartIcon,
+  PackageIcon,
+  TagIcon,
+  UsersIcon
+} from 'lucide-react'
 
-export default function AdminDashboardPage() {
-  // Mock data - in real implementation, this would come from the database
-  const stats = {
-    totalOrders: 156,
-    totalAuthors: 45,
-    totalBooks: 234
-  }
+export default async function AdminDashboardPage() {
+  const {
+    ordersCount,
+    authorsCount,
+    booksCount,
+    bookShelvesCount,
+    totalReviewsCount,
+    totalTagsCount
+  } = await getAdminDashboardData()
 
   return (
     <div className='space-y-6'>
@@ -40,7 +50,7 @@ export default function AdminDashboardPage() {
             <CardDescription>All user orders</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{stats.totalOrders}</div>
+            <div className='text-2xl font-bold'>{ordersCount}</div>
           </CardContent>
         </Card>
 
@@ -53,7 +63,7 @@ export default function AdminDashboardPage() {
             <CardDescription>Total registered authors</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{stats.totalAuthors}</div>
+            <div className='text-2xl font-bold'>{authorsCount}</div>
           </CardContent>
         </Card>
 
@@ -66,7 +76,48 @@ export default function AdminDashboardPage() {
             <CardDescription>Total books in catalog</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{stats.totalBooks}</div>
+            <div className='text-2xl font-bold'>{booksCount}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className='pb-2'>
+            <div className='flex items-center gap-2'>
+              <BookmarkIcon className='h-4 w-4 text-muted-foreground' />
+              <CardTitle className='text-sm font-medium'>
+                Book Shelves
+              </CardTitle>
+            </div>
+            <CardDescription>Total user book shelves</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold'>{bookShelvesCount}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className='pb-2'>
+            <div className='flex items-center gap-2'>
+              <HeartIcon className='h-4 w-4 text-muted-foreground' />
+              <CardTitle className='text-sm font-medium'>Reviews</CardTitle>
+            </div>
+            <CardDescription>Total user reviews</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold'>{totalReviewsCount}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className='pb-2'>
+            <div className='flex items-center gap-2'>
+              <TagIcon className='h-4 w-4 text-muted-foreground' />
+              <CardTitle className='text-sm font-medium'>Tags</CardTitle>
+            </div>
+            <CardDescription>Total book tags</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold'>{totalTagsCount}</div>
           </CardContent>
         </Card>
       </div>
