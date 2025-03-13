@@ -6,9 +6,8 @@ import {
 } from '@/app/actions/bookShelves.actions'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Heart } from 'lucide-react'
-import { toast } from 'sonner'
+import { useLikeOptimistic } from '@/hooks/useLikeOptimistic'
 
 interface ShelfLikeButtonProps {
   shelfId: string
@@ -16,24 +15,14 @@ interface ShelfLikeButtonProps {
 }
 
 export function ShelfLikeButton({ shelfId, likesCount }: ShelfLikeButtonProps) {
-  const queryClient = useQueryClient()
-
-  const { data: isLiked = false, isLoading: isLikeStatusLoading } = useQuery({
-    queryKey: ['isLikedShelf', shelfId],
-    queryFn: () => hasLikedShelf(shelfId)
-  })
-
-  const likeMutation = useMutation({
-    mutationFn: () => toggleShelfLike(shelfId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['isLikedShelf', shelfId]
-      })
-    },
-    onError: () => {
-      toast.error('Failed to update like status. Please try again.')
-    }
-  })
+  const { isLiked, isLikeStatusLoading, likeMutation, optimisticLikesCount } =
+    useLikeOptimistic({
+      itemId: shelfId,
+      initialLikesCount: likesCount,
+      queryKeyPrefix: 'isLikedShelf',
+      checkLikeStatusFn: hasLikedShelf,
+      toggleLikeFn: () => toggleShelfLike(shelfId)
+    })
 
   return (
     <div className='flex items-center gap-1.5'>
@@ -47,12 +36,18 @@ export function ShelfLikeButton({ shelfId, likesCount }: ShelfLikeButtonProps) {
             : 'text-muted-foreground hover:text-foreground'
         )}
         onClick={() => {
-          likeMutation.mutate()
+          likeMutation.mutate(undefined)
         }}
-        disabled={likeMutation.isPending || isLikeStatusLoading}
+        disabled={isLikeStatusLoading}
       >
         {likeMutation.isPending ? (
-          <span className='h-4 w-4 animate-pulse' />
+          <Heart
+            className={cn(
+              'h-4 w-4 transition-all animate-pulse',
+              // Still show the appropriate fill state during pending mutations
+              isLiked ? 'fill-current' : 'fill-none'
+            )}
+          />
         ) : (
           <Heart
             className={cn(
@@ -61,7 +56,7 @@ export function ShelfLikeButton({ shelfId, likesCount }: ShelfLikeButtonProps) {
             )}
           />
         )}
-        <span className='text-xs font-medium'>{likesCount}</span>
+        <span className='text-xs font-medium'>{optimisticLikesCount}</span>
         <span className='sr-only'>{isLiked ? 'Unlike' : 'Like'} shelf</span>
       </Button>
     </div>
