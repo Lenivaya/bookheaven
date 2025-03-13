@@ -87,6 +87,14 @@ export function OrderCard({ order }: OrderCardProps) {
                 />
               </Suspense>
               <div className='flex items-center gap-2 text-xs text-muted-foreground'>
+                <span className='font-medium'>User ID:</span>
+                <CopyableText
+                  text={order.userId}
+                  displayText={`user_${order.userId.substring(0, 8)}...`}
+                  className='font-mono hover:text-foreground transition-colors'
+                />
+              </div>
+              <div className='flex items-center gap-2 text-xs text-muted-foreground'>
                 <span className='font-medium'>Session ID:</span>
                 <CopyableText
                   text={order.stripeSessionId}
