@@ -8,6 +8,13 @@
       "when": 1741892123549,
       "tag": "0000_init_db",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1741905835912,
+      "tag": "0001_add_idxs",
+      "breakpoints": true
     }
   ]
 }

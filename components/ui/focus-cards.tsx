@@ -32,9 +32,14 @@ export const Card = React.memo(
         fill
         className='object-cover absolute inset-0'
       />
+      {/* Always visible label for small touch devices */}
+      <div className='absolute inset-x-0 bottom-0 bg-black/70 py-3 px-4 md:hidden'>
+        <div className='text-lg font-medium text-white'>{card.title}</div>
+      </div>
+      {/* Hover overlay for larger devices */}
       <div
         className={cn(
-          'absolute inset-0 bg-black/50 flex items-end py-8 px-4 transition-opacity duration-300',
+          'absolute inset-0 bg-black/50 flex items-end py-8 px-4 transition-opacity duration-300 hidden md:flex',
           hovered === index ? 'opacity-100' : 'opacity-0'
         )}
       >

@@ -5,7 +5,6 @@ import Image from 'next/image'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { ZoomableImage } from '@/components/generic/ZoomableImage'
-import { unstable_ViewTransition as ViewTransition } from 'react'
 
 interface BookCoverProps {
   thumbnailUrl: string | null
@@ -44,23 +43,21 @@ export default function BookCover({
               <Skeleton className='w-full h-full absolute' />
             </div>
           )}
-          <ViewTransition name='book-cover-image'>
-            <ZoomableImage src={thumbnailUrl} alt={`Cover of ${title}`}>
-              <Image
-                src={thumbnailUrl}
-                alt={`Cover of ${title}`}
-                fill
-                sizes='(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw'
-                className={cn(
-                  'object-cover transition-opacity duration-300',
-                  isLoading ? 'opacity-0' : 'opacity-100'
-                )}
-                priority
-                onLoad={handleImageLoad}
-                onError={handleImageError}
-              />
-            </ZoomableImage>
-          </ViewTransition>
+          <ZoomableImage src={thumbnailUrl} alt={`Cover of ${title}`}>
+            <Image
+              src={thumbnailUrl}
+              alt={`Cover of ${title}`}
+              fill
+              sizes='(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw'
+              className={cn(
+                'object-cover transition-opacity duration-300',
+                isLoading ? 'opacity-0' : 'opacity-100'
+              )}
+              priority
+              onLoad={handleImageLoad}
+              onError={handleImageError}
+            />
+          </ZoomableImage>
         </>
       ) : (
         <div className='w-full h-full flex items-center justify-center p-4 text-center'>

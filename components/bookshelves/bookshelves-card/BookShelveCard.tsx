@@ -17,7 +17,6 @@ import { BookShelveUserInfo } from './BookShelveUserInfo'
 import { ShelfDeleteButton } from './ShelfDeleteButton'
 import { ShelfEditButton } from './ShelfEditButton'
 import { ShelfLikeButton } from './ShelfLikeButton'
-import { unstable_ViewTransition as ViewTransition } from 'react'
 
 interface BookShelveCardProps {
   shelf: FetchedShelfRelations
@@ -50,9 +49,7 @@ export function BookShelveCard({ shelf }: BookShelveCardProps) {
 
         <div className='flex justify-between items-start'>
           <div>
-            <ViewTransition name='book-shelf-name'>
-              <CardTitle className='text-xl font-bold'>{shelf.name}</CardTitle>
-            </ViewTransition>
+            <CardTitle className='text-xl font-bold'>{shelf.name}</CardTitle>
             <CardDescription className='line-clamp-2 mt-1'>
               {shelf.description || 'No description provided'}
             </CardDescription>
