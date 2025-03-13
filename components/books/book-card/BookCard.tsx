@@ -41,9 +41,9 @@ export default function BookCard({
 }: BookCardProps) {
   return (
     <Card className='group h-full overflow-hidden border-border/40 bg-card/95 transition-all duration-300 hover:border-primary/30 hover:shadow-md dark:bg-card/95 dark:hover:border-primary/40 dark:hover:bg-card/100'>
-      <div className='grid grid-cols-[120px_1fr] gap-3 p-3'>
+      <div className='grid grid-cols-1 xs:grid-cols-[100px_1fr] sm:grid-cols-[120px_1fr] gap-2 xs:gap-3 p-2 xs:p-3'>
         {/* Book cover on the left */}
-        <div className='relative h-[180px] w-[120px] overflow-hidden rounded-md shadow-sm transition-shadow duration-300 group-hover:shadow-md group'>
+        <div className='relative h-[160px] xs:h-[150px] sm:h-[180px] w-full xs:w-[100px] sm:w-[120px] mx-auto xs:mx-0 overflow-hidden rounded-md shadow-sm transition-shadow duration-300 group-hover:shadow-md group'>
           {/* Client component for interactive book cover */}
           <ClientBookCover
             thumbnailUrl={edition.thumbnailUrl}
@@ -61,7 +61,7 @@ export default function BookCard({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Link href={`/books/${edition.id}`}>
-                      <CardTitle className='line-clamp-2 text-base font-semibold leading-tight tracking-tight group-hover:text-primary transition-colors duration-200 dark:text-slate-50'>
+                      <CardTitle className='line-clamp-2 text-sm xs:text-base font-semibold leading-tight tracking-tight group-hover:text-primary transition-colors duration-200 dark:text-slate-50'>
                         {book.title}
                       </CardTitle>
                     </Link>
@@ -107,20 +107,20 @@ export default function BookCard({
 
           <CardContent className='flex-grow p-0 py-1'>
             {book.description && (
-              <p className='line-clamp-3 text-sm leading-snug text-muted-foreground dark:text-slate-400/90'>
+              <p className='line-clamp-2 xs:line-clamp-3 text-xs xs:text-sm leading-snug text-muted-foreground dark:text-slate-400/90'>
                 {book.description}
               </p>
             )}
           </CardContent>
 
-          <CardFooter className='mt-auto flex flex-col items-start gap-1.5 p-0 pt-1'>
+          <CardFooter className='mt-auto flex flex-col items-start gap-1 xs:gap-1.5 p-0 pt-1'>
             {/* Tag section with min-height instead of fixed height */}
-            <div className='min-h-[32px] w-full'>
+            <div className='min-h-[24px] xs:min-h-[32px] w-full'>
               <BookTagsList tags={tags} />
             </div>
 
             <div className='flex w-full items-center justify-between mt-1'>
-              <div className='flex items-center gap-2.5'>
+              <div className='flex items-center gap-1.5 xs:gap-2.5'>
                 <ClientPriceAndBuy
                   price={edition.price}
                   salePrice={edition.salePrice}
@@ -130,7 +130,7 @@ export default function BookCard({
                 />
               </div>
 
-              <div className='text-xs text-muted-foreground dark:text-slate-500'>
+              <div className='text-[10px] xs:text-xs text-muted-foreground dark:text-slate-500'>
                 {edition.format && (
                   <span className='font-medium'>{edition.format}</span>
                 )}
