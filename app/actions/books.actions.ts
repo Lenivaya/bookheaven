@@ -29,6 +29,9 @@ import {
   SQL
 } from 'drizzle-orm'
 import { getAuthenticatedUserId } from './actions.helpers'
+import IsbnFetch from 'isbn-fetch'
+import { faker } from '@faker-js/faker'
+import { revalidatePath } from 'next/cache'
 
 type Book = {
   edition: BookEdition
@@ -47,6 +50,38 @@ type FetchedBookRelations = BookEdition & {
       {
         tag: Tag
       }[]
+  }
+}
+
+type IsbnSearchResponse =
+  | { status: 'error'; message: string }
+  | {
+      status: 'exists'
+      data: {
+        edition: BookEdition
+        work: BookWork
+        authors: Author[]
+        tags: Tag[]
+      }
+    }
+  | {
+      status: 'success'
+      data: {
+        edition: BookEdition
+        work: BookWork
+        authors: Author[]
+        tags: Tag[]
+      }
+    }
+
+type ExistingEditionWithRelations = BookEdition & {
+  work: BookWork & {
+    workToAuthors: (WorkToAuthor & {
+      author: Author
+    })[]
+    workToTags: (WorkToTag & {
+      tag: Tag
+    })[]
   }
 }
 
@@ -503,5 +538,167 @@ export async function deleteBook(editionId: string) {
   } catch (error) {
     console.error('Error deleting book:', error)
     return { success: false, error: 'Failed to delete book' }
+  }
+}
+
+/**
+ * Server action to fetch and process book data by ISBN
+ */
+export async function fetchAndProcessBookByIsbn(
+  isbn: string
+): Promise<IsbnSearchResponse> {
+  try {
+    // First check if book with this ISBN already exists
+    const existingEdition = (await db.query.bookEditions.findFirst({
+      where: eq(bookEditions.isbn, isbn),
+      with: {
+        work: {
+          with: {
+            workToAuthors: {
+              with: {
+                author: true
+              }
+            },
+            workToTags: {
+              with: {
+                tag: true
+              }
+            }
+          }
+        }
+      }
+    })) as ExistingEditionWithRelations | null
+
+    if (existingEdition) {
+      return {
+        status: 'exists',
+        data: {
+          edition: existingEdition,
+          work: existingEdition.work,
+          authors: existingEdition.work.workToAuthors.map(
+            ({ author }) => author
+          ),
+          tags: existingEdition.work.workToTags.map(({ tag }) => tag)
+        }
+      }
+    }
+
+    // Fetch book data from ISBN
+    const bookInfo = await IsbnFetch.combined(isbn)
+    if (!bookInfo) {
+      return {
+        status: 'error',
+        message: 'Book not found'
+      }
+    }
+
+    // Process the data within a transaction
+    const result = await db.transaction(async (tx) => {
+      // Create or get authors
+      const authorPromises = (bookInfo.authors || []).map(
+        async (authorName) => {
+          const [author] = await tx
+            .insert(authors)
+            .values({
+              name: authorName
+            })
+            .onConflictDoUpdate({
+              target: authors.name,
+              set: { name: authorName }
+            })
+            .returning()
+          return author
+        }
+      )
+      const bookAuthors = await Promise.all(authorPromises)
+
+      // Create work
+      const [work] = await tx
+        .insert(bookWorks)
+        .values({
+          title: bookInfo.title!,
+          description: bookInfo.description,
+          originalLanguage: bookInfo.language?.toLowerCase() || 'en'
+        })
+        .returning()
+
+      // Create edition
+      const [edition] = await tx
+        .insert(bookEditions)
+        .values({
+          workId: work.id,
+          isbn: bookInfo.isbn13,
+          publisher: bookInfo.publishers?.[0],
+          publishedAt: bookInfo.publishedDate
+            ? new Date(bookInfo.publishedDate)
+            : null,
+          language: bookInfo.language?.toLowerCase() || 'en',
+          pageCount: bookInfo.pageCount,
+          thumbnailUrl: bookInfo.thumbnail,
+          smallThumbnailUrl: bookInfo.thumbnailSmall,
+          price: faker.commerce.price({ min: 9, max: 50, dec: 0 }),
+          stockQuantity: faker.number.int({ min: 10, max: 200 }),
+          format: 'paperback' // Default format
+        })
+        .returning()
+
+      // Link authors to work
+      await Promise.all(
+        bookAuthors.map((author) =>
+          tx.insert(workToAuthors).values({
+            authorId: author.id,
+            workId: work.id
+          })
+        )
+      )
+
+      // Create and link tags/genres
+      const bookTags = []
+      if (bookInfo.genres) {
+        const tagPromises = bookInfo.genres.map(async (genre) => {
+          const [tag] = await tx
+            .insert(tags)
+            .values({
+              name: genre
+            })
+            .onConflictDoUpdate({
+              target: tags.name,
+              set: { name: genre }
+            })
+            .returning()
+
+          await tx.insert(workToTags).values({
+            tagId: tag.id,
+            workId: work.id
+          })
+
+          return tag
+        })
+        bookTags.push(...(await Promise.all(tagPromises)))
+      }
+
+      return {
+        edition,
+        work,
+        authors: bookAuthors,
+        tags: bookTags
+      }
+    })
+
+    revalidatePath('/forms/books')
+    revalidatePath(`/forms/books/${result.edition.id}/edit`)
+    revalidatePath(`/books/${result.edition.id}`)
+    revalidatePath('/books')
+
+    return {
+      status: 'success',
+      data: result
+    }
+  } catch (error) {
+    console.error('Error processing book:', error)
+    return {
+      status: 'error',
+      message: 'Failed to process book'
+    }
   }
 }
