@@ -63,7 +63,8 @@ export async function getOrders(
         ilike(bookEditions.publisher, `%${term}%`),
         ilike(bookEditions.edition, `%${term}%`),
         ilike(tags.name, `%${term}%`),
-        ilike(authors.name, `%${term}%`)
+        ilike(authors.name, `%${term}%`),
+        ilike(orders.userId, `%${term}%`)
       )
     ) as SQL[]
     filters.push(...orConditions)
