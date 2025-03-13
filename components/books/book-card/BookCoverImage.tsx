@@ -62,18 +62,12 @@ export function BookCoverImage({
       </ZoomableImage>
 
       {/* Hover overlay with like button */}
-      <div
-        className={cn(
-          'absolute inset-0 bg-black/40 transition-opacity duration-200',
-          isHovering ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        )}
-      >
-        <Suspense fallback={null}>
-          <Protect>
-            <LikeButton bookEditionId={bookEditionId} isHovering={isHovering} />
-          </Protect>
-        </Suspense>
-      </div>
+      <div className='absolute inset-0 bg-black/40' />
+      <Suspense fallback={null}>
+        <Protect>
+          <LikeButton bookEditionId={bookEditionId} isHovering={isHovering} />
+        </Protect>
+      </Suspense>
 
       {isLoading && (
         <div className='absolute inset-0 flex items-center justify-center bg-muted/50 dark:bg-muted/30'>
