@@ -25,6 +25,7 @@ import {
 import { revalidatePath } from 'next/cache'
 import { getAuthenticatedUserId } from './actions.helpers'
 import { isSome } from '@/lib/types'
+import { checkRole } from '@/lib/auth/utils'
 
 export type FetchedOrderRelations = typeof orders.$inferSelect & {
   items: (typeof orderItems.$inferSelect & {
@@ -132,12 +133,13 @@ export async function getOrders(
  */
 export async function cancelOrder(orderId: string) {
   const user = await getAuthenticatedUserId()
+  const isAdmin = await checkRole('admin')
   await db.transaction(async (tx) => {
     const order = await tx.query.orders.findFirst({
-      where: (orders, { eq, and, ne }) =>
+      where: (orders, { eq, and, ne, or }) =>
         and(
           eq(orders.id, orderId),
-          eq(orders.userId, user),
+          isAdmin ? undefined : eq(orders.userId, user),
           ne(orders.status, 'Cancelled')
         ),
       with: {
