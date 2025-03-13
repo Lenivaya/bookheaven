@@ -2,8 +2,11 @@
 
 import { db } from '@/db'
 import {
+  authorFollowers,
   authors,
+  bookEditions,
   bookWorks,
+  shelfItems,
   tags,
   workToAuthors,
   workToTags
@@ -15,7 +18,8 @@ import {
   getTableColumns,
   ilike,
   or,
-  SQL
+  SQL,
+  sum
 } from 'drizzle-orm'
 
 /**
@@ -88,4 +92,51 @@ export async function getAuthor(id: string) {
     where: eq(authors.id, id)
   })
   return author ?? null
+}
+
+/**
+ * Get author books count
+ */
+export async function getAuthorStats(authorId: string) {
+  const [{ bookCount } = { bookCount: 0 }] = await db
+    .select({
+      bookCount: countDistinct(bookWorks.id)
+    })
+    .from(bookWorks)
+    .innerJoin(workToAuthors, eq(bookWorks.id, workToAuthors.workId))
+    .where(eq(workToAuthors.authorId, authorId))
+
+  const [{ likesCount } = { likesCount: 0 }] = await db
+    .select({
+      likesCount: sum(bookEditions.likesCount)
+    })
+    .from(bookEditions)
+    .innerJoin(bookWorks, eq(bookEditions.workId, bookWorks.id))
+    .innerJoin(workToAuthors, eq(bookWorks.id, workToAuthors.workId))
+    .where(eq(workToAuthors.authorId, authorId))
+
+  const [{ followersCount } = { followersCount: 0 }] = await db
+    .select({
+      followersCount: countDistinct(authorFollowers.authorId)
+    })
+    .from(authorFollowers)
+    .where(eq(authorFollowers.authorId, authorId))
+
+  const [{ mentionedInShelvesCount } = { mentionedInShelvesCount: 0 }] =
+    await db
+      .select({
+        mentionedInShelvesCount: countDistinct(shelfItems.shelfId)
+      })
+      .from(shelfItems)
+      .innerJoin(bookEditions, eq(shelfItems.editionId, bookEditions.id))
+      .innerJoin(bookWorks, eq(bookEditions.workId, bookWorks.id))
+      .innerJoin(workToAuthors, eq(bookWorks.id, workToAuthors.workId))
+      .where(eq(workToAuthors.authorId, authorId))
+
+  return {
+    bookCount,
+    likesCount,
+    followersCount,
+    mentionedInShelvesCount
+  }
 }
