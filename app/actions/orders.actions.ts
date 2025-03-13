@@ -17,12 +17,14 @@ import {
   eq,
   getTableColumns,
   ilike,
+  inArray,
   or,
   sql,
   SQL
 } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { getAuthenticatedUserId } from './actions.helpers'
+import { isSome } from '@/lib/types'
 
 export type FetchedOrderRelations = typeof orders.$inferSelect & {
   items: (typeof orderItems.$inferSelect & {
@@ -40,14 +42,14 @@ export async function getOrders(
     limit: number
     offset: number
     search?: string
+    userIds?: string[]
   } = {
     limit: 10,
     offset: 0,
-    search: ''
+    search: '',
+    userIds: []
   }
 ) {
-  const user = await getAuthenticatedUserId()
-
   const filters: SQL[] = []
 
   if (options.search) {
@@ -66,6 +68,10 @@ export async function getOrders(
     filters.push(...orConditions)
   }
 
+  if (isSome(options.userIds) && options.userIds.length > 0) {
+    filters.push(inArray(orders.userId, options.userIds))
+  }
+
   const getFilteredOrdersQuery = db
     .select({
       ...getTableColumns(orders)
@@ -78,7 +84,7 @@ export async function getOrders(
     .leftJoin(authors, eq(workToAuthors.authorId, authors.id))
     .leftJoin(workToTags, eq(bookWorks.id, workToTags.workId))
     .leftJoin(tags, eq(workToTags.tagId, tags.id))
-    .where(and(...filters, eq(orders.userId, user)))
+    .where(and(...filters))
     .as('filteredOrders')
 
   const getFilteredOrders = db
