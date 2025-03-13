@@ -17,12 +17,15 @@ import {
   eq,
   getTableColumns,
   ilike,
+  inArray,
   or,
   sql,
   SQL
 } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { getAuthenticatedUserId } from './actions.helpers'
+import { isSome } from '@/lib/types'
+import { checkRole } from '@/lib/auth/utils'
 
 export type FetchedOrderRelations = typeof orders.$inferSelect & {
   items: (typeof orderItems.$inferSelect & {
@@ -40,14 +43,14 @@ export async function getOrders(
     limit: number
     offset: number
     search?: string
+    userIds?: string[]
   } = {
     limit: 10,
     offset: 0,
-    search: ''
+    search: '',
+    userIds: []
   }
 ) {
-  const user = await getAuthenticatedUserId()
-
   const filters: SQL[] = []
 
   if (options.search) {
@@ -60,10 +63,15 @@ export async function getOrders(
         ilike(bookEditions.publisher, `%${term}%`),
         ilike(bookEditions.edition, `%${term}%`),
         ilike(tags.name, `%${term}%`),
-        ilike(authors.name, `%${term}%`)
+        ilike(authors.name, `%${term}%`),
+        ilike(orders.userId, `%${term}%`)
       )
     ) as SQL[]
     filters.push(...orConditions)
+  }
+
+  if (isSome(options.userIds) && options.userIds.length > 0) {
+    filters.push(inArray(orders.userId, options.userIds))
   }
 
   const getFilteredOrdersQuery = db
@@ -78,7 +86,7 @@ export async function getOrders(
     .leftJoin(authors, eq(workToAuthors.authorId, authors.id))
     .leftJoin(workToTags, eq(bookWorks.id, workToTags.workId))
     .leftJoin(tags, eq(workToTags.tagId, tags.id))
-    .where(and(...filters, eq(orders.userId, user)))
+    .where(and(...filters))
     .as('filteredOrders')
 
   const getFilteredOrders = db
@@ -126,12 +134,13 @@ export async function getOrders(
  */
 export async function cancelOrder(orderId: string) {
   const user = await getAuthenticatedUserId()
+  const isAdmin = await checkRole('admin')
   await db.transaction(async (tx) => {
     const order = await tx.query.orders.findFirst({
-      where: (orders, { eq, and, ne }) =>
+      where: (orders, { eq, and, ne, or }) =>
         and(
           eq(orders.id, orderId),
-          eq(orders.userId, user),
+          isAdmin ? undefined : eq(orders.userId, user),
           ne(orders.status, 'Cancelled')
         ),
       with: {

@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 export function Navbar() {
   return (
     <div className='fixed top-0 z-40 flex w-full justify-center pt-4 sm:pt-6 md:pt-10'>
-      <header className='w-[95%] rounded-full border border-border/40 bg-background/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/60 md:w-[90%] lg:w-[80%] xl:w-[60%]'>
+      <header className='w-[95%] rounded-full border border-primary/20 bg-background/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/60 md:w-[90%] lg:w-[80%] xl:w-[60%] hover:border-primary/30 transition-colors duration-200'>
         <div className='flex h-12 items-center justify-between px-3 sm:px-6'>
           <div className='flex items-center gap-3 sm:gap-6'>
             <Link

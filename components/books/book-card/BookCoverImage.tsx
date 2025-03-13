@@ -1,13 +1,12 @@
 'use client'
 
-import Image from 'next/image'
-import { Suspense, useState } from 'react'
-import { ImageOff, Loader2 } from 'lucide-react'
 import { ZoomableImage } from '@/components/generic/ZoomableImage'
 import { cn } from '@/lib/utils'
-import { LikeButton } from './LikeButton'
 import { Protect } from '@clerk/nextjs'
-import { unstable_ViewTransition as ViewTransition } from 'react'
+import { ImageOff, Loader2 } from 'lucide-react'
+import Image from 'next/image'
+import { Suspense, useState } from 'react'
+import { LikeButton } from './LikeButton'
 
 interface BookCoverImageProps {
   thumbnailUrl: string | null
@@ -44,39 +43,31 @@ export function BookCoverImage({
       onMouseLeave={() => setIsHovering(false)}
     >
       <ZoomableImage src={thumbnailUrl} alt={`Cover of ${title}`}>
-        <ViewTransition name='book-cover-image'>
-          <Image
-            src={thumbnailUrl}
-            alt={`Cover of ${title}`}
-            fill
-            className={cn(
-              'object-cover transition-opacity duration-300',
-              isLoading ? 'opacity-0' : 'opacity-100',
-              hasError ? 'hidden' : 'block'
-            )}
-            sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
-            onLoad={() => setIsLoading(false)}
-            onError={() => {
-              setIsLoading(false)
-              setHasError(true)
-            }}
-          />
-        </ViewTransition>
+        <Image
+          src={thumbnailUrl}
+          alt={`Cover of ${title}`}
+          fill
+          className={cn(
+            'object-cover transition-opacity duration-300',
+            isLoading ? 'opacity-0' : 'opacity-100',
+            hasError ? 'hidden' : 'block'
+          )}
+          sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
+          onLoad={() => setIsLoading(false)}
+          onError={() => {
+            setIsLoading(false)
+            setHasError(true)
+          }}
+        />
       </ZoomableImage>
 
       {/* Hover overlay with like button */}
-      <div
-        className={cn(
-          'absolute inset-0 bg-black/40 transition-opacity duration-200',
-          isHovering ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        )}
-      >
-        <Suspense fallback={null}>
-          <Protect>
-            <LikeButton bookEditionId={bookEditionId} isHovering={isHovering} />
-          </Protect>
-        </Suspense>
-      </div>
+      <div className='absolute inset-0 bg-black/40' />
+      <Suspense fallback={null}>
+        <Protect>
+          <LikeButton bookEditionId={bookEditionId} isHovering={isHovering} />
+        </Protect>
+      </Suspense>
 
       {isLoading && (
         <div className='absolute inset-0 flex items-center justify-center bg-muted/50 dark:bg-muted/30'>

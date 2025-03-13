@@ -1,4 +1,5 @@
 import ReactQueryProvider from '@/components/providers/ReactQueryProvider'
+import { NextSSRPlugin } from '@uploadthing/react/next-ssr-plugin'
 import { ClerkProvider } from '@clerk/nextjs'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
@@ -9,6 +10,8 @@ import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 import { ShoppingStripeCartProvider } from '@/components/providers/CartProdiver'
 import { ViewTransitions } from 'next-view-transitions'
+import { extractRouterConfig } from 'uploadthing/server'
+import { ourFileRouter } from './api/uploadthing/core'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -32,12 +35,12 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <ViewTransitions>
-      <ClerkProvider
-        appearance={{
-          baseTheme: dark
-        }}
-      >
+    <ClerkProvider
+      appearance={{
+        baseTheme: dark
+      }}
+    >
+      <ViewTransitions>
         <html lang='en' className='dark' suppressHydrationWarning>
           <body
             className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -46,6 +49,9 @@ export default function RootLayout({
               <ReactQueryProvider>
                 <ShoppingStripeCartProvider>
                   <Navbar />
+                  <NextSSRPlugin
+                    routerConfig={extractRouterConfig(ourFileRouter)}
+                  />
                   {children}
                   <Toaster position='bottom-right' />
                 </ShoppingStripeCartProvider>
@@ -53,7 +59,7 @@ export default function RootLayout({
             </NuqsAdapter>
           </body>
         </html>
-      </ClerkProvider>
-    </ViewTransitions>
+      </ViewTransitions>
+    </ClerkProvider>
   )
 }

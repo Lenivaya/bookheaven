@@ -16,8 +16,12 @@ import {
   shelves,
   tags,
   updateShelfSchema,
+  WorkToAuthor,
+  WorkToTag,
   workToAuthors,
-  workToTags
+  workToTags,
+  Author,
+  Tag
 } from '@/db/schema'
 import { DefaultShelves } from '@/lib/constants'
 import { isNone, isSome } from '@/lib/types'
@@ -34,6 +38,8 @@ import {
 } from 'drizzle-orm'
 import { z } from 'zod'
 import { getAuthenticatedUserId } from './actions.helpers'
+import { revalidatePath } from 'next/cache'
+import { auth } from '@clerk/nextjs/server'
 
 export type FetchedShelfRelations = typeof shelves.$inferSelect & {
   items: (typeof shelfItems.$inferSelect & {
@@ -65,6 +71,7 @@ export async function getBookShelves(
     authorsIds?: string[]
     bookWorksIds?: string[]
     onlyPublic?: boolean
+    likedByUser?: boolean
   } = {
     limit: 10,
     offset: 0,
@@ -72,7 +79,8 @@ export async function getBookShelves(
     userIds: [],
     tagsIds: [],
     authorsIds: [],
-    onlyPublic: false
+    onlyPublic: false,
+    likedByUser: false
   }
 ) {
   const filters: SQL[] = []
@@ -95,6 +103,19 @@ export async function getBookShelves(
 
   if (options.onlyPublic) {
     filters.push(eq(shelves.isPublic, true))
+  }
+
+  if (options.likedByUser) {
+    const { userId } = await auth()
+    if (isSome(userId)) {
+      const likedShelves = db
+        .select({
+          shelfId: shelfLikes.shelfId
+        })
+        .from(shelfLikes)
+        .where(eq(shelfLikes.userId, userId))
+      filters.push(inArray(shelves.id, likedShelves))
+    }
   }
 
   if (options.search) {
@@ -211,7 +232,7 @@ export async function getShelves() {
 /**
  * Gets a shelf by id
  */
-export async function getShelfById(id: string) {
+export async function getShelfByIdMinimal(id: string) {
   const userId = await getAuthenticatedUserId()
   return await db.query.shelves.findFirst({
     where: and(
@@ -247,7 +268,20 @@ export async function getShelfByIdWithBooks(id: string) {
         with: {
           bookEdition: {
             with: {
-              work: true
+              work: {
+                with: {
+                  workToAuthors: {
+                    with: {
+                      author: true
+                    }
+                  },
+                  workToTags: {
+                    with: {
+                      tag: true
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -256,7 +290,14 @@ export async function getShelfByIdWithBooks(id: string) {
   })) as BookShelf & {
     items: (BookShelfItems & {
       bookEdition: BookEdition & {
-        work: BookWork
+        work: BookWork & {
+          workToAuthors: (WorkToAuthor & {
+            author: Author
+          })[]
+          workToTags: (WorkToTag & {
+            tag: Tag
+          })[]
+        }
       }
     })[]
   }
@@ -467,6 +508,8 @@ export async function toggleShelfLike(shelfId: string) {
   } else {
     await upsertShelfLike(shelfId)
   }
+  revalidatePath('/book-shelves')
+  revalidatePath(`/book-shelves/${shelfId}`)
 }
 
 /**

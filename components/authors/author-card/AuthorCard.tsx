@@ -1,18 +1,20 @@
-import { Author } from '@/db/schema'
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { ZoomableImage } from '@/components/generic/ZoomableImage'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { Author } from '@/db/schema'
+import { cn } from '@/lib/utils'
 import { CalendarIcon, CheckCircle2 } from 'lucide-react'
 import { Link } from 'next-view-transitions'
+import { AuthorAdminActions } from './AuthorAdminActions'
 import { AuthorFollowButton } from './AuthorFollowButton'
 import { AuthorViewBooksButton } from './AuthorViewBooksButton'
-import { ZoomableImage } from '@/components/generic/ZoomableImage'
-import { cn } from '@/lib/utils'
 
 interface AuthorCardProps {
   author: Author
   isFollowing?: boolean
+  showAdminActions?: boolean
 }
 
 // Get author initials for the avatar fallback
@@ -32,7 +34,8 @@ function formatDate(date: Date) {
 
 export default function AuthorCard({
   author,
-  isFollowing = false
+  isFollowing = false,
+  showAdminActions = false
 }: AuthorCardProps) {
   return (
     <Card
@@ -123,11 +126,16 @@ export default function AuthorCard({
           />
         </div>
 
-        <Link href={`/authors/${author.id}`}>
-          <Button variant='ghost' size='sm'>
-            Profile
-          </Button>
-        </Link>
+        <div className='flex gap-2 items-center'>
+          {showAdminActions && (
+            <AuthorAdminActions authorId={author.id} authorName={author.name} />
+          )}
+          <Link href={`/authors/${author.id}`}>
+            <Button variant='ghost' size='sm'>
+              Profile
+            </Button>
+          </Link>
+        </div>
       </CardFooter>
     </Card>
   )

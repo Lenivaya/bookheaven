@@ -19,7 +19,7 @@ import { orderItems } from './orders.schema'
 // Authors table
 export const authors = pgTable('authors', {
   id: uuid('id').defaultRandom().primaryKey(),
-  name: text('name').notNull(),
+  name: text('name').notNull().unique(),
   biography: text('biography'),
   birthDate: timestamp('birth_date'),
   deathDate: timestamp('death_date'),

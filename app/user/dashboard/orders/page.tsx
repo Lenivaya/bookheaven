@@ -5,6 +5,8 @@ import { orderSearchParamsCache } from './searchParams'
 import { OrdersSearch } from '@/components/orders/orders-search/OrdersSearch'
 import { OrderCard } from '@/components/orders/order-card/OrderCard'
 import { OrdersPagination } from '@/components/orders/orders-pagiantion/OrdersPagination'
+import { auth } from '@clerk/nextjs/server'
+import { notFound } from 'next/navigation'
 
 const DEFAULT_PAGE_SIZE = 6
 
@@ -15,10 +17,16 @@ interface OrdersPageProps {
 export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const params = await orderSearchParamsCache.parse(searchParams)
 
+  const { userId } = await auth()
+  if (!userId) {
+    notFound()
+  }
+
   const { orders, totalCount, pageCount } = await getOrders({
     limit: DEFAULT_PAGE_SIZE,
     offset: (Number(params.page) - 1) * DEFAULT_PAGE_SIZE,
-    search: params.q
+    search: params.q,
+    userIds: [userId]
   })
 
   return (

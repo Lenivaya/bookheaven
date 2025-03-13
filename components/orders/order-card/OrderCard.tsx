@@ -17,6 +17,8 @@ import { MapPin, Receipt } from 'lucide-react'
 import { Link } from 'next-view-transitions'
 import { OrderCardBooks } from './OrderCardBooks'
 import { OrderCardCancelButton } from './OrderCardCancelButton'
+import { Suspense } from 'react'
+import { OrderUserInfo } from './OrderUserInfo'
 
 interface OrderCardProps {
   order: FetchedOrderRelations
@@ -61,7 +63,7 @@ export function OrderCard({ order }: OrderCardProps) {
     <Card className='hover:shadow-lg transition-all duration-200 border-zinc-200 dark:border-zinc-800/50'>
       <CardHeader className='space-y-4'>
         <div className='flex items-start justify-between'>
-          <div className='space-y-1.5'>
+          <div className='space-y-3'>
             <div className='flex items-center gap-2'>
               <Receipt className='h-4 w-4 text-amber-500' />
               <CardTitle className='text-base font-medium flex items-center gap-1'>
@@ -74,7 +76,24 @@ export function OrderCard({ order }: OrderCardProps) {
               </CardTitle>
             </div>
             <div className='flex flex-col gap-1'>
-              <CardDescription>Placed {formattedDate}</CardDescription>
+              <Suspense
+                fallback={
+                  <div className='h-8 bg-muted rounded animate-pulse' />
+                }
+              >
+                <OrderUserInfo
+                  userId={order.userId}
+                  createdAt={order.created_at}
+                />
+              </Suspense>
+              <div className='flex items-center gap-2 text-xs text-muted-foreground'>
+                <span className='font-medium'>User ID:</span>
+                <CopyableText
+                  text={order.userId}
+                  displayText={`user_${order.userId.substring(0, 8)}...`}
+                  className='font-mono hover:text-foreground transition-colors'
+                />
+              </div>
               <div className='flex items-center gap-2 text-xs text-muted-foreground'>
                 <span className='font-medium'>Session ID:</span>
                 <CopyableText

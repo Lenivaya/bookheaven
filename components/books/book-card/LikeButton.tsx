@@ -35,7 +35,8 @@ export function LikeButton({ bookEditionId, isHovering }: LikeButtonProps) {
     <div
       className={cn(
         'absolute inset-0 pointer-events-none',
-        shouldShow ? 'opacity-100' : 'opacity-0'
+        // Only hide the button if not liked AND not hovering
+        !isLiked && !isHovering ? 'opacity-0' : 'opacity-100'
       )}
     >
       <Button

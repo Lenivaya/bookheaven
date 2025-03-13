@@ -4,6 +4,11 @@ import { AuthorsSearch } from '@/components/authors/author-search/AuthorsSearch'
 import { SearchParams } from 'nuqs/server'
 import { authorSearchParamsCache } from './searchParams'
 import { AuthorPagination } from '@/components/authors/author-pagination/AuthorPagination'
+import { Button } from '@/components/ui/button'
+import { PlusIcon } from 'lucide-react'
+import { Link } from 'next-view-transitions'
+import { Separator } from '@/components/ui/separator'
+import { checkRole } from '@/lib/auth/utils'
 
 interface AuthorsPageProps {
   searchParams: Promise<SearchParams>
@@ -13,6 +18,7 @@ const DEFAULT_PAGE_SIZE = 12
 
 export default async function AuthorsPage({ searchParams }: AuthorsPageProps) {
   const params = await authorSearchParamsCache.parse(searchParams)
+  const isAdmin = await checkRole('admin')
 
   const { authors, totalCount } = await getAuthors({
     limit: DEFAULT_PAGE_SIZE,
@@ -26,6 +32,26 @@ export default async function AuthorsPage({ searchParams }: AuthorsPageProps) {
   return (
     <div className='container mx-auto py-8 mt-20'>
       <div className='flex flex-col justify-between mb-5 w-full'>
+        <div className='flex items-center justify-between'>
+          <div>
+            <h2 className='text-2xl font-semibold tracking-tight'>Authors</h2>
+            <p className='text-muted-foreground'>
+              Browse and discover your favorite authors.
+            </p>
+          </div>
+
+          {isAdmin && (
+            <Button size='sm' className='gap-1' asChild>
+              <Link href='/forms/authors'>
+                <PlusIcon className='h-4 w-4' />
+                <span>Add Author</span>
+              </Link>
+            </Button>
+          )}
+        </div>
+
+        <Separator className='my-4' />
+
         <AuthorsSearch />
       </div>
 

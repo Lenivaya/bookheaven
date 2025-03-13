@@ -28,6 +28,8 @@ import { Minus, Plus, ShoppingCart, X, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { toast } from 'sonner'
 import { useShoppingCart } from 'use-shopping-cart'
+import { Link } from 'next-view-transitions'
+import { unstable_ViewTransition as ViewTransition } from 'react'
 
 export function ShoppingCartSheet({ children }: { children: React.ReactNode }) {
   const {
@@ -114,19 +116,25 @@ export function ShoppingCartSheet({ children }: { children: React.ReactNode }) {
                     <div className='flex items-start gap-5'>
                       <div className='h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border bg-muted'>
                         {item.image && (
-                          <Image
-                            src={item.image as string}
-                            alt={item.name}
-                            width={100}
-                            height={100}
-                            className='h-full w-full object-cover object-center'
-                          />
+                          <ViewTransition name='book-cover-image'>
+                            <Image
+                              src={item.image as string}
+                              alt={item.name}
+                              width={100}
+                              height={100}
+                              className='h-full w-full object-cover object-center'
+                            />
+                          </ViewTransition>
                         )}
                       </div>
 
                       <div className='flex flex-1 flex-col'>
                         <div className='flex justify-between'>
-                          <h3 className='text-base font-medium'>{item.name}</h3>
+                          <Link href={`/books/${item.id}`}>
+                            <h3 className='text-base font-medium'>
+                              {item.name}
+                            </h3>
+                          </Link>
                           <p className='text-base font-medium ml-4'>
                             {item.formattedValue}
                           </p>

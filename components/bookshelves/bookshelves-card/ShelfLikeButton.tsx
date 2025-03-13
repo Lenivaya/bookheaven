@@ -1,16 +1,14 @@
 'use client'
 
-import { Heart } from 'lucide-react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   hasLikedShelf,
   toggleShelfLike
 } from '@/app/actions/bookShelves.actions'
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Heart } from 'lucide-react'
 import { toast } from 'sonner'
-import { match, P } from 'ts-pattern'
-import { useState } from 'react'
 
 interface ShelfLikeButtonProps {
   shelfId: string
@@ -25,12 +23,9 @@ export function ShelfLikeButton({ shelfId, likesCount }: ShelfLikeButtonProps) {
     queryFn: () => hasLikedShelf(shelfId)
   })
 
-  const [likeChanged, setLikedChanged] = useState(false)
-
   const likeMutation = useMutation({
     mutationFn: () => toggleShelfLike(shelfId),
     onSuccess: () => {
-      setLikedChanged(!isLiked)
       queryClient.invalidateQueries({
         queryKey: ['isLikedShelf', shelfId]
       })
@@ -66,11 +61,7 @@ export function ShelfLikeButton({ shelfId, likesCount }: ShelfLikeButtonProps) {
             )}
           />
         )}
-        <span className='text-xs font-medium'>
-          {match([likesCount, likeChanged])
-            .with([P.number, true], () => likesCount + 1)
-            .otherwise(() => likesCount)}
-        </span>
+        <span className='text-xs font-medium'>{likesCount}</span>
         <span className='sr-only'>{isLiked ? 'Unlike' : 'Like'} shelf</span>
       </Button>
     </div>

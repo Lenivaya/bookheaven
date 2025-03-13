@@ -21,19 +21,23 @@ import { Link } from 'next-view-transitions'
 import { BookCardAuthors } from './BookCardAuthors'
 import { BookTagsList } from './BookTagsList'
 import { ClientBookCover } from './ClientBookCover'
+import { ClientPriceAndBuy } from './ClientPriceAndBuy'
+import { BookAdminActions } from './BookAdminActions'
 
 interface BookCardProps {
   book: BookWork
   edition: BookEdition
   authors: Author[]
   tags: Tag[]
+  showAdminActions?: boolean
 }
 
 export default function BookCard({
   book,
   edition,
   authors,
-  tags
+  tags,
+  showAdminActions = false
 }: BookCardProps) {
   return (
     <Card className='group h-full overflow-hidden border-border/40 bg-card/95 transition-all duration-300 hover:border-primary/30 hover:shadow-md dark:bg-card/95 dark:hover:border-primary/40 dark:hover:bg-card/100'>
@@ -52,24 +56,33 @@ export default function BookCard({
         {/* Book details on the right */}
         <div className='flex flex-col'>
           <CardHeader className='space-y-1 p-0 pb-1'>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link href={`/books/${edition.id}`}>
-                    <CardTitle className='line-clamp-2 text-base font-semibold leading-tight tracking-tight group-hover:text-primary transition-colors duration-200 dark:text-slate-50'>
-                      {book.title}
-                    </CardTitle>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent
-                  side='top'
-                  align='start'
-                  className='max-w-[250px]'
-                >
-                  <p>{book.title}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <div className='flex items-start justify-between gap-2'>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link href={`/books/${edition.id}`}>
+                      <CardTitle className='line-clamp-2 text-base font-semibold leading-tight tracking-tight group-hover:text-primary transition-colors duration-200 dark:text-slate-50'>
+                        {book.title}
+                      </CardTitle>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side='top'
+                    align='start'
+                    className='max-w-[250px]'
+                  >
+                    <p>{book.title}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              {showAdminActions && (
+                <BookAdminActions
+                  editionId={edition.id}
+                  bookTitle={book.title}
+                />
+              )}
+            </div>
 
             <HoverCard>
               <HoverCardTrigger asChild>
@@ -130,5 +143,3 @@ export default function BookCard({
     </Card>
   )
 }
-// Separate file for client components
-import { ClientPriceAndBuy } from './ClientPriceAndBuy'

@@ -1,3 +1,5 @@
+import { checkRole } from '@/lib/auth/utils'
+import { Roles } from '@/types/globals'
 import { isNone } from '@/lib/types'
 import { auth } from '@clerk/nextjs/server'
 
@@ -12,4 +14,12 @@ export async function getAuthenticatedUserId(
     throw new Error(errorMessage)
   }
   return userId.userId
+}
+
+/**
+ * Ensures user is admin
+ */
+export async function ensureAdmin(errorMessage = 'User must be admin') {
+  const isAdmin = await checkRole('admin')
+  if (!isAdmin) throw new Error(errorMessage)
 }
