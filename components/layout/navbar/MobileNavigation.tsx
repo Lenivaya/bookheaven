@@ -4,46 +4,90 @@ import { cn } from '@/lib/utils'
 import { Link } from 'next-view-transitions'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { BookOpenIcon, Users, Library } from 'lucide-react'
+import { BookOpenIcon, Users, Library, Menu } from 'lucide-react'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger
+} from '@/components/ui/sheet'
+import { useState } from 'react'
 
 export function MobileNavigation() {
   const pathname = usePathname()
+  const [open, setOpen] = useState(false)
 
   return (
-    <nav className='flex sm:hidden items-center space-x-1'>
-      <MobileNavLink href='/books' isActive={pathname.startsWith('/books')}>
-        <BookOpenIcon size={16} />
-        Books
-      </MobileNavLink>
-      <MobileNavLink href='/authors' isActive={pathname.startsWith('/authors')}>
-        <Users size={16} />
-        Authors
-      </MobileNavLink>
-      <MobileNavLink href='/tags' isActive={pathname.startsWith('/tags')}>
-        <Library size={16} />
-        Shelves
-      </MobileNavLink>
-    </nav>
+    <div className='sm:hidden'>
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger asChild>
+          <Button variant='ghost' size='icon' className='h-8 w-8'>
+            <Menu size={18} />
+            <span className='sr-only'>Open menu</span>
+          </Button>
+        </SheetTrigger>
+        <SheetContent side='right' className='w-[250px] sm:w-[300px]'>
+          <SheetHeader className='mb-4'>
+            <SheetTitle className='text-left'>Navigation</SheetTitle>
+          </SheetHeader>
+          <nav className='flex flex-col space-y-3'>
+            <MobileNavLink
+              href='/books'
+              isActive={pathname.startsWith('/books')}
+              onClick={() => setOpen(false)}
+            >
+              <BookOpenIcon size={16} className='mr-2' />
+              Books
+            </MobileNavLink>
+            <MobileNavLink
+              href='/authors'
+              isActive={pathname.startsWith('/authors')}
+              onClick={() => setOpen(false)}
+            >
+              <Users size={16} className='mr-2' />
+              Authors
+            </MobileNavLink>
+            <MobileNavLink
+              href='/book-shelves'
+              isActive={pathname.startsWith('/book-shelves')}
+              onClick={() => setOpen(false)}
+            >
+              <Library size={16} className='mr-2' />
+              Shelves
+            </MobileNavLink>
+          </nav>
+        </SheetContent>
+      </Sheet>
+    </div>
   )
 }
 
 function MobileNavLink({
   href,
   isActive,
-  children
+  children,
+  onClick
 }: {
   href: string
   isActive: boolean
   children: React.ReactNode
+  onClick?: () => void
 }) {
   return (
-    <Button variant='ghost' size='sm' className='px-2 h-8' asChild>
+    <Button
+      variant='ghost'
+      size='sm'
+      className='justify-start px-2 h-10 w-full'
+      asChild
+    >
       <Link
         href={href}
         className={cn(
-          'text-xs font-medium',
+          'text-sm font-medium',
           isActive ? 'text-primary' : 'text-muted-foreground'
         )}
+        onClick={onClick}
       >
         {children}
       </Link>
