@@ -45,8 +45,8 @@ export default function BookCover({
               <Skeleton className='w-full h-full absolute' />
             </div>
           )}
-          <ZoomableImage src={thumbnailUrl} alt={`Cover of ${title}`}>
-            <ViewTransition name='book-cover-image'>
+          <ViewTransition name='book-cover-image'>
+            <ZoomableImage src={thumbnailUrl} alt={`Cover of ${title}`}>
               <Image
                 src={thumbnailUrl}
                 alt={`Cover of ${title}`}
@@ -60,8 +60,8 @@ export default function BookCover({
                 onLoad={handleImageLoad}
                 onError={handleImageError}
               />
-            </ViewTransition>
-          </ZoomableImage>
+            </ZoomableImage>
+          </ViewTransition>
         </>
       ) : (
         <div className='w-full h-full flex items-center justify-center p-4 text-center'>
