@@ -30,15 +30,10 @@ export const authors = pgTable(
     photoUrl: text('photo_url'),
     ...timestamps
   },
-  (table) => {
-    return {
-      nameIdx: index('authors_name_idx').on(table.name),
-      nameSearchIdx: index('authors_name_search_idx').using(
-        'gin',
-        sql`to_tsvector('english', ${table.name})`
-      )
-    }
-  }
+  (table) => [
+    index('authors_name_idx').on(table.name),
+    index('authors_name_search_idx').on(table.name)
+  ]
 )
 
 // BookWorks table - represents the intellectual property of a book
@@ -53,30 +48,14 @@ export const bookWorks = pgTable(
     originalLanguage: text('original_language').default('en'),
     ...timestamps
   },
-  (table) => {
-    return {
-      titleIdx: index('book_works_title_idx').on(table.title),
-      originalTitleIdx: index('book_works_original_title_idx').on(
-        table.originalTitle
-      ),
-      descriptionIdx: index('book_works_description_idx').on(table.description),
-      titleSearchIdx: index('book_works_title_search_idx').using(
-        'gin',
-        sql`to_tsvector('english', ${table.title})`
-      ),
-      descriptionSearchIdx: index('book_works_description_search_idx').using(
-        'gin',
-        sql`to_tsvector('english', ${table.description})`
-      ),
-      contentSearchIdx: index('book_works_content_search_idx').using(
-        'gin',
-        sql`(
-          setweight(to_tsvector('english', ${table.title}), 'A') ||
-          setweight(to_tsvector('english', ${table.description}), 'B')
-        )`
-      )
-    }
-  }
+  (table) => [
+    index('book_works_title_idx').on(table.title),
+    index('book_works_original_title_idx').on(table.originalTitle),
+    index('book_works_description_idx').on(table.description),
+    index('book_works_title_search_idx').on(table.title),
+    index('book_works_description_search_idx').on(table.description),
+    index('book_works_content_search_idx').on(table.title, table.description)
+  ]
 )
 
 // BookEditions table - represents specific published editions
@@ -103,24 +82,16 @@ export const bookEditions = pgTable(
     likesCount: integer('likes_count').default(0),
     ...timestamps
   },
-  (table) => {
-    return {
-      workIdIdx: index('book_editions_work_id_idx').on(table.workId),
-      isbnIdx: uniqueIndex('book_editions_isbn_idx').on(table.isbn),
-      publisherIdx: index('book_editions_publisher_idx').on(table.publisher),
-      editionIdx: index('book_editions_edition_idx').on(table.edition),
-      formatIdx: index('book_editions_format_idx').on(table.format),
-      isOnSaleIdx: index('book_editions_is_on_sale_idx').on(table.isOnSale),
-      publisherSearchIdx: index('book_editions_publisher_search_idx').using(
-        'gin',
-        sql`to_tsvector('english', ${table.publisher})`
-      ),
-      editionSearchIdx: index('book_editions_edition_search_idx').using(
-        'gin',
-        sql`to_tsvector('english', ${table.edition})`
-      )
-    }
-  }
+  (table) => [
+    index('book_editions_work_id_idx').on(table.workId),
+    uniqueIndex('book_editions_isbn_idx').on(table.isbn),
+    index('book_editions_publisher_idx').on(table.publisher),
+    index('book_editions_edition_idx').on(table.edition),
+    index('book_editions_format_idx').on(table.format),
+    index('book_editions_is_on_sale_idx').on(table.isOnSale),
+    index('book_editions_publisher_search_idx').on(table.publisher),
+    index('book_editions_edition_search_idx').on(table.edition)
+  ]
 )
 
 export const bookLikes = pgTable(
@@ -132,13 +103,11 @@ export const bookLikes = pgTable(
       .references(() => bookEditions.id, { onDelete: 'cascade' }),
     ...timestamps
   },
-  (t) => {
-    return {
-      pk: primaryKey({ columns: [t.userId, t.editionId] }),
-      editionIdIdx: index('book_likes_edition_id_idx').on(t.editionId),
-      userIdIdx: index('book_likes_user_id_idx').on(t.userId)
-    }
-  }
+  (t) => [
+    primaryKey({ columns: [t.userId, t.editionId] }),
+    index('book_likes_edition_id_idx').on(t.editionId),
+    index('book_likes_user_id_idx').on(t.userId)
+  ]
 )
 
 // Tags/Genres table
@@ -151,15 +120,10 @@ export const tags = pgTable(
     coverUrl: text('cover_url'),
     ...timestamps
   },
-  (table) => {
-    return {
-      nameIdx: index('tags_name_idx').on(table.name),
-      nameSearchIdx: index('tags_name_search_idx').using(
-        'gin',
-        sql`to_tsvector('english', ${table.name})`
-      )
-    }
-  }
+  (table) => [
+    index('tags_name_idx').on(table.name),
+    index('tags_name_search_idx').on(table.name)
+  ]
 )
 
 // Many-to-many relationship between works and authors
@@ -173,13 +137,11 @@ export const workToAuthors = pgTable(
       .notNull()
       .references(() => authors.id, { onDelete: 'cascade' })
   },
-  (t) => {
-    return {
-      pk: primaryKey({ columns: [t.workId, t.authorId] }),
-      workIdIdx: index('work_to_authors_work_id_idx').on(t.workId),
-      authorIdIdx: index('work_to_authors_author_id_idx').on(t.authorId)
-    }
-  }
+  (t) => [
+    primaryKey({ columns: [t.workId, t.authorId] }),
+    index('work_to_authors_work_id_idx').on(t.workId),
+    index('work_to_authors_author_id_idx').on(t.authorId)
+  ]
 )
 
 // Many-to-many relationship between works and tags
@@ -193,13 +155,11 @@ export const workToTags = pgTable(
       .notNull()
       .references(() => tags.id, { onDelete: 'cascade' })
   },
-  (t) => {
-    return {
-      pk: primaryKey({ columns: [t.workId, t.tagId] }),
-      workIdIdx: index('work_to_tags_work_id_idx').on(t.workId),
-      tagIdIdx: index('work_to_tags_tag_id_idx').on(t.tagId)
-    }
-  }
+  (t) => [
+    primaryKey({ columns: [t.workId, t.tagId] }),
+    index('work_to_tags_work_id_idx').on(t.workId),
+    index('work_to_tags_tag_id_idx').on(t.tagId)
+  ]
 )
 
 // Relations
