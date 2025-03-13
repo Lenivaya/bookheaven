@@ -1,5 +1,4 @@
 import { checkRole } from '@/lib/auth/utils'
-import { Roles } from '@/types/globals'
 import { isNone } from '@/lib/types'
 import { auth } from '@clerk/nextjs/server'
 

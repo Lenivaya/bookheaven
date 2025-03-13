@@ -24,8 +24,7 @@ interface CompactBookCardProps {
 export default function CompactBookCard({
   book,
   edition,
-  authors,
-  tags = []
+  authors
 }: CompactBookCardProps) {
   return (
     <Card className='group h-full overflow-hidden border-border/40 bg-card/95 transition-all duration-300 hover:border-primary/30 hover:shadow-md dark:bg-card/95 dark:hover:border-primary/40 dark:hover:bg-card/100'>

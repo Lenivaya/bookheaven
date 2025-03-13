@@ -45,9 +45,11 @@
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-query": "^5.67.3",
     "@types/pg": "^8.11.11",
+    "@types/ws": "^8.18.0",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.26.1",
     "@uploadthing/react": "^7.3.0",
+    "bufferutil": "^4.0.9",
     "chalk": "^5.4.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -88,6 +90,7 @@
     "use-debounce": "^10.0.4",
     "use-shopping-cart": "^3.2.0",
     "usehooks-ts": "^3.1.1",
+    "ws": "^8.18.1",
     "zod": "^3.24.2"
   },
   "devDependencies": {

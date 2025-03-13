@@ -1,13 +1,7 @@
 import { getBooks } from '@/app/actions/books.actions'
 import BookCard from '@/components/books/book-card/BookCard'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Carousel,
   CarouselContent,
@@ -269,7 +263,7 @@ export default async function Home() {
                 <TrendingUp className='h-4 w-4 mr-1' /> Trending Now
               </div>
               <h2 className='text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80'>
-                What's Hot Right Now
+                What&apos;s Hot Right Now
               </h2>
               <p className='max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed'>
                 Stay up to date with the most popular books our readers are

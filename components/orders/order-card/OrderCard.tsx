@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle
@@ -12,7 +11,6 @@ import {
 import { CopyableText } from '@/components/ui/copyable-text'
 import { Separator } from '@/components/ui/separator'
 import { cn, formatCurrency } from '@/lib/utils'
-import { formatDistanceToNow } from 'date-fns'
 import { MapPin, Receipt } from 'lucide-react'
 import { Link } from 'next-view-transitions'
 import { OrderCardBooks } from './OrderCardBooks'
@@ -39,10 +37,6 @@ function formatOrderNumber(id: string): string {
 }
 
 export function OrderCard({ order }: OrderCardProps) {
-  const formattedDate = formatDistanceToNow(new Date(order.created_at), {
-    addSuffix: true
-  })
-
   if (!order.shippingAddress?.address) {
     return null
   }

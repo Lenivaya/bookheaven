@@ -1,11 +1,6 @@
 'use client'
 
 import {
-  deleteShelfItem,
-  getUserShelvesWithItems,
-  upsertShelfItemWithShelfName
-} from '@/app/actions/bookShelves.actions'
-import {
   deleteBookRating,
   getBookEditionAverageRating,
   getUserRating,
@@ -30,10 +25,11 @@ import {
   BookX,
   X
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { match } from 'ts-pattern'
 import { BookRating } from './BookRating'
+import { useBookshelfOptimistic } from '@/hooks/useBookshelfOptimistic'
 
 interface BookActionsProps {
   editionId: string
@@ -45,25 +41,18 @@ export function BookActions({ editionId, bookTitle }: BookActionsProps) {
   const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
 
-  const { data: userShelves, isLoading: isShelvesLoading } = useQuery({
-    queryKey: ['userShelves'],
-    queryFn: () => getUserShelvesWithItems(DEFAULT_SYSTEM_SHELVES),
-    refetchOnWindowFocus: false,
-    staleTime: 5 * 60 * 1000
+  // Use our custom hook for optimistic bookshelf updates
+  const {
+    currentShelf,
+    isBookmarked,
+    isShelvesLoading,
+    handleShelfSelect,
+    isPending: isShelfActionPending
+  } = useBookshelfOptimistic({
+    editionId,
+    bookTitle,
+    systemShelves: DEFAULT_SYSTEM_SHELVES
   })
-
-  const { currentShelf, isBookmarked } = useMemo(() => {
-    if (!userShelves) return { currentShelf: null, isBookmarked: false }
-
-    const shelfWithBook = userShelves.find((shelf) =>
-      shelf.items.some((item) => item.editionId === editionId)
-    )
-
-    return {
-      currentShelf: shelfWithBook?.name as DefaultShelves | null,
-      isBookmarked: !!shelfWithBook
-    }
-  }, [userShelves, editionId])
 
   const { data: userRating } = useQuery({
     queryKey: ['userRating', editionId],
@@ -77,35 +66,6 @@ export function BookActions({ editionId, bookTitle }: BookActionsProps) {
     queryFn: () => getBookEditionAverageRating(editionId),
     refetchOnWindowFocus: false,
     enabled: open
-  })
-
-  const addToShelfMutation = useMutation({
-    mutationFn: (shelfName: DefaultShelves) =>
-      upsertShelfItemWithShelfName({ editionId }, shelfName),
-    onSuccess: (_, shelfName) => {
-      queryClient.invalidateQueries({ queryKey: ['userShelves'] })
-      toast.success(`Added "${bookTitle}" to ${shelfName}`)
-    },
-    onError: (error) => {
-      console.error('Failed to add book to shelf:', error)
-      toast.error('Failed to add book to shelf')
-    }
-  })
-
-  const removeFromShelfMutation = useMutation({
-    mutationFn: async (shelfName: DefaultShelves) => {
-      const shelf = userShelves?.find((s) => s.name === shelfName)
-      if (!shelf) throw new Error(`Shelf ${shelfName} not found`)
-      return deleteShelfItem(shelf.id, editionId)
-    },
-    onSuccess: (_, shelfName) => {
-      queryClient.invalidateQueries({ queryKey: ['userShelves'] })
-      toast.success(`Removed "${bookTitle}" from ${shelfName}`)
-    },
-    onError: (error) => {
-      console.error('Failed to remove book from shelf:', error)
-      toast.error('Failed to remove book from shelf')
-    }
   })
 
   const updateRatingMutation = useMutation({
@@ -144,37 +104,6 @@ export function BookActions({ editionId, bookTitle }: BookActionsProps) {
       .with('Read', () => <BookCheck className='h-4 w-4' />)
       .with('Did Not Finish', () => <BookX className='h-4 w-4' />)
       .otherwise(() => <Bookmark className='h-4 w-4' />)
-  }
-
-  const handleShelfSelect = async (shelf: DefaultShelves) => {
-    if (currentShelf === shelf) {
-      removeFromShelfMutation.mutate(shelf)
-      setOpen(false)
-      return
-    }
-
-    if (currentShelf) {
-      try {
-        const currentShelfObj = userShelves?.find(
-          (s) => s.name === currentShelf
-        )
-        if (currentShelfObj) {
-          await deleteShelfItem(currentShelfObj.id, editionId)
-          await upsertShelfItemWithShelfName({ editionId }, shelf)
-          queryClient.invalidateQueries({ queryKey: ['userShelves'] })
-          toast.success(`Moved "${bookTitle}" from ${currentShelf} to ${shelf}`)
-          setOpen(false)
-          return
-        }
-      } catch (error) {
-        console.error('Failed to move book between shelves:', error)
-        toast.error('Failed to move book between shelves')
-        return
-      }
-    }
-
-    addToShelfMutation.mutate(shelf)
-    setOpen(false)
   }
 
   const handleRateBook = (rating: number) => {
@@ -236,11 +165,15 @@ export function BookActions({ editionId, bookTitle }: BookActionsProps) {
                 variant={currentShelf === shelf ? 'default' : 'ghost'}
                 size='sm'
                 className='w-full justify-start text-sm'
-                onClick={() => handleShelfSelect(shelf)}
-                disabled={
-                  addToShelfMutation.isPending ||
-                  removeFromShelfMutation.isPending
-                }
+                onClick={() => {
+                  handleShelfSelect(shelf)
+                  // Only close the popover if we're removing from the current shelf
+                  // or if we're adding to a new shelf (not moving between shelves)
+                  if (currentShelf === shelf || !currentShelf) {
+                    setOpen(false)
+                  }
+                }}
+                disabled={isShelfActionPending}
               >
                 {match(shelf)
                   .with('Want to Read', () => (
@@ -273,7 +206,7 @@ export function BookActions({ editionId, bookTitle }: BookActionsProps) {
                   variant='ghost'
                   size='icon'
                   className='h-5 w-5'
-                  onClick={() => deleteRatingMutation.mutate()}
+                  onClick={() => deleteRatingMutation.mutate(undefined)}
                   disabled={deleteRatingMutation.isPending}
                   title='Remove rating'
                 >
@@ -307,33 +240,6 @@ export function BookActions({ editionId, bookTitle }: BookActionsProps) {
           </div>
 
           <DropdownMenuSeparator className='my-2' />
-
-          <div className='px-2 py-1 space-y-1'>
-            <Button
-              variant='ghost'
-              size='sm'
-              className='w-full justify-start text-sm'
-              onClick={() =>
-                toast.info(
-                  `Write review for "${bookTitle}" functionality coming soon`
-                )
-              }
-            >
-              Write a review...
-            </Button>
-            <Button
-              variant='ghost'
-              size='sm'
-              className='w-full justify-start text-sm'
-              onClick={() =>
-                toast.info(
-                  `Add "${bookTitle}" to list functionality coming soon`
-                )
-              }
-            >
-              Add to list...
-            </Button>
-          </div>
         </div>
       </PopoverContent>
     </Popover>

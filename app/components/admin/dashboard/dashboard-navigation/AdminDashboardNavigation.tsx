@@ -28,13 +28,10 @@ const adminNavItems = [
   }
 ]
 
-interface AdminDashboardNavigationProps
-  extends React.HTMLAttributes<HTMLDivElement> {}
-
 export function AdminDashboardNavigation({
   className,
   ...props
-}: AdminDashboardNavigationProps) {
+}: React.HTMLAttributes<HTMLDivElement>) {
   const pathname = usePathname()
 
   return (

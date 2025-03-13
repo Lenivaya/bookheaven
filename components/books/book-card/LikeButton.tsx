@@ -1,10 +1,10 @@
 'use client'
 
 import { Heart } from 'lucide-react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { hasLikedBook, toggleBookLike } from '@/app/actions/books.actions'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { useLikeOptimistic } from '@/hooks/useLikeOptimistic'
 
 interface LikeButtonProps {
   bookEditionId: string
@@ -12,24 +12,12 @@ interface LikeButtonProps {
 }
 
 export function LikeButton({ bookEditionId, isHovering }: LikeButtonProps) {
-  const queryClient = useQueryClient()
-
-  const { data: isLiked = false, isLoading: isLikeStatusLoading } = useQuery({
-    queryKey: ['isLikedBook', bookEditionId],
-    queryFn: () => hasLikedBook(bookEditionId)
+  const { isLiked, isLikeStatusLoading, likeMutation } = useLikeOptimistic({
+    itemId: bookEditionId,
+    queryKeyPrefix: 'isLikedBook',
+    checkLikeStatusFn: hasLikedBook,
+    toggleLikeFn: () => toggleBookLike(bookEditionId)
   })
-
-  const likeMutation = useMutation({
-    mutationFn: () => toggleBookLike(bookEditionId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['isLikedBook', bookEditionId]
-      })
-    }
-  })
-
-  // Show the button if hovering or if the book is already liked
-  const shouldShow = isHovering || isLiked
 
   return (
     <div
@@ -52,12 +40,18 @@ export function LikeButton({ bookEditionId, isHovering }: LikeButtonProps) {
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
-          likeMutation.mutate()
+          likeMutation.mutate(undefined)
         }}
-        disabled={likeMutation.isPending || isLikeStatusLoading}
+        disabled={isLikeStatusLoading}
       >
         {likeMutation.isPending ? (
-          <span className='h-4 w-4 animate-pulse' />
+          <Heart
+            className={cn(
+              'h-4 w-4 transition-all animate-pulse',
+              // Still show the appropriate fill state during pending mutations
+              isLiked ? 'fill-current' : 'fill-none'
+            )}
+          />
         ) : (
           <Heart
             className={cn(

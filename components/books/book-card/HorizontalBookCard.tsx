@@ -28,7 +28,6 @@ export default function HorizontalBookCard({
   book,
   edition,
   authors,
-  tags = [],
   className,
   width = 'md'
 }: HorizontalBookCardProps) {

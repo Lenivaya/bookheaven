@@ -137,7 +137,7 @@ export async function cancelOrder(orderId: string) {
   const isAdmin = await checkRole('admin')
   await db.transaction(async (tx) => {
     const order = await tx.query.orders.findFirst({
-      where: (orders, { eq, and, ne, or }) =>
+      where: (orders, { eq, and, ne }) =>
         and(
           eq(orders.id, orderId),
           isAdmin ? undefined : eq(orders.userId, user),

@@ -3,9 +3,10 @@ import {
   updateAuthor,
   upsertAuthor
 } from '@/app/actions/authors.actions'
-import { isNone, isSome } from '@/lib/types'
-import { notFound } from 'next/navigation'
+import { isSome } from '@/lib/types'
 import { AuthorForm } from './AuthorForm'
+import { authorsInsertSchema } from '@/db/schema/books.schema'
+import { z } from 'zod'
 
 interface AuthorPageProps {
   searchParams: Promise<{
@@ -18,7 +19,7 @@ export default async function AuthorPage({ searchParams }: AuthorPageProps) {
 
   const author = await getAuthor(id)
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: z.infer<typeof authorsInsertSchema>) => {
     'use server'
 
     if (isSome(author)) {

@@ -48,7 +48,6 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 import { MoneyInput } from '@/components/ui/money-input'
 import { IsbnSearchDialog } from '@/components/ui/isbn-search-dialog'
-import { useRouter } from 'next/navigation'
 
 // Combine both schemas for the full book form
 const bookFormSchema = z.object({
@@ -114,7 +113,6 @@ export function BookForm({
   const [createdEditionId, setCreatedEditionId] = useState<string | null>(
     initialData?.edition.id || null
   )
-  const router = useRouter()
 
   const form = useForm<BookFormData>({
     resolver: zodResolver(bookFormSchema),
