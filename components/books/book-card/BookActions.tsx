@@ -240,33 +240,6 @@ export function BookActions({ editionId, bookTitle }: BookActionsProps) {
           </div>
 
           <DropdownMenuSeparator className='my-2' />
-
-          <div className='px-2 py-1 space-y-1'>
-            <Button
-              variant='ghost'
-              size='sm'
-              className='w-full justify-start text-sm'
-              onClick={() =>
-                toast.info(
-                  `Write review for "${bookTitle}" functionality coming soon`
-                )
-              }
-            >
-              Write a review...
-            </Button>
-            <Button
-              variant='ghost'
-              size='sm'
-              className='w-full justify-start text-sm'
-              onClick={() =>
-                toast.info(
-                  `Add "${bookTitle}" to list functionality coming soon`
-                )
-              }
-            >
-              Add to list...
-            </Button>
-          </div>
         </div>
       </PopoverContent>
     </Popover>
