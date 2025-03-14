@@ -110,6 +110,7 @@
     "@tailwindcss/postcss": "^4.0.13",
     "@tanstack/eslint-plugin-query": "^5.67.2",
     "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@testing-library/react-hooks": "^8.0.1",
     "@types/node": "^22.13.10",
