@@ -10,7 +10,8 @@ import { SearchParams } from 'nuqs/server'
 import { bookShelvesSearchParamsCache } from '@/components/bookshelves/bookshelves-search/shelves.searchParams'
 import { BookShelveCard } from '@/components/bookshelves/bookshelves-card/BookShelveCard'
 import { BookShelvesSearch } from '@/components/bookshelves/bookshelves-search/BookShelvesSearch'
-import { Link } from 'next-view-transitions'
+import Link from 'next/link'
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 const DEFAULT_PAGE_SIZE = 10

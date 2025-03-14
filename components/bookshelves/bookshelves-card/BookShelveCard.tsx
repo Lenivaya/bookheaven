@@ -11,7 +11,8 @@ import {
 import { cn } from '@/lib/utils'
 import { BookOpenIcon, ChevronRightIcon } from 'lucide-react'
 import Image from 'next/image'
-import { Link } from 'next-view-transitions'
+import Link from 'next/link'
+
 import { Suspense } from 'react'
 import { BookShelveUserInfo } from './BookShelveUserInfo'
 import { ShelfDeleteButton } from './ShelfDeleteButton'

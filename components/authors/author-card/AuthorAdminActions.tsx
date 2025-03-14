@@ -3,7 +3,8 @@
 import { deleteAuthor } from '@/app/actions/authors.actions'
 import { Button } from '@/components/ui/button'
 import { Pencil, Trash2 } from 'lucide-react'
-import { Link } from 'next-view-transitions'
+import Link from 'next/link'
+
 import { toast } from 'sonner'
 
 interface AuthorAdminActionsProps {

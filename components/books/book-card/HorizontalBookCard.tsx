@@ -6,7 +6,8 @@ import {
   CardTitle
 } from '@/components/ui/card'
 import { Author, BookEdition, BookWork, Tag } from '@/db/schema'
-import { Link } from 'next-view-transitions'
+import Link from 'next/link'
+
 import { BookCardAuthors } from './BookCardAuthors'
 import { ClientBookCover } from './ClientBookCover'
 import { ClientPriceAndBuy } from './ClientPriceAndBuy'
