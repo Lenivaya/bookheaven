@@ -34,14 +34,14 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <ClerkProvider
-      appearance={{
-        baseTheme: dark
-      }}
-    >
-      <html lang='en' className='dark' suppressHydrationWarning>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+    <html lang='en' className='dark' suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <ClerkProvider
+          appearance={{
+            baseTheme: dark
+          }}
         >
           <NuqsAdapter>
             <ReactQueryProvider>
@@ -55,8 +55,8 @@ export default function RootLayout({
               </ShoppingStripeCartProvider>
             </ReactQueryProvider>
           </NuqsAdapter>
-        </body>
-      </html>
-    </ClerkProvider>
+        </ClerkProvider>
+      </body>
+    </html>
   )
 }
