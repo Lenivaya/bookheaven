@@ -53,8 +53,9 @@ export default defineConfig({
         // Shadcn UI
         'components/ui/**',
         'app/actions/*',
-        '*.actions.ts*',
-        'app/'
+        '*.actions.ts',
+        'app/',
+        'components/providers/*'
       ],
       reporter: ['html', 'json-summary', 'json', 'text'],
       provider: 'istanbul',
