@@ -54,7 +54,7 @@ export function OrderCard({ order }: OrderCardProps) {
     .join(', ')
 
   return (
-    <Card className='hover:shadow-lg transition-all duration-200 border-zinc-200 dark:border-zinc-800/50'>
+    <Card className='hover:shadow-lg transition-all duration-200 border-zinc-200 dark:border-zinc-800/50 flex flex-col min-h-[400px]'>
       <CardHeader className='space-y-4'>
         <div className='flex items-start justify-between'>
           <div className='space-y-3'>
@@ -110,7 +110,7 @@ export function OrderCard({ order }: OrderCardProps) {
         </div>
       </CardHeader>
 
-      <CardContent className='space-y-6'>
+      <CardContent className='space-y-6 flex-grow'>
         <OrderCardBooks items={order.items} />
 
         <Separator />
@@ -133,7 +133,7 @@ export function OrderCard({ order }: OrderCardProps) {
         </div>
       </CardContent>
 
-      <CardFooter className='flex justify-end gap-3'>
+      <CardFooter className='flex justify-end gap-3 mt-auto'>
         <OrderCardCancelButton orderId={order.id} />
         <Button variant='outline' asChild>
           <Link href={`/user/dashboard/orders/${order.id}`}>View Details</Link>
