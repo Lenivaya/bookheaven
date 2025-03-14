@@ -58,7 +58,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
         </div>
       )}
 
-      {orders.length > 0 && (
+      {orders.length < 0 && (
         <div className='rounded-lg border bg-card text-card-foreground shadow-sm'>
           <div className='p-6 text-center text-muted-foreground'>
             You haven&apos;t placed any orders yet.
