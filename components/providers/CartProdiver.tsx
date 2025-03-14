@@ -11,7 +11,7 @@ export function ShoppingStripeCartProvider({
   return (
     <CartProvider
       // @ts-expect-error <idc>
-      mode='payment'
+      mode='checkout-session'
       cartMode='checkout-session'
       stripe={env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
       currency='USD'
