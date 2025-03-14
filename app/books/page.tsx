@@ -79,6 +79,8 @@ async function BooksList({
     return <EmptyState />
   }
 
+  // console.log(totalCount)
+
   return (
     <>
       <div className='min-h-[70vh]'>
