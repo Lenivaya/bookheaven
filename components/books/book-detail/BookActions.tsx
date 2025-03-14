@@ -81,7 +81,7 @@ export default function BookActions({ editionId }: BookActionsProps) {
               {isShelvesLoading ? (
                 <Bookmark className='w-4 h-4 mr-2 animate-pulse' />
               ) : (
-                getShelfIcon(currentShelf)
+                getShelfIcon(currentShelf ?? null)
               )}
               <span className='ml-2'>
                 {isBookmarked ? currentShelf : 'Want to Read'}
