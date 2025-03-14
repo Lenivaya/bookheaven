@@ -6,6 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { SearchParams } from 'nuqs/server'
 import BookCard from '@/components/books/book-card/BookCard'
+import { Button } from '@/components/ui/button'
+import { PlusIcon } from 'lucide-react'
+import { Link } from 'next-view-transitions'
 
 const DEFAULT_PAGE_SIZE = 6
 
@@ -29,11 +32,20 @@ export default async function AdminBooksPage({
 
   return (
     <div className='space-y-6'>
-      <div>
-        <h2 className='text-2xl font-semibold tracking-tight'>Books</h2>
-        <p className='text-muted-foreground'>
-          Manage books catalog and inventory.
-        </p>
+      <div className='flex items-center justify-between'>
+        <div>
+          <h2 className='text-2xl font-semibold tracking-tight'>Books</h2>
+          <p className='text-muted-foreground'>
+            Manage books catalog and inventory.
+          </p>
+        </div>
+
+        <Button size='sm' className='gap-1' asChild>
+          <Link href='/forms/books'>
+            <PlusIcon className='h-4 w-4' />
+            <span>Add Book</span>
+          </Link>
+        </Button>
       </div>
 
       <Separator />
