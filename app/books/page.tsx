@@ -43,23 +43,6 @@ function EmptyState() {
   )
 }
 
-// Separate component for the book grid to allow for more granular suspense
-function BookGrid({ books }: { books: any[] }) {
-  return (
-    <div className='grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6'>
-      {books.map((book) => (
-        <BookCard
-          key={book.edition.id}
-          book={book.work}
-          edition={book.edition}
-          authors={book.authors}
-          tags={book.tags}
-        />
-      ))}
-    </div>
-  )
-}
-
 // Separate component for the book list to allow for Suspense
 async function BooksList({
   params
@@ -84,7 +67,17 @@ async function BooksList({
   return (
     <>
       <div className='min-h-[70vh]'>
-        <BookGrid books={books} />
+        <div className='grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6'>
+          {books.map((book) => (
+            <BookCard
+              key={book.edition.id}
+              book={book.work}
+              edition={book.edition}
+              authors={book.authors}
+              tags={book.tags}
+            />
+          ))}
+        </div>
       </div>
 
       {totalCount > DEFAULT_PAGE_SIZE && (
