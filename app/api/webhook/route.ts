@@ -47,7 +47,7 @@ export async function POST(req: Request) {
       switch (event.type) {
         case 'checkout.session.completed':
           data = event.data.object as Stripe.Checkout.Session
-          handleCheckoutSessionCompleted(data)
+          await handleCheckoutSessionCompleted(data)
           console.log(`💰 CheckoutSession status: ${data.payment_status}`)
           break
         case 'payment_intent.payment_failed':
