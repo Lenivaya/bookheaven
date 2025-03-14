@@ -53,6 +53,7 @@ export default defineConfig({
         // Shadcn UI
         'components/ui/**',
         'app/actions/*',
+        '*.actions.ts*',
         'app/'
       ],
       reporter: ['html', 'json-summary', 'json', 'text'],
