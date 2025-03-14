@@ -49,7 +49,10 @@ export default defineConfig({
         'lib/stripe/stripe.ts',
         'lib/constants/**',
         // Scripts
-        'scripts/*'
+        'scripts/*',
+        // Shadcn UI
+        'components/ui/**',
+        'app/actions/*'
       ],
       reporter: ['html', 'json-summary', 'json', 'text'],
       provider: 'v8',
