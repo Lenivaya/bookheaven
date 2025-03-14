@@ -227,7 +227,8 @@ export async function ensureShelfAuthor(shelfId: string) {
  * Get all shelves for a user
  */
 export async function getShelves() {
-  const userId = await getAuthenticatedUserId()
+  const { userId } = await auth()
+  if (isNone(userId)) return []
   return db.query.shelves.findMany({
     where: eq(shelves.userId, userId)
   })
@@ -523,7 +524,8 @@ export async function toggleShelfLike(shelfId: string) {
  * Returns shelves with their items so the client can check if a book is in a shelf
  */
 export async function getUserShelvesWithItems(shelfNames?: DefaultShelves[]) {
-  const userId = await getAuthenticatedUserId()
+  const { userId } = await auth()
+  if (isNone(userId)) return []
 
   // Get all shelves with the given names and their items
   const userShelves = await db.query.shelves.findMany({
