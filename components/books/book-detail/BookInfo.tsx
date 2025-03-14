@@ -1,6 +1,6 @@
 import { BookEdition, BookWork, Tag } from '@/db/schema/books.schema'
 import { Badge } from '@/components/ui/badge'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 import { format } from 'date-fns'
 import {
   BookOpenIcon,

@@ -195,20 +195,10 @@ export async function getBooks(
     }
   })
 
-  let books: FetchedBookRelations[] = []
-  let totalCount = 0
-
-  if (options.withCount) {
-    const [booksResult, totalCountResult] = await Promise.all([
-      getBookFinal,
-      getTotalCount
-    ])
-    books = booksResult as FetchedBookRelations[]
-    totalCount = totalCountResult[0].totalCount
-  } else {
-    books = (await getBookFinal) as FetchedBookRelations[]
-    totalCount = books.length
-  }
+  const [books, [{ totalCount }]] = await Promise.all([
+    getBookFinal,
+    getTotalCount
+  ])
 
   return {
     books: (books as FetchedBookRelations[]).map((book) => ({

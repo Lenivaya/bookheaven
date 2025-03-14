@@ -1,5 +1,3 @@
-'use client'
-
 import { Card, CardContent } from '@/components/ui/card'
 import { OptimizedAvatarImage } from '@/components/ui/avatar-image'
 import { Star } from 'lucide-react'

@@ -1,5 +1,3 @@
-'use client'
-
 import { Button } from '@/components/ui/button'
 import {
   ArrowRight,
@@ -8,7 +6,7 @@ import {
   BookText,
   BookCopy
 } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 
 export default function HeroSection() {
   return (

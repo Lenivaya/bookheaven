@@ -25,6 +25,8 @@ export function BooksPagination({
   const handlePageChange = useCallback(
     (page: number) => {
       setSearchParams({ page: String(page) })
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     },
     [setSearchParams]
   )

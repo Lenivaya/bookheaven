@@ -1,7 +1,5 @@
-'use client'
-
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 import { ArrowRight } from 'lucide-react'
 
 export default function CTASection() {

@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Author } from '@/db/schema'
 import { cn } from '@/lib/utils'
 import { BookOpenIcon } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 
 interface CompactAuthorCardProps {
   author: Author

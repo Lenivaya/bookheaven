@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 import { CheckCircle2, Package, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {

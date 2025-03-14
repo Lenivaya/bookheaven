@@ -2,7 +2,7 @@ import { getPopularTags } from '@/app/actions/tags.actions'
 import { Button } from '@/components/ui/button'
 import { FocusCards } from '@/components/ui/focus-cards'
 import { ArrowRight, TrendingUp } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 
 // This is a Server Component that fetches its own data
 export default async function TrendingSection() {

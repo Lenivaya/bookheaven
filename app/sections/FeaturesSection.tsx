@@ -1,5 +1,3 @@
-'use client'
-
 import { Card, CardContent } from '@/components/ui/card'
 import { BookOpen, Heart, ShoppingBag } from 'lucide-react'
 

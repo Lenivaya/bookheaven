@@ -9,7 +9,7 @@ import {
   CarouselPrevious
 } from '@/components/ui/carousel'
 import { ArrowRight } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 
 // This is a Server Component that fetches its own data
 export default async function FeaturedBooksSection() {
