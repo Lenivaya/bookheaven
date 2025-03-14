@@ -25,7 +25,7 @@ export default async function FeaturedBooksSection() {
             </p>
           </div>
         </div>
-        <div className='mx-auto grid max-w-5xl grid-cols-1 gap-6 py-12 sm:grid-cols-2 md:grid-cols-3'>
+        <div className='mx-auto grid max-w-5xl grid-cols-1 gap-6 py-12 sm:grid-cols-2'>
           {featuredBooks.books.map((book) => (
             <BookCard
               key={book.edition.id}
