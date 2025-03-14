@@ -58,7 +58,7 @@ export default defineConfig({
         'components/providers/*'
       ],
       reporter: ['html', 'json-summary', 'json', 'text'],
-      provider: 'istanbul',
+      provider: 'v8',
       reportOnFailure: true,
       thresholds: {
         branches: 40,
