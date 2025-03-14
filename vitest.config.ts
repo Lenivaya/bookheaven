@@ -15,7 +15,34 @@ export default defineConfig({
         'eslint.config.mjs',
         'next-env.d.ts',
         'vitest.config.ts',
-        'db'
+        'db/*',
+        'env.ts',
+        'types/*',
+        '.next/*',
+        'public/*',
+        // Configuration files
+        'drizzle.config.ts',
+        'instrumentation.ts',
+        'middleware.ts',
+        'sentry.client.config.ts',
+        'sentry.edge.config.ts',
+        'sentry.server.config.ts',
+        // Storybook files
+        '.storybook/**',
+        '**/*.stories.tsx',
+        // Generated coverage files
+        'coverage/**',
+        // API routes
+        'app/api/**',
+        // Next.js special files
+        '**/layout.tsx',
+        '**/global-error.tsx',
+        '**/error.tsx',
+        '**/loading.tsx',
+        '**/not-found.tsx',
+        // Utility files that are imported by the app
+        'lib/stripe/stripe.ts',
+        'lib/constants/**'
       ],
       reporter: ['html', 'json-summary', 'json', 'text'],
       provider: 'v8',
