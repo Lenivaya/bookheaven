@@ -202,7 +202,7 @@ export default async function PaymentsSuccess({
               asChild
               className='w-full border-zinc-800 text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100 h-11 transition-all duration-300'
             >
-              <Link href='/account/orders'>View My Orders</Link>
+              <Link href='/user/dashboard/orders'>View My Orders</Link>
             </Button>
           </CardFooter>
         </Card>

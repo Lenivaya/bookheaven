@@ -54,14 +54,14 @@ export function BookActions({ editionId, bookTitle }: BookActionsProps) {
     systemShelves: DEFAULT_SYSTEM_SHELVES
   })
 
-  const { data: userRating } = useQuery({
+  const { data: userRating, isLoading: isUserRatingLoading } = useQuery({
     queryKey: ['userRating', editionId],
     queryFn: () => getUserRating(editionId),
     refetchOnWindowFocus: false,
     enabled: open
   })
 
-  const { data: averageRating } = useQuery({
+  const { data: averageRating, isLoading: isAverageRatingLoading } = useQuery({
     queryKey: ['averageRating', editionId],
     queryFn: () => getBookEditionAverageRating(editionId),
     refetchOnWindowFocus: false,
@@ -95,7 +95,7 @@ export function BookActions({ editionId, bookTitle }: BookActionsProps) {
     }
   })
 
-  const getShelfIcon = (shelf: DefaultShelves | null) => {
+  const getShelfIcon = (shelf: DefaultShelves | null | undefined) => {
     if (!shelf) return <Bookmark className='h-4 w-4' />
 
     return match(shelf)
@@ -166,11 +166,16 @@ export function BookActions({ editionId, bookTitle }: BookActionsProps) {
                 size='sm'
                 className='w-full justify-start text-sm'
                 onClick={() => {
-                  handleShelfSelect(shelf)
-                  // Only close the popover if we're removing from the current shelf
-                  // or if we're adding to a new shelf (not moving between shelves)
-                  if (currentShelf === shelf || !currentShelf) {
-                    setOpen(false)
+                  try {
+                    handleShelfSelect(shelf)
+                    // Only close the popover if we're removing from the current shelf
+                    // or if we're adding to a new shelf (not moving between shelves)
+                    if (currentShelf === shelf || !currentShelf) {
+                      setOpen(false)
+                    }
+                  } catch (error) {
+                    console.error('Error selecting shelf:', error)
+                    toast.error(`Failed to update shelf for "${bookTitle}"`)
                   }
                 }}
                 disabled={isShelfActionPending}

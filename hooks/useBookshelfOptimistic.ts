@@ -58,12 +58,13 @@ export function useBookshelfOptimistic({
 
   // Build lookup maps for efficient access
   const shelfByName = new Map(userShelves.map((shelf) => [shelf.name, shelf]))
+
   const shelfWithBook = userShelves.find((shelf) =>
-    shelf.items.some((item) => item.editionId === editionId)
+    shelf.items?.some((item) => item.editionId === editionId)
   )
 
   // Derived state
-  const currentShelf = shelfWithBook?.name as DefaultShelves | null
+  const currentShelf = shelfWithBook?.name as DefaultShelves | undefined | null
   const isBookmarked = !!shelfWithBook
   const shelfId = shelfWithBook?.id || null
 
@@ -72,20 +73,23 @@ export function useBookshelfOptimistic({
    */
   const updateCache = (newShelfName: DefaultShelves | null) => {
     queryClient.setQueryData(queryKey, (oldData: Shelf[] | undefined) => {
-      if (!oldData) return oldData
+      if (!oldData || !Array.isArray(oldData)) return oldData
 
       // Create a deep copy
-      const newData = structuredClone(oldData)
+      const newData = JSON.parse(JSON.stringify(oldData)) as Shelf[]
 
       // Create a lookup map for the new data
-      const shelvesByName = Object.fromEntries(
-        newData.map((shelf) => [shelf.name, shelf])
-      )
+      const shelvesByName: Record<string, Shelf> = {}
+      for (const shelf of newData) {
+        if (shelf && typeof shelf === 'object' && 'name' in shelf) {
+          shelvesByName[shelf.name] = shelf
+        }
+      }
 
       // Handle removal from current shelf
       if (currentShelf && (!newShelfName || newShelfName !== currentShelf)) {
         const currentShelfObj = shelvesByName[currentShelf]
-        if (currentShelfObj) {
+        if (currentShelfObj && Array.isArray(currentShelfObj.items)) {
           currentShelfObj.items = currentShelfObj.items.filter(
             (item) => item.editionId !== editionId
           )
@@ -95,14 +99,19 @@ export function useBookshelfOptimistic({
       // Handle addition to new shelf
       if (newShelfName) {
         const targetShelf = shelvesByName[newShelfName]
-        if (
-          targetShelf &&
-          !targetShelf.items.some((item) => item.editionId === editionId)
-        ) {
-          targetShelf.items.push({
-            editionId,
-            shelfId: targetShelf.id
-          })
+        if (targetShelf) {
+          // Ensure items is an array
+          if (!Array.isArray(targetShelf.items)) {
+            targetShelf.items = []
+          }
+
+          // Only add if not already present
+          if (!targetShelf.items.some((item) => item.editionId === editionId)) {
+            targetShelf.items.push({
+              editionId,
+              shelfId: targetShelf.id
+            })
+          }
         }
       }
 
@@ -127,7 +136,10 @@ export function useBookshelfOptimistic({
         return { previousData }
       },
       onError: (error, variables, context) => {
-        queryClient.setQueryData(queryKey, context?.previousData)
+        // Restore previous data on error
+        if (context?.previousData) {
+          queryClient.setQueryData(queryKey, context.previousData)
+        }
         console.error(
           `Failed to ${action} book ${action === 'add' ? 'to' : 'from'} shelf:`,
           error
@@ -136,8 +148,9 @@ export function useBookshelfOptimistic({
           `Failed to ${action} "${bookTitle}" ${action === 'add' ? 'to' : 'from'} ${variables}`
         )
       },
-      onSettled: (_, error) => {
-        if (error) queryClient.invalidateQueries({ queryKey })
+      onSettled: () => {
+        // Always refetch after settled to ensure data consistency
+        queryClient.invalidateQueries({ queryKey })
       },
       onSuccess: (_, shelfName) => {
         toast.success(
@@ -169,38 +182,48 @@ export function useBookshelfOptimistic({
    * Handles shelf selection with optimistic updates
    */
   const handleShelfSelect = async (shelf: DefaultShelves) => {
-    // If selecting the current shelf, remove the book from it
-    if (currentShelf === shelf) {
-      removeFromShelfMutation.mutate(shelf, undefined)
-      return
-    }
-
-    // If moving from one shelf to another
-    if (currentShelf) {
-      await queryClient.cancelQueries({ queryKey })
-      const previousData = queryClient.getQueryData(queryKey)
-
-      // Optimistic update
-      updateCache(shelf)
-
-      try {
-        const currentShelfObj = shelfByName.get(currentShelf)
-        if (currentShelfObj) {
-          await deleteShelfItem(currentShelfObj.id, editionId)
-          await upsertShelfItemWithShelfName({ editionId }, shelf)
-          toast.success(`Moved "${bookTitle}" from ${currentShelf} to ${shelf}`)
-        }
-      } catch (error) {
-        queryClient.setQueryData(queryKey, previousData)
-        console.error('Failed to move book between shelves:', error)
-        toast.error(`Failed to move "${bookTitle}" to ${shelf}`)
-        queryClient.invalidateQueries({ queryKey })
+    try {
+      // If selecting the current shelf, remove the book from it
+      if (currentShelf === shelf) {
+        removeFromShelfMutation.mutate(shelf)
+        return
       }
-      return
-    }
 
-    // If not on any shelf, add to the selected shelf
-    addToShelfMutation.mutate(shelf, undefined)
+      // If moving from one shelf to another
+      if (currentShelf) {
+        await queryClient.cancelQueries({ queryKey })
+        const previousData = queryClient.getQueryData(queryKey)
+
+        // Optimistic update
+        updateCache(shelf)
+
+        try {
+          const currentShelfObj = shelfByName.get(currentShelf)
+          if (currentShelfObj) {
+            await deleteShelfItem(currentShelfObj.id, editionId)
+            await upsertShelfItemWithShelfName({ editionId }, shelf)
+            toast.success(
+              `Moved "${bookTitle}" from ${currentShelf} to ${shelf}`
+            )
+          }
+        } catch (error) {
+          // Restore previous data on error
+          queryClient.setQueryData(queryKey, previousData)
+          console.error('Failed to move book between shelves:', error)
+          toast.error(`Failed to move "${bookTitle}" to ${shelf}`)
+          queryClient.invalidateQueries({ queryKey })
+        }
+        return
+      }
+
+      // If not on any shelf, add to the selected shelf
+      addToShelfMutation.mutate(shelf)
+    } catch (error) {
+      console.error('Error in handleShelfSelect:', error)
+      toast.error(`Failed to update shelf for "${bookTitle}"`)
+      // Ensure data is refreshed
+      queryClient.invalidateQueries({ queryKey })
+    }
   }
 
   return {
