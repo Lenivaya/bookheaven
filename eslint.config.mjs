@@ -15,7 +15,8 @@ const eslintConfig = [
   ...pluginQuery.configs['flat/recommended'],
   ...compat.config({
     extends: ['next/core-web-vitals', 'next/typescript'],
-    plugins: ['drizzle']
+    plugins: ['drizzle'],
+    ignorePatterns: ['__tests__', '*.test.tsx', '*.test.ts']
   })
 ]
 
