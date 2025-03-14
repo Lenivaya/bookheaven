@@ -32,6 +32,8 @@ export function ZoomableImage({
             fill
             alt={alt || ''}
             className='h-full w-full object-contain'
+            sizes='(max-width: 640px) 95vw, (max-width: 1024px) 80vw, 70vw'
+            quality={85}
           />
         </div>
       </DialogContent>

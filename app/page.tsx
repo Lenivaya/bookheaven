@@ -26,6 +26,7 @@ import { Link } from 'next-view-transitions'
 import { getPopularTags } from './actions/tags.actions'
 import { Input } from '@/components/ui/input'
 import Image from 'next/image'
+import { OptimizedAvatarImage } from '@/components/ui/avatar-image'
 
 export default async function Home() {
   const [featuredBooks, popularTags] = await Promise.all([
@@ -370,12 +371,10 @@ export default async function Home() {
                   </p>
                   <div className='flex items-center'>
                     <div className='h-12 w-12 rounded-full overflow-hidden mr-3 ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300'>
-                      <Image
+                      <OptimizedAvatarImage
                         src={testimonial.avatar}
                         alt={testimonial.name}
-                        width={48}
-                        height={48}
-                        className='object-cover'
+                        size={48}
                       />
                     </div>
                     <div>

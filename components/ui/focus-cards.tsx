@@ -31,6 +31,9 @@ export const Card = React.memo(
         alt={card.title}
         fill
         className='object-cover absolute inset-0'
+        sizes='(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw'
+        quality={75}
+        loading='lazy'
       />
       {/* Always visible label for small touch devices */}
       <div className='absolute inset-x-0 bottom-0 bg-black/70 py-3 px-4 md:hidden'>

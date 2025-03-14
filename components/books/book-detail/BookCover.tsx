@@ -48,12 +48,13 @@ export default function BookCover({
               src={thumbnailUrl}
               alt={`Cover of ${title}`}
               fill
-              sizes='(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw'
+              sizes='(max-width: 640px) 80vw, (max-width: 768px) 40vw, (max-width: 1024px) 30vw, 25vw'
               className={cn(
                 'object-cover transition-opacity duration-300',
                 isLoading ? 'opacity-0' : 'opacity-100'
               )}
               priority
+              quality={85}
               onLoad={handleImageLoad}
               onError={handleImageError}
             />

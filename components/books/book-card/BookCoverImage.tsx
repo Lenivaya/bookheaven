@@ -52,7 +52,9 @@ export function BookCoverImage({
             isLoading ? 'opacity-0' : 'opacity-100',
             hasError ? 'hidden' : 'block'
           )}
-          sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
+          sizes='(max-width: 640px) 90vw, (max-width: 768px) 45vw, (max-width: 1024px) 30vw, 20vw'
+          quality={80}
+          loading='lazy'
           onLoad={() => setIsLoading(false)}
           onError={() => {
             setIsLoading(false)
