@@ -42,7 +42,9 @@ export default defineConfig({
         '**/not-found.tsx',
         // Utility files that are imported by the app
         'lib/stripe/stripe.ts',
-        'lib/constants/**'
+        'lib/constants/**',
+        // Scripts
+        'scripts/*'
       ],
       reporter: ['html', 'json-summary', 'json', 'text'],
       provider: 'v8',
