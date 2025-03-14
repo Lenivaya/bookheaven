@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
@@ -43,156 +42,132 @@ export function useBookshelfOptimistic({
   systemShelves
 }: UseBookshelfOptimisticOptions) {
   const queryClient = useQueryClient()
+  const queryKey = ['userShelves']
 
   // Query to get user shelves with items
   const {
-    data: userShelves,
+    data: userShelves = [],
     isLoading: isShelvesLoading,
     isError: isShelvesError
   } = useQuery({
-    queryKey: ['userShelves'],
+    queryKey,
     queryFn: () => getUserShelvesWithItems(systemShelves),
     refetchOnWindowFocus: false,
     staleTime: 5 * 60 * 1000
   })
 
-  // Calculate current shelf and bookmarked status
-  const { currentShelf, isBookmarked, shelfId } = (() => {
-    if (!userShelves)
-      return { currentShelf: null, isBookmarked: false, shelfId: null }
+  // Build lookup maps for efficient access
+  const shelfByName = new Map(userShelves.map((shelf) => [shelf.name, shelf]))
+  const shelfWithBook = userShelves.find((shelf) =>
+    shelf.items.some((item) => item.editionId === editionId)
+  )
 
-    const shelfWithBook = userShelves.find((shelf) =>
-      shelf.items.some((item) => item.editionId === editionId)
-    )
+  // Derived state
+  const currentShelf = shelfWithBook?.name as DefaultShelves | null
+  const isBookmarked = !!shelfWithBook
+  const shelfId = shelfWithBook?.id || null
 
-    return {
-      currentShelf: shelfWithBook?.name as DefaultShelves | null,
-      isBookmarked: !!shelfWithBook,
-      shelfId: shelfWithBook?.id || null
-    }
-  })()
+  /**
+   * Updates the cache optimistically
+   */
+  const updateCache = (newShelfName: DefaultShelves | null) => {
+    queryClient.setQueryData(queryKey, (oldData: Shelf[] | undefined) => {
+      if (!oldData) return oldData
 
-  // Helper function to update the cache optimistically
-  const updateShelvesCache = (newShelfName: DefaultShelves | null) => {
-    queryClient.setQueryData(
-      ['userShelves'],
-      (oldData: Shelf[] | undefined) => {
-        if (!oldData) return oldData
+      // Create a deep copy
+      const newData = structuredClone(oldData)
 
-        // Create a deep copy of the shelves data
-        const newData = JSON.parse(JSON.stringify(oldData)) as Shelf[]
+      // Create a lookup map for the new data
+      const shelvesByName = Object.fromEntries(
+        newData.map((shelf) => [shelf.name, shelf])
+      )
 
-        // If removing from a shelf
-        if (currentShelf && (!newShelfName || newShelfName !== currentShelf)) {
-          // Find the current shelf and remove the book from it
-          const currentShelfObj = newData.find((s) => s.name === currentShelf)
-          if (currentShelfObj) {
-            currentShelfObj.items = currentShelfObj.items.filter(
-              (item) => item.editionId !== editionId
-            )
-          }
+      // Handle removal from current shelf
+      if (currentShelf && (!newShelfName || newShelfName !== currentShelf)) {
+        const currentShelfObj = shelvesByName[currentShelf]
+        if (currentShelfObj) {
+          currentShelfObj.items = currentShelfObj.items.filter(
+            (item) => item.editionId !== editionId
+          )
         }
-
-        // If adding to a new shelf
-        if (newShelfName) {
-          // Find or create the new shelf
-          let newShelfObj = newData.find((s) => s.name === newShelfName)
-
-          // If the shelf exists, add the book to it
-          if (newShelfObj) {
-            // Only add if not already there
-            if (
-              !newShelfObj.items.some((item) => item.editionId === editionId)
-            ) {
-              newShelfObj.items.push({
-                editionId,
-                shelfId: newShelfObj.id
-              })
-            }
-          }
-        }
-
-        return newData
       }
-    )
+
+      // Handle addition to new shelf
+      if (newShelfName) {
+        const targetShelf = shelvesByName[newShelfName]
+        if (
+          targetShelf &&
+          !targetShelf.items.some((item) => item.editionId === editionId)
+        ) {
+          targetShelf.items.push({
+            editionId,
+            shelfId: targetShelf.id
+          })
+        }
+      }
+
+      return newData
+    })
   }
 
-  // Mutation to add a book to a shelf with optimistic updates
-  const addToShelfMutation = useMutation({
-    mutationFn: (shelfName: DefaultShelves) =>
-      upsertShelfItemWithShelfName({ editionId }, shelfName),
-    // Optimistic update
-    onMutate: async (shelfName) => {
-      // Cancel any outgoing refetches to avoid overwriting our optimistic update
-      await queryClient.cancelQueries({ queryKey: ['userShelves'] })
-
-      // Snapshot the previous data
-      const previousData = queryClient.getQueryData(['userShelves'])
-
-      // Optimistically update the cache
-      updateShelvesCache(shelfName)
-
-      // Return a context object with the previous data
-      return { previousData }
-    },
-    // If the mutation fails, use the context returned from onMutate to roll back
-    onError: (error, variables, context) => {
-      // Roll back to the previous data
-      queryClient.setQueryData(['userShelves'], context?.previousData)
-      console.error('Failed to add book to shelf:', error)
-      toast.error(`Failed to add "${bookTitle}" to ${variables}`)
-    },
-    // Only refetch on error to ensure data consistency
-    onSettled: (data, error) => {
-      if (error) {
-        queryClient.invalidateQueries({ queryKey: ['userShelves'] })
+  /**
+   * Common mutation configuration factory
+   */
+  const createMutation = (
+    action: 'add' | 'remove',
+    mutationFn: (shelfName: DefaultShelves) => Promise<any>,
+    updateFn: (shelfName: DefaultShelves) => void
+  ) => {
+    return useMutation({
+      mutationFn,
+      onMutate: async (shelfName) => {
+        await queryClient.cancelQueries({ queryKey })
+        const previousData = queryClient.getQueryData(queryKey)
+        updateFn(shelfName)
+        return { previousData }
+      },
+      onError: (error, variables, context) => {
+        queryClient.setQueryData(queryKey, context?.previousData)
+        console.error(
+          `Failed to ${action} book ${action === 'add' ? 'to' : 'from'} shelf:`,
+          error
+        )
+        toast.error(
+          `Failed to ${action} "${bookTitle}" ${action === 'add' ? 'to' : 'from'} ${variables}`
+        )
+      },
+      onSettled: (_, error) => {
+        if (error) queryClient.invalidateQueries({ queryKey })
+      },
+      onSuccess: (_, shelfName) => {
+        toast.success(
+          `${action === 'add' ? 'Added' : 'Removed'} "${bookTitle}" ${action === 'add' ? 'to' : 'from'} ${shelfName}`
+        )
       }
-    },
-    onSuccess: (_, shelfName) => {
-      toast.success(`Added "${bookTitle}" to ${shelfName}`)
-    }
-  })
+    })
+  }
 
-  // Mutation to remove a book from a shelf with optimistic updates
-  const removeFromShelfMutation = useMutation({
-    mutationFn: async (shelfName: DefaultShelves) => {
-      const shelf = userShelves?.find((s) => s.name === shelfName)
+  // Add to shelf mutation
+  const addToShelfMutation = createMutation(
+    'add',
+    (shelfName) => upsertShelfItemWithShelfName({ editionId }, shelfName),
+    (shelfName) => updateCache(shelfName)
+  )
+
+  // Remove from shelf mutation
+  const removeFromShelfMutation = createMutation(
+    'remove',
+    async (shelfName) => {
+      const shelf = shelfByName.get(shelfName)
       if (!shelf) throw new Error(`Shelf ${shelfName} not found`)
       return deleteShelfItem(shelf.id, editionId)
     },
-    // Optimistic update
-    onMutate: async (shelfName) => {
-      // Cancel any outgoing refetches to avoid overwriting our optimistic update
-      await queryClient.cancelQueries({ queryKey: ['userShelves'] })
+    () => updateCache(null)
+  )
 
-      // Snapshot the previous data
-      const previousData = queryClient.getQueryData(['userShelves'])
-
-      // Optimistically update the cache
-      updateShelvesCache(null)
-
-      // Return a context object with the previous data
-      return { previousData }
-    },
-    // If the mutation fails, use the context returned from onMutate to roll back
-    onError: (error, variables, context) => {
-      // Roll back to the previous data
-      queryClient.setQueryData(['userShelves'], context?.previousData)
-      console.error('Failed to remove book from shelf:', error)
-      toast.error(`Failed to remove "${bookTitle}" from ${variables}`)
-    },
-    // Only refetch on error to ensure data consistency
-    onSettled: (data, error) => {
-      if (error) {
-        queryClient.invalidateQueries({ queryKey: ['userShelves'] })
-      }
-    },
-    onSuccess: (_, shelfName) => {
-      toast.success(`Removed "${bookTitle}" from ${shelfName}`)
-    }
-  })
-
-  // Function to handle shelf selection with optimistic updates
+  /**
+   * Handles shelf selection with optimistic updates
+   */
   const handleShelfSelect = async (shelf: DefaultShelves) => {
     // If selecting the current shelf, remove the book from it
     if (currentShelf === shelf) {
@@ -200,38 +175,26 @@ export function useBookshelfOptimistic({
       return
     }
 
-    // If moving from one shelf to another, handle it optimistically
+    // If moving from one shelf to another
     if (currentShelf) {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['userShelves'] })
+      await queryClient.cancelQueries({ queryKey })
+      const previousData = queryClient.getQueryData(queryKey)
 
-      // Snapshot the previous data
-      const previousData = queryClient.getQueryData(['userShelves'])
-
-      // Optimistically update the cache
-      updateShelvesCache(shelf)
+      // Optimistic update
+      updateCache(shelf)
 
       try {
-        // Find the current shelf object
-        const currentShelfObj = userShelves?.find(
-          (s) => s.name === currentShelf
-        )
-
+        const currentShelfObj = shelfByName.get(currentShelf)
         if (currentShelfObj) {
-          // Perform the actual operations
           await deleteShelfItem(currentShelfObj.id, editionId)
           await upsertShelfItemWithShelfName({ editionId }, shelf)
-
           toast.success(`Moved "${bookTitle}" from ${currentShelf} to ${shelf}`)
         }
       } catch (error) {
-        // Roll back to the previous data
-        queryClient.setQueryData(['userShelves'], previousData)
+        queryClient.setQueryData(queryKey, previousData)
         console.error('Failed to move book between shelves:', error)
         toast.error(`Failed to move "${bookTitle}" to ${shelf}`)
-
-        // Refetch to ensure data consistency
-        queryClient.invalidateQueries({ queryKey: ['userShelves'] })
+        queryClient.invalidateQueries({ queryKey })
       }
       return
     }

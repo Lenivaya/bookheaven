@@ -12,7 +12,7 @@ import {
   StarIcon,
   X
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import {
   Popover,
   PopoverContent,
@@ -20,11 +20,6 @@ import {
 } from '@/components/ui/popover'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import {
-  deleteShelfItem,
-  getUserShelvesWithItems,
-  upsertShelfItemWithShelfName
-} from '@/app/actions/bookShelves.actions'
 import { DEFAULT_SYSTEM_SHELVES, DefaultShelves } from '@/lib/constants'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { match } from 'ts-pattern'
@@ -36,6 +31,7 @@ import {
   upsertBookRating
 } from '@/app/actions/ratings.actions'
 import { RatingValue } from '@/db/schema/ratings.schema'
+import { useBookshelfOptimistic } from '@/hooks/useBookshelfOptimistic'
 
 interface BookActionsProps {
   editionId: string
@@ -43,55 +39,19 @@ interface BookActionsProps {
 
 export default function BookActions({ editionId }: BookActionsProps) {
   const [isBookmarkOpen, setIsBookmarkOpen] = useState(false)
-  const queryClient = useQueryClient()
 
-  const { data: userShelves, isLoading: isShelvesLoading } = useQuery({
-    queryKey: ['userShelves'],
-    queryFn: () => getUserShelvesWithItems(DEFAULT_SYSTEM_SHELVES),
-    refetchOnWindowFocus: false,
-    staleTime: 5 * 60 * 1000
-  })
+  // Use our optimistic bookshelf hook
+  const {
+    currentShelf,
+    isBookmarked,
 
-  const { currentShelf, isBookmarked } = useMemo(() => {
-    if (!userShelves) return { currentShelf: null, isBookmarked: false }
-
-    const shelfWithBook = userShelves.find((shelf) =>
-      shelf.items.some((item) => item.editionId === editionId)
-    )
-
-    return {
-      currentShelf: shelfWithBook?.name as DefaultShelves | null,
-      isBookmarked: !!shelfWithBook
-    }
-  }, [userShelves, editionId])
-
-  const addToShelfMutation = useMutation({
-    mutationFn: (shelfName: DefaultShelves) =>
-      upsertShelfItemWithShelfName({ editionId }, shelfName),
-    onSuccess: (_, shelfName) => {
-      queryClient.invalidateQueries({ queryKey: ['userShelves'] })
-      toast.success(`Added to ${shelfName}`)
-    },
-    onError: (error) => {
-      console.error('Failed to add book to shelf:', error)
-      toast.error('Failed to add book to shelf')
-    }
-  })
-
-  const removeFromShelfMutation = useMutation({
-    mutationFn: async (shelfName: DefaultShelves) => {
-      const shelf = userShelves?.find((s) => s.name === shelfName)
-      if (!shelf) throw new Error(`Shelf ${shelfName} not found`)
-      return deleteShelfItem(shelf.id, editionId)
-    },
-    onSuccess: (_, shelfName) => {
-      queryClient.invalidateQueries({ queryKey: ['userShelves'] })
-      toast.success(`Removed from ${shelfName}`)
-    },
-    onError: (error) => {
-      console.error('Failed to remove book from shelf:', error)
-      toast.error('Failed to remove book from shelf')
-    }
+    isShelvesLoading,
+    handleShelfSelect,
+    isPending: isShelfActionPending
+  } = useBookshelfOptimistic({
+    editionId,
+    bookTitle: 'Book', // We don't have the book title here, but it's only used for toast messages
+    systemShelves: DEFAULT_SYSTEM_SHELVES
   })
 
   const getShelfIcon = (shelf: DefaultShelves | null) => {
@@ -103,37 +63,6 @@ export default function BookActions({ editionId }: BookActionsProps) {
       .with('Read', () => <BookCheck className='h-4 w-4' />)
       .with('Did Not Finish', () => <BookX className='h-4 w-4' />)
       .otherwise(() => <Bookmark className='h-4 w-4' />)
-  }
-
-  const handleShelfSelect = async (shelf: DefaultShelves) => {
-    if (currentShelf === shelf) {
-      removeFromShelfMutation.mutate(shelf)
-      setIsBookmarkOpen(false)
-      return
-    }
-
-    if (currentShelf) {
-      try {
-        const currentShelfObj = userShelves?.find(
-          (s) => s.name === currentShelf
-        )
-        if (currentShelfObj) {
-          await deleteShelfItem(currentShelfObj.id, editionId)
-          await upsertShelfItemWithShelfName({ editionId }, shelf)
-          queryClient.invalidateQueries({ queryKey: ['userShelves'] })
-          toast.success(`Moved from ${currentShelf} to ${shelf}`)
-          setIsBookmarkOpen(false)
-          return
-        }
-      } catch (error) {
-        console.error('Failed to move book between shelves:', error)
-        toast.error('Failed to move book between shelves')
-        return
-      }
-    }
-
-    addToShelfMutation.mutate(shelf)
-    setIsBookmarkOpen(false)
   }
 
   return (
@@ -172,11 +101,15 @@ export default function BookActions({ editionId }: BookActionsProps) {
                     variant={currentShelf === shelf ? 'default' : 'ghost'}
                     size='sm'
                     className='w-full justify-start text-sm'
-                    onClick={() => handleShelfSelect(shelf)}
-                    disabled={
-                      addToShelfMutation.isPending ||
-                      removeFromShelfMutation.isPending
-                    }
+                    onClick={() => {
+                      handleShelfSelect(shelf)
+                      // Only close the popover if we're removing from the current shelf
+                      // or if we're adding to a new shelf (not moving between shelves)
+                      if (currentShelf === shelf || !currentShelf) {
+                        setIsBookmarkOpen(false)
+                      }
+                    }}
+                    disabled={isShelfActionPending}
                   >
                     {match(shelf)
                       .with('Want to Read', () => (
@@ -302,7 +235,7 @@ function RatingPopover({ editionId }: { editionId: string }) {
                 variant='ghost'
                 size='icon'
                 className='h-5 w-5'
-                onClick={() => deleteRatingMutation.mutate()}
+                onClick={() => deleteRatingMutation.mutate(undefined)}
                 disabled={deleteRatingMutation.isPending}
                 title='Remove rating'
               >
