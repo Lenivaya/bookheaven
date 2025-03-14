@@ -9,6 +9,7 @@ import NewsletterSection from '@/app/sections/NewsletterSection'
 // Dynamic sections with data fetching
 import FeaturedBooksSection from '@/app/sections/FeaturedBooksSection'
 import TestimonialsSection from '@/app/sections/TestimonialsSection'
+import TrendingSection from '@/app/sections/TrendingSection'
 
 // Skeleton loaders
 import {
@@ -19,7 +20,6 @@ import {
 export default function Home() {
   return (
     <main className='flex min-h-screen flex-col items-center justify-between'>
-      {/* Static sections that load immediately */}
       <HeroSection />
       <FeaturesSection />
 
@@ -27,6 +27,11 @@ export default function Home() {
         <FeaturedBooksSection />
       </Suspense>
 
+      <Suspense fallback={<TrendingSkeleton />}>
+        <TrendingSection />
+      </Suspense>
+
+      {/* Lower priority content */}
       <TestimonialsSection />
       <NewsletterSection />
       <CTASection />

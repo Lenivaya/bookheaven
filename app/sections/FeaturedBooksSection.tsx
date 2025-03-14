@@ -4,7 +4,7 @@ import BookCard from '@/components/books/book-card/BookCard'
 export default async function FeaturedBooksSection() {
   // Fetch data for this section independently
   const featuredBooks = await getBooks({
-    limit: 8,
+    limit: 6,
     offset: 0
   })
 
@@ -25,7 +25,7 @@ export default async function FeaturedBooksSection() {
             </p>
           </div>
         </div>
-        <div className='mx-auto grid max-w-5xl grid-cols-1 gap-6 py-12 sm:grid-cols-2'>
+        <div className='mx-auto grid max-w-5xl grid-cols-1 gap-6 py-12 sm:grid-cols-2 md:grid-cols-3'>
           {featuredBooks.books.map((book) => (
             <BookCard
               key={book.edition.id}
