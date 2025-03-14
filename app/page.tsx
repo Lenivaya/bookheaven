@@ -9,7 +9,6 @@ import NewsletterSection from '@/app/sections/NewsletterSection'
 // Dynamic sections with data fetching
 import FeaturedBooksSection from '@/app/sections/FeaturedBooksSection'
 import TestimonialsSection from '@/app/sections/TestimonialsSection'
-import TrendingSection from '@/app/sections/TrendingSection'
 
 // Skeleton loaders
 import {
@@ -26,9 +25,6 @@ export default function Home() {
 
       <Suspense fallback={<FeaturedBooksSkeleton />}>
         <FeaturedBooksSection />
-      </Suspense>
-      <Suspense fallback={<TrendingSkeleton />}>
-        <TrendingSection />
       </Suspense>
 
       <TestimonialsSection />
