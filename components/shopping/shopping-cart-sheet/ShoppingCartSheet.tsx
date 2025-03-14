@@ -28,7 +28,7 @@ import { Minus, Plus, ShoppingCart, X, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { toast } from 'sonner'
 import { useShoppingCart } from 'use-shopping-cart'
-import { Link } from 'next-view-transitions'
+import Link from 'next/link'
 
 export function ShoppingCartSheet({ children }: { children: React.ReactNode }) {
   const {

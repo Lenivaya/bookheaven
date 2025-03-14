@@ -1,5 +1,6 @@
 import { Author } from '@/db/schema/books.schema'
-import { Link } from 'next-view-transitions'
+import Link from 'next/link'
+
 import { StarIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { getWorkAverageRating } from '@/app/actions/ratings.actions'

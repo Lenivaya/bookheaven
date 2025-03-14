@@ -14,6 +14,52 @@ interface BooksPageProps {
 
 const DEFAULT_PAGE_SIZE = 9
 
+// Empty state component
+function EmptyState() {
+  return (
+    <div className='flex flex-col items-center justify-center min-h-[50vh]'>
+      <div className='rounded-lg border border-dashed p-8 text-center max-w-md mx-auto'>
+        <svg
+          xmlns='http://www.w3.org/2000/svg'
+          className='mx-auto h-12 w-12 text-muted-foreground'
+          fill='none'
+          viewBox='0 0 24 24'
+          stroke='currentColor'
+        >
+          <path
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeWidth={2}
+            d='M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z'
+          />
+        </svg>
+        <h3 className='mt-4 text-lg font-semibold'>No books found</h3>
+        <p className='mt-2 text-sm text-muted-foreground'>
+          Try adjusting your search or filter to find what you&apos;re looking
+          for.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// Separate component for the book grid to allow for more granular suspense
+function BookGrid({ books }: { books: any[] }) {
+  return (
+    <div className='grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6'>
+      {books.map((book) => (
+        <BookCard
+          key={book.edition.id}
+          book={book.work}
+          edition={book.edition}
+          authors={book.authors}
+          tags={book.tags}
+        />
+      ))}
+    </div>
+  )
+}
+
 // Separate component for the book list to allow for Suspense
 async function BooksList({
   params
@@ -30,47 +76,13 @@ async function BooksList({
   })
 
   if (books.length === 0) {
-    return (
-      <div className='flex flex-col items-center justify-center min-h-[50vh]'>
-        <div className='rounded-lg border border-dashed p-8 text-center max-w-md mx-auto'>
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            className='mx-auto h-12 w-12 text-muted-foreground'
-            fill='none'
-            viewBox='0 0 24 24'
-            stroke='currentColor'
-          >
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z'
-            />
-          </svg>
-          <h3 className='mt-4 text-lg font-semibold'>No books found</h3>
-          <p className='mt-2 text-sm text-muted-foreground'>
-            Try adjusting your search or filter to find what you&apos;re looking
-            for.
-          </p>
-        </div>
-      </div>
-    )
+    return <EmptyState />
   }
 
   return (
     <>
       <div className='min-h-[70vh]'>
-        <div className='grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6'>
-          {books.map((book) => (
-            <BookCard
-              key={book.edition.id}
-              book={book.work}
-              edition={book.edition}
-              authors={book.authors}
-              tags={book.tags}
-            />
-          ))}
-        </div>
+        <BookGrid books={books} />
       </div>
 
       {totalCount > DEFAULT_PAGE_SIZE && (
@@ -102,23 +114,33 @@ function PaginationSkeleton() {
   )
 }
 
+// Skeleton component for the book grid
+function BookGridSkeleton() {
+  return (
+    <div className='grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6'>
+      {Array.from({ length: 9 }).map((_, index) => (
+        <BookCardSkeleton key={index} />
+      ))}
+    </div>
+  )
+}
+
 export default async function BooksPage({ searchParams }: BooksPageProps) {
+  // Parse search params outside of suspense to avoid waterfall
   const params = await bookSearchParamsCache.parse(searchParams)
 
   return (
     <div className='container mx-auto py-8 mt-20'>
+      {/* Search component loads immediately */}
       <div className='flex flex-col justify-between mb-5 w-full'>
         <BooksSearch />
       </div>
 
+      {/* Progressive loading with suspense */}
       <Suspense
         fallback={
           <div className='min-h-[70vh]'>
-            <div className='grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6'>
-              {Array.from({ length: 9 }).map((_, index) => (
-                <BookCardSkeleton key={index} />
-              ))}
-            </div>
+            <BookGridSkeleton />
             <PaginationSkeleton />
           </div>
         }

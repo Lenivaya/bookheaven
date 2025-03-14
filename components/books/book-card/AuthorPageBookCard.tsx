@@ -12,7 +12,8 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip'
 import { Author, BookEdition, BookWork, Tag } from '@/db/schema'
-import { Link } from 'next-view-transitions'
+import Link from 'next/link'
+
 import { BookCardAuthors } from './BookCardAuthors'
 import { BookTagsList } from './BookTagsList'
 import { ClientBookCover } from './ClientBookCover'

@@ -1,5 +1,6 @@
 import { Separator } from '@/components/ui/separator'
-import { Link } from 'next-view-transitions'
+import Link from 'next/link'
+
 import { MobileNavigation } from './MobileNavigation'
 import { NavbarCart } from './NavbarCart'
 import { NavbarUser } from './NavbarUser'
