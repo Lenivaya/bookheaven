@@ -74,7 +74,7 @@ const bookFormSchema = z.object({
   tagIds: z.array(z.string())
 })
 
-type BookFormData = z.infer<typeof bookFormSchema>
+export type BookFormData = z.infer<typeof bookFormSchema>
 
 interface BookFormProps {
   initialData?: {
