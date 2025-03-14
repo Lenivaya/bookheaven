@@ -91,6 +91,7 @@ type ExistingEditionWithRelations = BookEdition & {
  */
 export async function getBooks(
   options: {
+    withCount?: boolean
     limit: number
     offset: number
     search?: string
@@ -99,6 +100,7 @@ export async function getBooks(
     bookWorksIds?: string[]
     bookEditionsIds?: string[]
   } = {
+    withCount: true,
     limit: 10,
     offset: 0,
     search: '',
@@ -193,13 +195,22 @@ export async function getBooks(
     }
   })
 
-  const [books, [{ totalCount }]] = await Promise.all([
-    getBookFinal,
-    getTotalCount
-  ])
+  let books: FetchedBookRelations[] = []
+  let totalCount = 0
+
+  if (options.withCount) {
+    const [booksResult, totalCountResult] = await Promise.all([
+      getBookFinal,
+      getTotalCount
+    ])
+    books = booksResult as FetchedBookRelations[]
+    totalCount = totalCountResult[0].totalCount
+  } else {
+    books = (await getBookFinal) as FetchedBookRelations[]
+    totalCount = books.length
+  }
 
   return {
-    // books: [],
     books: (books as FetchedBookRelations[]).map((book) => ({
       edition: book,
       work: book.work!,

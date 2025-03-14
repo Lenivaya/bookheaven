@@ -9,7 +9,8 @@ export default async function TrendingSection() {
   // Fetch trending books - using different offset to get different books
   const trendingBooks = await getBooks({
     limit: 4,
-    offset: 8 // Different offset to get different books than featured section
+    offset: 8,
+    withCount: false
   })
 
   return (
