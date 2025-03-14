@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Pencil, Trash2 } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'

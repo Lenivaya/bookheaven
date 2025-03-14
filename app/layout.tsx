@@ -10,6 +10,7 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { extractRouterConfig } from 'uploadthing/server'
 import { Navbar } from '../components/layout/navbar/Navbar'
 import { ourFileRouter } from './api/uploadthing/core'
+import { ViewTransitions } from 'next-view-transitions'
 import './globals.css'
 
 const geistSans = Geist({
@@ -34,29 +35,31 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang='en' className='dark' suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <ClerkProvider
-          appearance={{
-            baseTheme: dark
-          }}
+    <ViewTransitions>
+      <html lang='en' className='dark' suppressHydrationWarning>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <NuqsAdapter>
-            <ReactQueryProvider>
-              <ShoppingStripeCartProvider>
-                <Navbar />
-                <NextSSRPlugin
-                  routerConfig={extractRouterConfig(ourFileRouter)}
-                />
-                <main className='px-2 sm:px-0'>{children}</main>
-                <Toaster position='bottom-right' />
-              </ShoppingStripeCartProvider>
-            </ReactQueryProvider>
-          </NuqsAdapter>
-        </ClerkProvider>
-      </body>
-    </html>
+          <ClerkProvider
+            appearance={{
+              baseTheme: dark
+            }}
+          >
+            <NuqsAdapter>
+              <ReactQueryProvider>
+                <ShoppingStripeCartProvider>
+                  <Navbar />
+                  <NextSSRPlugin
+                    routerConfig={extractRouterConfig(ourFileRouter)}
+                  />
+                  <main className='px-2 sm:px-0'>{children}</main>
+                  <Toaster position='bottom-right' />
+                </ShoppingStripeCartProvider>
+              </ReactQueryProvider>
+            </NuqsAdapter>
+          </ClerkProvider>
+        </body>
+      </html>
+    </ViewTransitions>
   )
 }

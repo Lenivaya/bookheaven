@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Author } from '@/db/schema'
 import { cn } from '@/lib/utils'
 import { CalendarIcon, CheckCircle2 } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 
 import { AuthorAdminActions } from './AuthorAdminActions'
 import { AuthorFollowButton } from './AuthorFollowButton'

@@ -1,5 +1,5 @@
 import { Author } from '@/db/schema/books.schema'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 
 import { StarIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'

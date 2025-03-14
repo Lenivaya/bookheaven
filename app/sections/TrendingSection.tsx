@@ -2,7 +2,7 @@ import { getPopularTags } from '@/app/actions/tags.actions'
 import { Button } from '@/components/ui/button'
 import { FocusCards } from '@/components/ui/focus-cards'
 import { ArrowRight, TrendingUp } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 
 export default async function TrendingSection() {
   const popularTags = await getPopularTags({ limit: 9 })

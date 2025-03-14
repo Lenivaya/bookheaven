@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button'
 import { notFound } from 'next/navigation'
 import { SearchParams } from 'nuqs/server'
 import { Suspense } from 'react'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 
 interface AuthorPageProps {
   params: Promise<{

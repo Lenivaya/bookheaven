@@ -6,7 +6,7 @@ import { authorSearchParamsCache } from './searchParams'
 import { AuthorPagination } from '@/components/authors/author-pagination/AuthorPagination'
 import { Button } from '@/components/ui/button'
 import { PlusIcon } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 
 import { Separator } from '@/components/ui/separator'
 import { checkRole } from '@/lib/auth/utils'

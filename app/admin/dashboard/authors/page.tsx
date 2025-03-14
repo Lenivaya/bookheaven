@@ -8,7 +8,7 @@ import { SearchParams } from 'nuqs/server'
 import AuthorList from '@/components/authors/author-list/AuthorList'
 import { Button } from '@/components/ui/button'
 import { PlusIcon } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 
 const DEFAULT_PAGE_SIZE = 12
 

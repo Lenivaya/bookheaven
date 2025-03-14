@@ -8,7 +8,7 @@ import {
   BookText,
   BookCopy
 } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 
 import { useInView } from 'react-intersection-observer'
 import { useEffect, useState } from 'react'
