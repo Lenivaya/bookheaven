@@ -25,6 +25,7 @@ import {
 } from 'drizzle-orm'
 import { z } from 'zod'
 import { ensureAdmin } from './actions.helpers'
+import { revalidatePath } from 'next/cache'
 
 /**
  * Server action to fetch authors with multi-criteria search at the database level
@@ -170,6 +171,8 @@ export async function upsertAuthor(
 export async function deleteAuthor(authorId: string) {
   await ensureAdmin()
   await db.delete(authors).where(eq(authors.id, authorId))
+  revalidatePath('/authors')
+  revalidatePath('/admin/authors')
 }
 
 /**

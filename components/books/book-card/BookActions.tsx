@@ -14,6 +14,7 @@ import {
   PopoverTrigger
 } from '@/components/ui/popover'
 import { RatingValue } from '@/db/schema/ratings.schema'
+import { useBookshelfOptimistic } from '@/hooks/useBookshelfOptimistic'
 import { DEFAULT_SYSTEM_SHELVES, DefaultShelves } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -29,7 +30,6 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { match } from 'ts-pattern'
 import { BookRating } from './BookRating'
-import { useBookshelfOptimistic } from '@/hooks/useBookshelfOptimistic'
 
 interface BookActionsProps {
   editionId: string
@@ -54,14 +54,14 @@ export function BookActions({ editionId, bookTitle }: BookActionsProps) {
     systemShelves: DEFAULT_SYSTEM_SHELVES
   })
 
-  const { data: userRating, isLoading: isUserRatingLoading } = useQuery({
+  const { data: userRating } = useQuery({
     queryKey: ['userRating', editionId],
     queryFn: () => getUserRating(editionId),
     refetchOnWindowFocus: false,
     enabled: open
   })
 
-  const { data: averageRating, isLoading: isAverageRatingLoading } = useQuery({
+  const { data: averageRating } = useQuery({
     queryKey: ['averageRating', editionId],
     queryFn: () => getBookEditionAverageRating(editionId),
     refetchOnWindowFocus: false,

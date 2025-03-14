@@ -94,7 +94,7 @@ export function BooksSearch({ isAutoFocusable, isClient }: BooksSearchProps) {
             autoComplete='off'
             ref={inputRef}
             name='query'
-            placeholder='Search for a recipe on reciper...'
+            placeholder='Search for a book on BookHeaven...'
             value={search ?? ''}
             onChange={handleSearchChange}
             className='border-0 bg-transparent text-center shadow-none focus-visible:ring-0'

@@ -1,11 +1,10 @@
 'use client'
 
+import { deleteAuthor } from '@/app/actions/authors.actions'
 import { Button } from '@/components/ui/button'
 import { Pencil, Trash2 } from 'lucide-react'
 import { Link } from 'next-view-transitions'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { deleteAuthor } from '@/app/actions/authors'
 
 interface AuthorAdminActionsProps {
   authorId: string
@@ -16,21 +15,13 @@ export function AuthorAdminActions({
   authorId,
   authorName
 }: AuthorAdminActionsProps) {
-  const router = useRouter()
-
   const handleDelete = async () => {
     if (!confirm(`Are you sure you want to delete ${authorName}?`)) {
       return
     }
 
     try {
-      const result = await deleteAuthor(authorId)
-      if (result.success) {
-        toast.success('Author deleted successfully')
-        router.refresh()
-      } else {
-        toast.error(result.error || 'Failed to delete author')
-      }
+      await deleteAuthor(authorId)
     } catch (error) {
       toast.error('Failed to delete author')
       console.error('Error deleting author:', error)
