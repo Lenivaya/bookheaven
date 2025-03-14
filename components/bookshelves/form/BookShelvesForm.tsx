@@ -104,10 +104,11 @@ export function BookShelvesForm({ shelf }: BookShelvesFormProps) {
   const searchBooks = useCallback(async (query: string) => {
     try {
       const { books } = await getBooks({
-        limit: 5,
+        limit: 10,
         offset: 0,
         search: query
       })
+
       setSearchResults(books)
     } catch (error) {
       console.error('Error searching books:', error)
@@ -278,7 +279,12 @@ export function BookShelvesForm({ shelf }: BookShelvesFormProps) {
               <Badge variant='secondary' className='font-mono'>
                 {selectedBooksMap.size} books
               </Badge>
-              <Popover open={open} onOpenChange={setOpen}>
+              <Popover
+                open={open}
+                onOpenChange={(isOpen) => {
+                  setOpen(isOpen)
+                }}
+              >
                 <PopoverTrigger asChild>
                   <Button
                     variant='outline'
@@ -296,37 +302,35 @@ export function BookShelvesForm({ shelf }: BookShelvesFormProps) {
                   side='bottom'
                   sideOffset={8}
                 >
-                  <Command className='overflow-hidden rounded-lg border shadow-md'>
+                  <Command
+                    className='overflow-hidden rounded-lg border shadow-md'
+                    shouldFilter={false}
+                  >
                     <CommandInput
                       placeholder='Search books...'
                       value={searchQuery}
                       onValueChange={setSearchQuery}
+                      autoFocus
                     />
-                    <CommandList>
+                    <CommandList className='max-h-[300px] overflow-auto'>
                       <CommandEmpty>
-                        {searchQuery
-                          ? 'No books found.'
-                          : 'Start typing to search books...'}
+                        {searchQuery ? 'No books found.' : 'Type to search...'}
                       </CommandEmpty>
                       <CommandGroup>
-                        {searchResults.map((book) => {
-                          const isSelected = selectedBooksMap.has(
-                            book.edition.id
-                          )
-                          return (
-                            <CommandItem
-                              key={book.edition.id}
-                              onSelect={() => toggleBook(book)}
-                              className='px-0 aria-selected:bg-transparent'
-                            >
-                              <BookCard
-                                book={book}
-                                variant='search'
-                                isSelected={isSelected}
-                              />
-                            </CommandItem>
-                          )
-                        })}
+                        {searchResults.map((book) => (
+                          <CommandItem
+                            key={book.edition.id}
+                            onSelect={() => toggleBook(book)}
+                            className='px-0 cursor-pointer'
+                            value={`${book.work.title}-${book.edition.id}`}
+                          >
+                            <BookCard
+                              book={book}
+                              variant='search'
+                              isSelected={selectedBooksMap.has(book.edition.id)}
+                            />
+                          </CommandItem>
+                        ))}
                       </CommandGroup>
                     </CommandList>
                   </Command>
