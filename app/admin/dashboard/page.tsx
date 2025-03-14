@@ -1,4 +1,4 @@
-import { getAdminDashboardData } from '@/app/components/admin/dashboard/dashboard-navigation/dashboard.actions'
+import { getAdminDashboardData } from '@/components/admin/dashboard/dashboard-navigation/dashboard.actions'
 import {
   Card,
   CardContent,

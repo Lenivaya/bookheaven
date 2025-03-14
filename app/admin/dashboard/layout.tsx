@@ -1,4 +1,4 @@
-import { AdminDashboardNavigation } from '@/app/components/admin/dashboard/dashboard-navigation/AdminDashboardNavigation'
+import { AdminDashboardNavigation } from '@/components/admin/dashboard/dashboard-navigation/AdminDashboardNavigation'
 import { Separator } from '@/components/ui/separator'
 
 export default function AdminDashboardLayout({

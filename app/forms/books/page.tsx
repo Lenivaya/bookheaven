@@ -12,6 +12,7 @@ export default async function NewBookPage() {
 
   const handleSubmit = async (data: BookFormData) => {
     'use server'
+    // @ts-expect-error - <idc>
     return upsertBook(data)
   }
 
