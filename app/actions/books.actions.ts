@@ -32,6 +32,7 @@ import { getAuthenticatedUserId } from './actions.helpers'
 import IsbnFetch from 'isbn-fetch'
 import { faker } from '@faker-js/faker'
 import { revalidatePath } from 'next/cache'
+import { auth } from '@clerk/nextjs/server'
 
 type Book = {
   edition: BookEdition
@@ -272,7 +273,8 @@ export async function getBookWorkById(id: string) {
  * Server action to check if a user has liked a book by id
  */
 export async function hasLikedBook(bookEditionId: string) {
-  const userId = await getAuthenticatedUserId()
+  const { userId } = await auth()
+  if (isNone(userId)) return false
   const result = await db.query.bookLikes.findFirst({
     where: and(
       eq(bookLikes.editionId, bookEditionId),

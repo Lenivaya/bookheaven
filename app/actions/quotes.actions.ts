@@ -3,7 +3,8 @@ import { insertQuoteSchema, quoteLikes, quotes } from '@/db/schema'
 import { and, eq, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { getAuthenticatedUserId } from './actions.helpers'
-import { isSome } from '@/lib/types'
+import { isNone, isSome } from '@/lib/types'
+import { auth } from '@clerk/nextjs/server'
 
 /**
  * Get a quote by id
@@ -35,7 +36,8 @@ export async function deleteQuote(id: string) {
 
 /** Get quote like for specific quote */
 export async function getQuoteLike(quoteId: string) {
-  const userId = await getAuthenticatedUserId()
+  const { userId } = await auth()
+  if (isNone(userId)) return null
   return db.query.quoteLikes.findFirst({
     where: and(eq(quoteLikes.quoteId, quoteId), eq(quoteLikes.userId, userId))
   })

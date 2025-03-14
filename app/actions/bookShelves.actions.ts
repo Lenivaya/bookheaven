@@ -424,7 +424,8 @@ export async function upsertShelfItemWithShelfName(
  * Checks if shelf has the book in it given shelf name and user id
  */
 export async function hasBookInShelf(shelfName: string, editionId: string) {
-  const userId = await getAuthenticatedUserId()
+  const { userId } = await auth()
+  if (isNone(userId)) return false
   const shelf = await db.query.shelves.findFirst({
     where: and(eq(shelves.userId, userId), eq(shelves.name, shelfName)),
     with: {
@@ -455,7 +456,8 @@ export async function deleteShelfItem(shelfId: string, editionId: string) {
  * Gets user like for a book shelve
  */
 export async function getUserShelfLike(shelfId: string) {
-  const userId = await getAuthenticatedUserId()
+  const { userId } = await auth()
+  if (isNone(userId)) return null
   return db.query.shelfLikes.findFirst({
     where: and(eq(shelfLikes.shelfId, shelfId), eq(shelfLikes.userId, userId))
   })

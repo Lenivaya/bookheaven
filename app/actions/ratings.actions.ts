@@ -6,12 +6,14 @@ import { ratings, RatingValue } from '@/db/schema/ratings.schema'
 import { isNone, isSome } from '@/lib/types'
 import { and, avg, count, eq } from 'drizzle-orm'
 import { getAuthenticatedUserId } from './actions.helpers'
+import { auth } from '@clerk/nextjs/server'
 
 /**
  * Get a user's rating for a book edition
  */
 export async function getUserRating(bookEditionId: string) {
-  const userId = await getAuthenticatedUserId()
+  const { userId } = await auth()
+  if (isNone(userId)) return null
   return (
     (await db.query.ratings.findFirst({
       where: and(

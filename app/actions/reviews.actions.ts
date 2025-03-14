@@ -172,7 +172,8 @@ export async function getReviewById(reviewId: string) {
  * Check if a user has liked a review
  */
 export async function hasLikedReview(reviewId: string) {
-  const userId = await getAuthenticatedUserId()
+  const { userId } = await auth()
+  if (isNone(userId)) return false
   return isSome(
     await db.query.reviewLikes.findFirst({
       where: (reviewLikes, { eq, and }) =>
