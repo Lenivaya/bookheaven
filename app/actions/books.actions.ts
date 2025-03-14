@@ -170,6 +170,10 @@ export async function getBooks(
       inArray(bookEditions.id, getFilteredBooks),
     limit: options.limit,
     offset: options.offset,
+    orderBy: (bookEditions, { desc }) => [
+      desc(bookEditions.updated_at),
+      desc(bookEditions.created_at)
+    ],
     with: {
       work: {
         with: {

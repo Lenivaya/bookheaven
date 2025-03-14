@@ -167,6 +167,10 @@ export async function getBookShelves(
     where: inArray(shelves.id, getFilteredShelves),
     limit: options.limit,
     offset: options.offset,
+    orderBy: (shelves, { desc }) => [
+      desc(shelves.updated_at),
+      desc(shelves.created_at)
+    ],
     with: {
       items: {
         with: {
