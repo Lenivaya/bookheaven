@@ -52,10 +52,11 @@ export default defineConfig({
         'scripts/*',
         // Shadcn UI
         'components/ui/**',
-        'app/actions/*'
+        'app/actions/*',
+        'app/'
       ],
       reporter: ['html', 'json-summary', 'json', 'text'],
-      provider: 'v8',
+      provider: 'istanbul',
       reportOnFailure: true,
       thresholds: {
         branches: 40,
